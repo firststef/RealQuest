@@ -22,6 +22,10 @@
 <script>
 
     var stage, isRunning;
+    var playerPos=[27.598505,47.162098];
+    var ZOOM = 60000;
+    var offsetx = 160;
+    var offsety = 90;
     isRunning = false;
 
     function init() {
@@ -47,12 +51,6 @@
         sprite.name = "player";
         stage.addChild(sprite);
 
-        var polygon = new createjs.Shape();
-        polygon.graphics.beginStroke("black");
-        polygon.graphics.moveTo(0, 60).beginFill("#ff0000").lineTo(60, 60).lineTo(30, 90).lineTo(0, 60);
-
-        stage.addChild(polygon);
-
         createjs.Ticker.on("tick", tick);
     }
 
@@ -67,6 +65,9 @@
                 stage.getChildByName("player").gotoAndPlay("idle");
         }
 
+        if (stage.getChildByName("playerdot") != null) {
+            stage.getChildByName("playerdot").setTransform(-(playerPos[0] - map.transform._center.lng) * ZOOM + offsetx, (playerPos[1] - map.transform._center.lat) * ZOOM + offsety);
+        }
         stage.update(event); // important!!
     }
 
@@ -74,7 +75,7 @@
     let map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [Math.random()*100,Math.random()*100],
+        center: [27.598505,47.162098],
         zoom: 20
     });
 
@@ -114,7 +115,7 @@
         );
 
         // pixels the map pans when the up or down arrow is clicked
-        const deltaDistance = 10000;
+        const deltaDistance = 500;
 
         // degrees the map rotates when the left or right arrow is clicked
         const deltaDegrees = 25;
@@ -135,6 +136,7 @@
                     map.panBy([0, -deltaDistance], {
                         easing: easing
                     });
+
                 } else if (e.which === 40) {
                 // down
                     map.panBy([0, deltaDistance], {
@@ -158,22 +160,25 @@
         );
     });
 
-    const someBounds = [[48, 50.353521], [43.50585, 44]];
 
     setInterval( function(){
         var features = map.queryRenderedFeatures(
-            {sourceLayer: ["road", "building"]}); // This is where I get building
+            {/*sourceLayer: ["road", "building"]*/}); // This is where I get building
 
         features.forEach(function(feature){
             //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-            console.log(feature);
+            //console.log(feature);
 
-            var playerPos=[27.585016,47.156658];
-            var ZOOM = 60000;
-            var offsetx = 160;
-            var offsety = 90;
-            if (feature.sourceLayer == "road") {
-               // console.log(feature.geometry);
+            console.log(feature.id);
+
+            if (feature["id"] ==  229536321)
+            {
+                console.log('hai');
+                console.log(feature);
+            }
+
+            if (feature.sourceLayer == "road" || feature["source-layer"] == "road") {
+
                 let polygon = new createjs.Shape();
                 polygon.graphics.beginStroke("blue");
 
@@ -202,6 +207,21 @@
 
                 stage.addChild(polygon);
             }
+
+
+            var g = new createjs.Graphics();
+            g.setStrokeStyle(1);
+            g.beginStroke(createjs.Graphics.getRGB(0,0,0));
+            g.beginFill(createjs.Graphics.getRGB(0,255,0));
+            g.drawCircle(0,0,3);
+
+            var s = new createjs.Shape(g);
+            s.x = 5000;
+            s.y = 10000;
+            s.name = "playerdot";
+
+            stage.addChild(s);
+
 
 
             //console.log(feature.properties.height); // this is the building height
