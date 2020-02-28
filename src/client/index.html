@@ -47,6 +47,12 @@
         sprite.name = "player";
         stage.addChild(sprite);
 
+        var polygon = new createjs.Shape();
+        polygon.graphics.beginStroke("black");
+        polygon.graphics.moveTo(0, 60).beginFill("#ff0000").lineTo(60, 60).lineTo(30, 90).lineTo(0, 60);
+
+        stage.addChild(polygon);
+
         createjs.Ticker.on("tick", tick);
     }
 
@@ -68,8 +74,8 @@
     let map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-77.04, 38.907],
-        zoom: 30
+        center: [Math.random()*100,Math.random()*100],
+        zoom: 20
     });
 
     var mySource;
@@ -108,7 +114,7 @@
         );
 
         // pixels the map pans when the up or down arrow is clicked
-        const deltaDistance = 1000;
+        const deltaDistance = 10000;
 
         // degrees the map rotates when the left or right arrow is clicked
         const deltaDegrees = 25;
@@ -152,26 +158,57 @@
         );
     });
 
-    /*
-    const someBounds = [[32.958984, -5.353521], [43.50585, 5.615985]];
-
-    map.fitBounds(
-        someBounds, // arbitrary bounds
-        {
-            linear: true
-        });
+    const someBounds = [[48, 50.353521], [43.50585, 44]];
 
     setInterval( function(){
         var features = map.queryRenderedFeatures(
-            {layers: ["building"], filter: ['==', 'extrude', 'true']}); // This is where I get building information
+            {sourceLayer: ["road", "building"]}); // This is where I get building
 
         features.forEach(function(feature){
-            console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-            console.log(feature.properties.height); // this is the building height
-            console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
+            //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
+            console.log(feature);
+
+            var playerPos=[27.585016,47.156658];
+            var ZOOM = 60000;
+            var offsetx = 160;
+            var offsety = 90;
+            if (feature.sourceLayer == "road") {
+               // console.log(feature.geometry);
+                let polygon = new createjs.Shape();
+                polygon.graphics.beginStroke("blue");
+
+                polygon.graphics.moveTo(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM + offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
+
+                //console.log(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM+ offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
+
+                feature.geometry.coordinates.forEach(function (point) {
+                    polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                });
+
+                stage.addChild(polygon);
+            }
+            else if (feature.sourceLayer == "building"){
+                let polygon = new createjs.Shape();
+                polygon.graphics.beginStroke("red");
+
+                feature.geometry.coordinates.forEach(function (building){
+                   let buildingx=-(playerPos[0] - building[0][0]) * ZOOM + offsetx;
+                   let buildingy = (playerPos[1] - building[0][1]) * ZOOM + offsety;
+                   polygon.graphics.moveTo(buildingx, buildingy);
+                   building.forEach(function (point) {
+                       polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                   });
+                });
+
+                stage.addChild(polygon);
+            }
+
+
+            //console.log(feature.properties.height); // this is the building height
+            //console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
         });
-    }, 10000);
-    */
+    }, 1000);
+
 
 
 </script>
