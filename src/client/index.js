@@ -217,17 +217,33 @@ function setMap(lat=27.598505, long=47.162098){
 
 }
 
-function formValidation(form){
-
+function formValidation(lat, long){
+    let val1 = parseFloat(lat);
+    let val2= parseFloat(long);
+    if (!isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180)
+        return true;
+    else
+        return false;
 }
 function myFunction() {
     let lat=document.getElementById("latitude").value;
     let long=document.getElementById("longitude").value;
-    //document.getElementById("da").innerHTML=lat+" "+long;
-    setMap(lat, long);
-    init();
-    document.getElementById("form").hidden=true;
-    document.getElementById("showForm").hidden=false;
+    if (formValidation(lat, long)){
+        /*
+            // Not sure if setMap(lat, long) then init(), might have been init(lat, long)  then setMap()
+       */
+        setMap(lat, long);
+        init();
+        let str="Enter coordinates: ";
+        document.getElementById("formMessage").innerHTML=str;
+        document.getElementById("form").hidden=true;
+        document.getElementById("showForm").hidden=false;
+    }
+    else{
+        let str = "Enter valid coordinates: ";
+        let result = str.fontcolor("red");
+        document.getElementById("formMessage").innerHTML=result;
+    }
 }
 function showForm(){
     document.getElementById("form").hidden=false;
