@@ -7,11 +7,11 @@ isRunning = false;
 
 function init() {
     stage = new createjs.Stage("gameCanvas");
-
-    /*circle = new createjs.Shape();
-    circle.graphics.beginFill("red").drawCircle(0, 0, 40);
-    circle.y = 50;
-    stage.addChild(circle);*/
+    stage.canvas.width = window.innerWidth;
+    stage.canvas.height = window.innerHeight;
+    stage.update();
+    stage.scaleX = 4;
+    stage.scaleY = 4;
 
     var data = {
         images: ["./../sprites/spritesheet_grant.png"],
@@ -45,6 +45,7 @@ function tick(event) {
     if (stage.getChildByName("playerdot") != null) {
         stage.getChildByName("playerdot").setTransform(-(playerPos[0] - map.transform._center.lng) * ZOOM + offsetx, (playerPos[1] - map.transform._center.lat) * ZOOM + offsety);
     }
+
     stage.update(event); // important!!
 }
 
@@ -139,6 +140,7 @@ map.on('load', function() {
 
 
 setInterval( function(){
+
     var features = map.queryRenderedFeatures(
         {/*sourceLayer: ["road", "building"]*/}); // This is where I get building
 
