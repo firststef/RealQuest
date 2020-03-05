@@ -216,3 +216,20 @@ function setMap(lat=27.598505, long=47.162098){
     }, 1000);
 
 }
+
+function formValidation(form){
+
+}
+function myFunction() {
+    let lat=document.getElementById("latitude").value;
+    let long=document.getElementById("longitude").value;
+    //document.getElementById("da").innerHTML=lat+" "+long;
+    setMap(lat, long);
+    init();
+    document.getElementById("form").hidden=true;
+    document.getElementById("showForm").hidden=false;
+}
+function showForm(){
+    document.getElementById("form").hidden=false;
+    document.getElementById("showForm").hidden=true;
+}
