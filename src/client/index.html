@@ -12,6 +12,28 @@
 
     </style>
 </head>
+
+<div id="coordinatesForm">
+    <form id="form">
+        <p id="da"> Enter coordinates: </p>
+        <input type="text" id="latitude"> <input type="text" id="longitude">
+        <button type="button" id="latLongSubmit" onclick="myFunction()">Submit</button>
+    </form>
+    <script type="text/javascript">
+        function formValidation(form){
+
+        }
+        function myFunction() {
+            let lat=document.getElementById("latitude").value;
+            let long=document.getElementById("longitude").value;
+            //document.getElementById("da").innerHTML=lat+" "+long;
+            setMap(lat, long);
+            init();
+        }
+
+    </script>
+
+</div>
 <body onload="init();">
 <div id="map"></div>
 
@@ -20,5 +42,6 @@
 </canvas>
 
 <script src="index.js"></script>
+<script>setMap();</script>
 </body>
 </html>
