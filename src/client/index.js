@@ -167,103 +167,9 @@ function setMap(lat=27.598505, long=47.162098){
 
         features.forEach(function(feature){
             //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-            //console.log(feature);
-
-            //console.log(feature.layer.id);
-
-
-
-            if (feature.sourceLayer == "road" || feature["source-layer"] == "road") {
-
-                let polygon = new createjs.Shape();
-                polygon.graphics.beginStroke("gray");
-
-
-                //console.log(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM+ offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
-
-                if (feature.geometry.type=="MultiLineString"){
-                    feature.geometry.coordinates.forEach(function (array){
-                        //console.log(array);
-                        polygon.graphics.moveTo(-(playerPos[0]-array[0][0])*ZOOM + offsetx, (playerPos[1]-array[0][1])*ZOOM+ offsety);
-
-
-                        array.forEach(function (point) {
-                            polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                        });
-                    });
-
-                }
-                else{
-                    polygon.graphics.moveTo(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM + offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
-
-                    feature.geometry.coordinates.forEach(function (point) {
-                        polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                    });
-                }
-
-
-
-                stage.addChild(polygon);
-            }
-            //TODO add feature for multipolygons
-
-            else if (feature.sourceLayer == "building"){
-                let polygon = new createjs.Shape();
-                polygon.graphics.beginStroke("red");
-
-                feature.geometry.coordinates.forEach(function (building){
-                    let buildingx=-(playerPos[0] - building[0][0]) * ZOOM + offsetx;
-                    let buildingy = (playerPos[1] - building[0][1]) * ZOOM + offsety;
-                    polygon.graphics.moveTo(buildingx, buildingy);
-                    building.forEach(function (point) {
-                        polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                    });
-                });
-
-                stage.addChild(polygon);
-            }
-            else if (feature.sourceLayer=="water"){
-                //console.log(feature);
-                let polygon = new createjs.Shape();
-                polygon.graphics.beginStroke("blue");
-
-
-                if (feature.geometry.type=="MultiPolygon"){
-                    feature.geometry.coordinates.forEach(function (multiWater){
-                        multiWater.forEach(function (water){
-                            let waterx=-(playerPos[0] - water[0][0]) * ZOOM + offsetx;
-                            let watery = (playerPos[1] - water[0][1]) * ZOOM + offsety;
-                            polygon.graphics.moveTo(waterx, watery).beginFill("blue");
-                            water.forEach(function (point) {
-                                polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                            });
-                        });
-                    });
-                }
-                else{
-                    feature.geometry.coordinates.forEach(function (water){
-                        let waterx=-(playerPos[0] - water[0][0]) * ZOOM + offsetx;
-                        let watery = (playerPos[1] - water[0][1]) * ZOOM + offsety;
-                        polygon.graphics.moveTo(waterx, watery).beginFill("blue");
-                        water.forEach(function (point) {
-                            polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                        });
-                    });
-                }
-                stage.addChild(polygon);
-                /* Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]*/
-                /* MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...] */
-
-
-
-
-            }
-
-
-
-
-
-
+            drawFeature(feature);
+            // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
+            // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
             //console.log(feature.properties.height); // this is the building height
             //console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
         });
@@ -287,8 +193,7 @@ function getFormInput() {
         init();
         let str="Enter coordinates: ";
         document.getElementById("formMessage").innerHTML=str;
-        document.getElementById("form").hidden=true;
-        document.getElementById("showForm").hidden=false;
+        showForm(true);
     }
     else{
         let str = "Enter valid coordinates: ";
@@ -296,7 +201,91 @@ function getFormInput() {
         document.getElementById("formMessage").innerHTML=result;
     }
 }
-function showForm(){
-    document.getElementById("form").hidden=false;
-    document.getElementById("showForm").hidden=true;
+function showForm(value){
+    document.getElementById("form").hidden=value;
+    document.getElementById("showForm").hidden=!value;
 }
+
+function drawFeature(feature){
+    //TODO check if feature not already drawn
+    //if feature.id in our array
+    //return
+    switch(feature.sourceLayer){
+        case "road": {
+            drawRoad(feature.geometry, "gray", false);
+            break;
+        }
+        case "building": {
+            drawPolygon(feature.geometry, "red", false);
+            break;
+        }
+        case "water": {
+            drawPolygon(feature.geometry, "blue", true);
+            break;
+        }
+        default: break;
+    }
+}
+function drawRoad(geometry, color, fill=false){
+    let road = new createjs.Shape();
+    road.graphics.beginStroke(color);
+
+    if (geometry.type=="MultiLineString"){
+        geometry.coordinates.forEach(function (array){
+            let line_x=-(playerPos[0]-array[0][0])*ZOOM + offsetx;
+            let line_y=(playerPos[1]-array[0][1])*ZOOM+ offsety;
+            road.graphics.moveTo(line_x, line_y);
+            array.forEach(function (point) {
+                road.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+            });
+        });
+
+    }
+    else{
+        let line_x=-(playerPos[0]-geometry.coordinates[0][0])*ZOOM + offsetx;
+        let line_y=(playerPos[1]-geometry.coordinates[0][1])*ZOOM+ offsety;
+        road.graphics.moveTo(line_x,line_y);
+        geometry.coordinates.forEach(function (point) {
+            road.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+        });
+    }
+    stage.addChild(road);
+}
+function drawPolygon(geometry, color, fill=false){
+    let polygonType="MultiPolygon";
+    let polygon = new createjs.Shape();
+    polygon.graphics.beginStroke(color);
+
+    if (geometry.type==polygonType){
+        geometry.coordinates.forEach(function (multiPolygon){
+            multiPolygon.forEach(function (figure){
+                let figure_x=-(playerPos[0] - figure[0][0]) * ZOOM + offsetx;
+                let figure_y = (playerPos[1] - figure[0][1]) * ZOOM + offsety;
+                if (fill)
+                    polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
+                else
+                    polygon.graphics.moveTo(figure_x, figure_y);
+                figure.forEach(function (point) {
+                    polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                });
+            });
+        });
+    }
+    else{
+        geometry.coordinates.forEach(function (figure){
+            let figure_x=-(playerPos[0] - figure[0][0]) * ZOOM + offsetx;
+            let figure_y = (playerPos[1] - figure[0][1]) * ZOOM + offsety;
+            if (fill)
+                polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
+            else
+                polygon.graphics.moveTo(figure_x, figure_y);
+            figure.forEach(function (point) {
+                polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+            });
+        });
+    }
+    stage.addChild(polygon);
+}
+
+
+
