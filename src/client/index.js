@@ -32,6 +32,19 @@ function init() {
 }
 
 function tick(event) {
+    var g = new createjs.Graphics();
+    g.setStrokeStyle(1);
+    g.beginStroke(createjs.Graphics.getRGB(0,0,0));
+    g.beginFill(createjs.Graphics.getRGB(0,255,0));
+    g.drawCircle(0,0,3);
+
+    var s = new createjs.Shape(g);
+    s.x = 5000;
+    s.y = 10000;
+    s.name = "playerdot";
+
+    stage.addChild(s);
+
     stage.getChildByName("player").setTransform(130, 30, 0.2, 0.2);
     if (isRunning) {
         if (stage.getChildByName("player").currentAnimation !== "run")
@@ -140,6 +153,7 @@ function setMap(lat=27.598505, long=47.162098){
                         easing: easing
                     });
                 }
+
             },
             true
         );
@@ -155,29 +169,44 @@ function setMap(lat=27.598505, long=47.162098){
             //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
             //console.log(feature);
 
-            console.log(feature.id);
+            //console.log(feature.layer.id);
 
-            if (feature["id"] ==  229536321)
-            {
-                console.log('hai');
-                console.log(feature);
-            }
+
 
             if (feature.sourceLayer == "road" || feature["source-layer"] == "road") {
 
                 let polygon = new createjs.Shape();
-                polygon.graphics.beginStroke("blue");
+                polygon.graphics.beginStroke("gray");
 
-                polygon.graphics.moveTo(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM + offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
 
                 //console.log(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM+ offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
 
-                feature.geometry.coordinates.forEach(function (point) {
-                    polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                });
+                if (feature.geometry.type=="MultiLineString"){
+                    feature.geometry.coordinates.forEach(function (array){
+                        //console.log(array);
+                        polygon.graphics.moveTo(-(playerPos[0]-array[0][0])*ZOOM + offsetx, (playerPos[1]-array[0][1])*ZOOM+ offsety);
+
+
+                        array.forEach(function (point) {
+                            polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                        });
+                    });
+
+                }
+                else{
+                    polygon.graphics.moveTo(-(playerPos[0]-feature.geometry.coordinates[0][0])*ZOOM + offsetx, (playerPos[1]-feature.geometry.coordinates[0][1])*ZOOM+ offsety);
+
+                    feature.geometry.coordinates.forEach(function (point) {
+                        polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                    });
+                }
+
+
 
                 stage.addChild(polygon);
             }
+            //TODO add feature for multipolygons
+
             else if (feature.sourceLayer == "building"){
                 let polygon = new createjs.Shape();
                 polygon.graphics.beginStroke("red");
@@ -193,20 +222,45 @@ function setMap(lat=27.598505, long=47.162098){
 
                 stage.addChild(polygon);
             }
+            else if (feature.sourceLayer=="water"){
+                //console.log(feature);
+                let polygon = new createjs.Shape();
+                polygon.graphics.beginStroke("blue");
 
 
-            var g = new createjs.Graphics();
-            g.setStrokeStyle(1);
-            g.beginStroke(createjs.Graphics.getRGB(0,0,0));
-            g.beginFill(createjs.Graphics.getRGB(0,255,0));
-            g.drawCircle(0,0,3);
+                if (feature.geometry.type=="MultiPolygon"){
+                    feature.geometry.coordinates.forEach(function (multiWater){
+                        multiWater.forEach(function (water){
+                            let waterx=-(playerPos[0] - water[0][0]) * ZOOM + offsetx;
+                            let watery = (playerPos[1] - water[0][1]) * ZOOM + offsety;
+                            polygon.graphics.moveTo(waterx, watery).beginFill("blue");
+                            water.forEach(function (point) {
+                                polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                            });
+                        });
+                    });
+                }
+                else{
+                    feature.geometry.coordinates.forEach(function (water){
+                        let waterx=-(playerPos[0] - water[0][0]) * ZOOM + offsetx;
+                        let watery = (playerPos[1] - water[0][1]) * ZOOM + offsety;
+                        polygon.graphics.moveTo(waterx, watery).beginFill("blue");
+                        water.forEach(function (point) {
+                            polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+                        });
+                    });
+                }
+                stage.addChild(polygon);
+                /* Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]*/
+                /* MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...] */
 
-            var s = new createjs.Shape(g);
-            s.x = 5000;
-            s.y = 10000;
-            s.name = "playerdot";
 
-            stage.addChild(s);
+
+
+            }
+
+
+
 
 
 
@@ -229,9 +283,7 @@ function myFunction() {
     let lat=document.getElementById("latitude").value;
     let long=document.getElementById("longitude").value;
     if (formValidation(lat, long)){
-        /*
-            // Not sure if setMap(lat, long) then init(), might have been init(lat, long)  then setMap()
-       */
+
         setMap(lat, long);
         init();
         let str="Enter coordinates: ";

@@ -18,6 +18,13 @@ TODO: to change "showForm" button's width because it makes a non colorable strip
 !making form not hidden moves the drawn lines down
 BUG:lat=86, long=89 should be valid, it doesn't display what it should
 -->
+<!--
+<body>
+-->
+
+<body onload="init();">
+
+
 <div id="coordinatesForm">
     <button type="button" id="showForm" onclick="showForm()">+</button>
     <form id="form" hidden>
@@ -28,8 +35,6 @@ BUG:lat=86, long=89 should be valid, it doesn't display what it should
     </form>
 </div>
 
-
-<body onload="init();">
 <div id="map"></div>
 
 <canvas id="gameCanvas">
@@ -38,5 +43,6 @@ BUG:lat=86, long=89 should be valid, it doesn't display what it should
 
 
 <script>setMap();</script>
+
 </body>
 </html>
