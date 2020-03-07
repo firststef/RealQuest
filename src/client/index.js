@@ -4,6 +4,95 @@ var ZOOM = 60000;
 var offsetx = 160;
 var offsety = 90;
 isRunning = false;
+function getCoordinateX(point){
+    return -(playerPos[0]-point)*ZOOM+offsetx;
+}
+function getCoordinateY(point){
+    return (playerPos[1]-point)*ZOOM+ offsety;
+}
+
+function drawFeature(feature){
+    //TODO check if feature not already drawn
+    //if feature.id in our array
+    //return
+    switch(feature.sourceLayer){
+        case "road": {
+            drawRoad(feature.geometry, "gray", false);
+            break;
+        }
+        case "building": {
+            drawPolygon(feature.geometry, "red", false);
+            break;
+        }
+        case "water": {
+            drawPolygon(feature.geometry, "blue", true);
+            break;
+        }
+        default: break;
+    }
+}
+function drawRoad(geometry, color, fill=false){
+    let road = new createjs.Shape();
+    road.graphics.beginStroke(color);
+
+    if (geometry.type=="MultiLineString"){
+        geometry.coordinates.forEach(function (array){
+            let line_x=getCoordinateX(array[0][0]);
+            let line_y=getCoordinateY(array[0][1]);
+            road.graphics.moveTo(line_x, line_y);
+            array.forEach(function (point) {
+                road.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
+            });
+        });
+
+    }
+    else{
+        let line_x=getCoordinateX(geometry.coordinates[0][0]);
+        let line_y=getCoordinateY(geometry.coordinates[0][1]);
+        road.graphics.moveTo(line_x,line_y);
+        geometry.coordinates.forEach(function (point) {
+            road.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
+        });
+    }
+    stage.addChild(road);
+}
+function drawPolygon(geometry, color, fill=false){
+    let polygonType="MultiPolygon";
+    let polygon = new createjs.Shape();
+    polygon.graphics.beginStroke(color);
+
+    if (geometry.type==polygonType){
+        geometry.coordinates.forEach(function (multiPolygon){
+            multiPolygon.forEach(function (figure){
+                let figure_x=getCoordinateX(figure[0][0]);
+                let figure_y=getCoordinateY(figure[0][1]);
+                if (fill)
+                    polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
+                else
+                    polygon.graphics.moveTo(figure_x, figure_y);
+                figure.forEach(function (point) {
+                    polygon.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
+                });
+            });
+        });
+    }
+    else{
+        geometry.coordinates.forEach(function (figure){
+            let figure_x=getCoordinateX(figure[0][0]);
+            let figure_y=getCoordinateY(figure[0][1]);
+            if (fill)
+                polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
+            else
+                polygon.graphics.moveTo(figure_x, figure_y);
+            figure.forEach(function (point) {
+                polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
+            });
+        });
+    }
+    stage.addChild(polygon);
+}
+
+
 
 function init() {
     stage = new createjs.Stage("gameCanvas");
@@ -130,24 +219,24 @@ function setMap(lat=27.598505, long=47.162098){
                 e.preventDefault();
                 isRunning = true;
                 if (e.which === 38) {
-                // up
+                    // up
                     map.panBy([0, -deltaDistance], {
                         easing: easing
                     });
 
                 } else if (e.which === 40) {
-                // down
+                    // down
                     map.panBy([0, deltaDistance], {
                         easing: easing
                     });
                 } else if (e.which === 37) {
-                // left
+                    // left
                     map.easeTo({
                         bearing: map.getBearing() - deltaDegrees,
                         easing: easing
                     });
                 } else if (e.which === 39) {
-                // right
+                    // right
                     map.easeTo({
                         bearing: map.getBearing() + deltaDegrees,
                         easing: easing
@@ -205,87 +294,4 @@ function showForm(value){
     document.getElementById("form").hidden=value;
     document.getElementById("showForm").hidden=!value;
 }
-
-function drawFeature(feature){
-    //TODO check if feature not already drawn
-    //if feature.id in our array
-    //return
-    switch(feature.sourceLayer){
-        case "road": {
-            drawRoad(feature.geometry, "gray", false);
-            break;
-        }
-        case "building": {
-            drawPolygon(feature.geometry, "red", false);
-            break;
-        }
-        case "water": {
-            drawPolygon(feature.geometry, "blue", true);
-            break;
-        }
-        default: break;
-    }
-}
-function drawRoad(geometry, color, fill=false){
-    let road = new createjs.Shape();
-    road.graphics.beginStroke(color);
-
-    if (geometry.type=="MultiLineString"){
-        geometry.coordinates.forEach(function (array){
-            let line_x=-(playerPos[0]-array[0][0])*ZOOM + offsetx;
-            let line_y=(playerPos[1]-array[0][1])*ZOOM+ offsety;
-            road.graphics.moveTo(line_x, line_y);
-            array.forEach(function (point) {
-                road.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-            });
-        });
-
-    }
-    else{
-        let line_x=-(playerPos[0]-geometry.coordinates[0][0])*ZOOM + offsetx;
-        let line_y=(playerPos[1]-geometry.coordinates[0][1])*ZOOM+ offsety;
-        road.graphics.moveTo(line_x,line_y);
-        geometry.coordinates.forEach(function (point) {
-            road.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-        });
-    }
-    stage.addChild(road);
-}
-function drawPolygon(geometry, color, fill=false){
-    let polygonType="MultiPolygon";
-    let polygon = new createjs.Shape();
-    polygon.graphics.beginStroke(color);
-
-    if (geometry.type==polygonType){
-        geometry.coordinates.forEach(function (multiPolygon){
-            multiPolygon.forEach(function (figure){
-                let figure_x=-(playerPos[0] - figure[0][0]) * ZOOM + offsetx;
-                let figure_y = (playerPos[1] - figure[0][1]) * ZOOM + offsety;
-                if (fill)
-                    polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
-                else
-                    polygon.graphics.moveTo(figure_x, figure_y);
-                figure.forEach(function (point) {
-                    polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-                });
-            });
-        });
-    }
-    else{
-        geometry.coordinates.forEach(function (figure){
-            let figure_x=-(playerPos[0] - figure[0][0]) * ZOOM + offsetx;
-            let figure_y = (playerPos[1] - figure[0][1]) * ZOOM + offsety;
-            if (fill)
-                polygon.graphics.moveTo(figure_x, figure_y).beginFill(color);
-            else
-                polygon.graphics.moveTo(figure_x, figure_y);
-            figure.forEach(function (point) {
-                polygon.graphics.lineTo(-(playerPos[0]-point[0])*ZOOM+ offsetx, (playerPos[1]-point[1])*ZOOM+ offsety);
-            });
-        });
-    }
-    stage.addChild(polygon);
-}
-
-
 
