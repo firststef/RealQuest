@@ -1,50 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <title>Add an icon to the map</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
-    <link href="style.css" rel="stylesheet" />
-    <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
-    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
-    <!-- <script src="greiner-hormann.min.js"></script> -->
-    <script src="index.js"></script>
-    <style>
 
-    </style>
-</head>
-
-<!--
-TODO: to change "showForm" button's width because it makes a non colorable stripe
-!making form not hidden moves the drawn lines down
-BUG:lat=86, long=89 should be valid, it doesn't display what it should
+<html lang="ro"> 
+	<head>
+        <title>Awesome game</title>
+        <meta charset="utf-8" />
+		<meta name="description" content="Cancertopia" />
+		<meta name="keywords" content="Cancertopia best game 2020 anime rpg role playing" />
+		<meta name="distribution" content="Global" />
+		<meta name="author" content="Cosmin Vârlan" />
+		<meta name="owner"  content="Cosmin Vârlan" />			
+		<link rel="icon" href="https://profs.info.uaic.ro/~vcosmin/img/favicon_cv.ico" type="image/x-icon">
+		<link rel="stylesheet" href="style.css" />
+        <script src="index.js"></script> 
+    </head>
+    <body>
+        <div id="div_main_page">
+            <div id="div_header">
+                <div id="div_header_text">
+                    <h3> This is header </h3>
+                </div>
+            </div>
+            <div id="div_enter_game">
+                <div id="div_enter_game_text">
+                    <h3> This is enter game </h3>
+                </div>
+                <div id="div_enter_game_button">
+                
+                 <button class="button" id="showForm" onclick="showForm(false);">Start joc</button>
+                 <form id="form" target="_self" action="game.html" method="GET" hidden>
+                        <p id="formMessage"> Enter coordinates: </p>
+                        <input type="text" id="latitude" name="var1" placeholder="[-90, +90]">
+                        <input type="text" id="longitude" name="var2" placeholder="[-180, +180]">
+                        <input type="submit" onclick="showForm(true);" value="Submit request" />
+                        <!--
+                        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
+                        -->
+                    </form>
+                 <!--
+                 <div id="coordinatesForm">
+                    <button type="button" id="showForm" onclick="showForm(false)">+</button>
+                    <form id="form" hidden>
+                        <p id="formMessage"> Enter coordinates: </p>
+                        <input type="text" id="latitude" placeholder="[-90, +90]">
+                        <input type="text" id="longitude" placeholder="[-180, +180]">
+                        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
+                    </form>
+                </div>
 -->
-<!--
-<body>
--->
 
-<body onload="init();">
-
-
-<div id="coordinatesForm">
-    <button type="button" id="showForm" onclick="showForm(false)">+</button>
-    <form id="form" hidden>
-        <p id="formMessage"> Enter coordinates: </p>
-        <input type="text" id="latitude" placeholder="[-90, +90]">
-        <input type="text" id="longitude" placeholder="[-180, +180]">
-        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
-    </form>
-</div>
-
-<div id="map"></div>
-
-<canvas id="gameCanvas">
-    alternate content
-</canvas>
-
-
-<script>setMap();</script>
-
-</body>
+                </div>
+            </div>
+            <div id="div_lore">
+                <div id="div_lore_text">
+                    <h3> Malesuada fames ac turpis egestas sed tempus urna. Varius morbi enim nunc faucibus a pellentesque. Morbi non arcu risus quis. Dolor sit amet consectetur adipiscing elit duis tristique sollicitudin. Tincidunt vitae semper quis lectus nulla at. Dui vivamus arcu felis bibendum. Pulvinar etiam non quam lacus suspendisse. Leo integer malesuada nunc vel risus. Pretium aenean pharetra magna ac placerat vestibulum lectus mauris. A arcu cursus vitae congue mauris rhoncus aenean. Volutpat ac tincidunt vitae semper quis lectus. Condimentum vitae sapien pellentesque habitant morbi tristique. Augue ut lectus arcu bibendum at varius vel. </h3>
+                </div>
+                <div id="div_lore_image">
+                    <img id="lore_image" src="./../sprites/cat1.jpg">
+                </div>
+            </div>
+            <div id="div_specs">
+                <div id="div_specs_image">
+                    <img id="specs_image" src="./../sprites/cat2.jpg">
+                </div>
+                <div id="div_specs_text">
+                  <h3>  Sed arcu non odio euismod lacinia at quis risus sed. Morbi blandit cursus risus at ultrices. Condimentum lacinia quis vel eros donec ac odio tempor orci. Adipiscing elit pellentesque habitant morbi. Maecenas sed enim ut sem viverra aliquet. Lorem ipsum dolor sit amet consectetur adipiscing elit. Condimentum vitae sapien pellentesque habitant morbi tristique senectus. Quam adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Ullamcorper malesuada proin libero nunc. Ut eu sem integer vitae justo eget magna fermentum. Interdum varius sit amet mattis vulputate enim nulla aliquet. Ac ut consequat semper viverra nam. Urna nec tincidunt praesent semper. Blandit cursus risus at ultrices. Ut tellus elementum sagittis vitae et leo duis ut diam. </h3>
+                </div>
+            </div>
+            <div id="div_footer">
+                <div id="div_footer_text">
+                    <h3> This is footer </h3>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

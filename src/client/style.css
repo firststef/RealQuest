@@ -1,31 +1,74 @@
-body {
-    margin: 0;
-    padding: 0;
+body{
+    margin:0;
+}
+
+#div_main_page{
+    flex-wrap:wrap;
+    background-color: gray;
+    display:flex;
+    flex-direction: column;
+    align-items:stretch;
+}
+
+/*#div_enter_game,#div_header,#div_lore,#div_specs,#div_footer*/
+
+#div_main_page > div {
+    display:flex;
+    flex-wrap:wrap;
+    /*flex-direction:row;*/
+    justify-content:space-around;
+    background-color: #f1f1f1;
+    margin: 1px;
+    text-align: center;
+}
+
+#div_main_page > div > div{
+    background-color: #777777;
+    flex-wrap:wrap;
+}
+
+#div_header{
+    font-size:40px;
+}
+
+#div_enter_game {
+    flex-direction:column;
+    flex-wrap:no-wrap;
+    font-size: 30px;
+}
+
+#div_lore{
+    justify-content:stretch;
+}
+
+#div_lore_text{
+    margin: 10px;
+}
+
+#div_lore > div, #div_specs > div {
+    flex-grow: 1;
+    flex-shrink: 0;
+    flex-basis: 200px;
+    margin: 10px;
+    text-align:center;
+    font-size: 15px;
+}
+
+img{
+   width:100%;
+    height:auto; 
 }
 
 
-#map {
-    z-index: -1;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-}
-
-.leaflet-bottom, .leaflet-top {
-    z-index: 0 !important;
-    position: absolute;
-    pointer-events: none;
-}
-
-#gameCanvas {
-    position: fixed;
-    z-index: -1;
-    width: 100%;
-    height: 100%;
-}
-
-#coordinatesForm{
-    z-index: 0;
-
+.button {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
 }
