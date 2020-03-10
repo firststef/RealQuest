@@ -33,8 +33,33 @@ var playerGetPos = map => {
     ];
 };
 
-//initializing objects
+function checkCollisions(x, y) {
+    let playerX=map.transform._center.lng+x;
+    let playerY=map.transform._center.lat+y;
+    for (let i=0; i<buildings.length; i++){
+        let coords=buildings[i].geometry.coordinates;
+        if (collision(playerX, playerY, coords, buildings[i].geometry.type))
+            return false;
+    }
+    return true;
+}
 
+function isInside(x, y, coords){
+    return false;
+}
+
+function collision(x, y, coords, type){
+    if (type==="MultiPolygon"){
+        for (let i=0; i<coords.length; i++)
+            if (isInside(x, y, coords[i]))
+                return true;
+    }else
+        return isInside(x, y, coords);
+
+    return false;
+}
+
+//initializing objects
 function init() {
     stage = new createjs.Stage("gameCanvas");
     stage.canvas.width = window.innerWidth;
@@ -174,6 +199,8 @@ function setMap(lat = 27.598505, long = 47.162098) {
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
+                //console.log(buildings);
+                //console.log(map.transform._center);
                 e.preventDefault();
                 isRunning = true;
                 if (e.which === 38) {
