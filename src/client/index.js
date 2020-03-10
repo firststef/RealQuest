@@ -1,11 +1,21 @@
-var stage, isRunning;
-var playerPos = [27.598505, 47.162098];
+var stage;
+
+var playerPos = [27.598505, 47.162098];//to rename to center pos
+const playerWidth = 5;
 var ZOOM = 60000;
 var offsetx = 160;
 var offsety = 90;
-isRunning = false;
+
+function getCoordinateX(point){
+    return -(playerPos[0]-point)*ZOOM+offsetx;
+}
+function getCoordinateY(point){
+    return (playerPos[1]-point)*ZOOM+ offsety;
+}
+
+var isRunning = false;
 var idSet = new Set();
-var buildingSet= new Set();
+var buildings = [];
 
 //Map
 var map;
@@ -13,7 +23,18 @@ const deltaDistance = 500; // pixels the map pans when the up or down arrow is c
 const deltaDegrees = 25; // degrees the map rotates when the left or right arrow is clicked
 mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
+var playerGetPos = map => {
+    return [
+        [getCoordinateX(map.transform._center.lng) - playerWidth , getCoordinateY(map.transform._center.lat) - playerWidth],
+        [getCoordinateX(map.transform._center.lng) - playerWidth, getCoordinateY(map.transform._center.lat) + playerWidth],
+        [getCoordinateX(map.transform._center.lng) + playerWidth, getCoordinateY(map.transform._center.lat) + playerWidth],
+        [getCoordinateX(map.transform._center.lng) + playerWidth , getCoordinateY(map.transform._center.lat) - playerWidth],
+        [getCoordinateX(map.transform._center.lng) - playerWidth, getCoordinateY(map.transform._center.lat) - playerWidth]
+    ];
+};
+
 //initializing objects
+
 function init() {
     stage = new createjs.Stage("gameCanvas");
     stage.canvas.width = window.innerWidth;
@@ -40,18 +61,19 @@ function init() {
     sprite.name = "player";
     stage.addChild(sprite);
 
-    let g = new createjs.Graphics();
-    g.setStrokeStyle(1);
-    g.beginStroke(createjs.Graphics.getRGB(0, 0, 0));
-    g.beginFill(createjs.Graphics.getRGB(0, 255, 0));
-    g.drawCircle(0, 0, 3);
+    let playerRect = new createjs.Shape();
+    playerRect.graphics.beginStroke("green");
+    playerRect.name = "playerRect";
 
-    let s = new createjs.Shape(g);
-    s.x = 5000;
-    s.y = 10000;
-    s.name = "playerdot";
+    playerRect.graphics.moveTo(getCoordinateX(playerGetPos(map)[0][0]), getCoordinateY(playerGetPos(map)[0][1])).beginFill("green");
+    playerGetPos(map).forEach(point => {
+            playerRect.graphics.lineTo(point[0], point[1]);
+        }
+    );
 
-    stage.addChild(s);
+    //drawPointArray(playerRect, playerGetPos());
+
+    stage.addChild(playerRect);
 
     createjs.Ticker.on("tick", tick);
 }
@@ -67,18 +89,36 @@ function tick(event) {
             stage.getChildByName("player").gotoAndPlay("idle");
     }
 
-    if (stage.getChildByName("playerdot") != null) {
-        stage.getChildByName("playerdot").setTransform(-(playerPos[0] - map.transform._center.lng) * ZOOM + offsetx, (playerPos[1] - map.transform._center.lat) * ZOOM + offsety);
+    if (stage.getChildByName("playerRect") != null) {
+        stage.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng), getCoordinateY(map.transform._center.lat));
     }
 
     stage.update(event); // important!!
+}
+
+function setup(){
+    createCanvas();
 }
 
 function easing(t) {
     return t * (2 - t);
 }
 
-function validateId(id){
+function hash(obj){
+    let stringified = JSON.stringify(obj);
+
+    let hash = 0, i, chr;
+    if (stringified.length === 0) return hash;
+    for (i = 0; i < stringified.length; i++) {
+        chr   = stringified.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    return hash;
+}
+
+function validateId(obj){
+    let id = hash(obj);
     if (idSet.has(id))
         return false;
     idSet.add(id);
@@ -171,11 +211,12 @@ function setMap(lat = 27.598505, long = 47.162098) {
 
         features.forEach(function(feature) {
             //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-            if (validateId(feature.id)){
-                //TODO either make a hash or get defined id's
+
+            if (validateId(feature.geometry)){
                 drawFeature(feature);
             }
 
+            //console.log(feature);
 
             // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
             // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
@@ -214,12 +255,7 @@ function showForm(value) {
     document.getElementById("showForm").hidden = !value;
 }
 
-function getCoordinateX(point){
-    return -(playerPos[0]-point)*ZOOM+offsetx;
-}
-function getCoordinateY(point){
-    return (playerPos[1]-point)*ZOOM+ offsety;
-}
+
 
 function drawPointArray(object, array, fill = false, color = 0) {
     let line_x=getCoordinateX(array[0][0]);
@@ -247,6 +283,7 @@ function drawRoad(geometry, color) {
     stage.addChild(road);
 }
 
+//TODO: rename to instantiate
 function drawPolygon(geometry, fill = false, color) {
     let polygon = new createjs.Shape();
     polygon.graphics.beginStroke(color);
@@ -275,7 +312,7 @@ function drawFeature(feature) {
             break;
         }
         case "building": {
-            buildingSet.add(feature);
+            buildings.push(feature);
             drawPolygon(feature.geometry, false, "red");
             break;
         }
@@ -286,5 +323,9 @@ function drawFeature(feature) {
         default:
             break;
     }
+}
+
+function isPlayerCollidingWith(polygon2){
+
 }
 
