@@ -25,11 +25,11 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZ
 
 var playerGetPos = map => {
     return [
-        [getCoordinateX(map.transform._center.lng) - playerWidth , getCoordinateY(map.transform._center.lat) - playerWidth],
-        [getCoordinateX(map.transform._center.lng) - playerWidth, getCoordinateY(map.transform._center.lat) + playerWidth],
-        [getCoordinateX(map.transform._center.lng) + playerWidth, getCoordinateY(map.transform._center.lat) + playerWidth],
-        [getCoordinateX(map.transform._center.lng) + playerWidth , getCoordinateY(map.transform._center.lat) - playerWidth],
-        [getCoordinateX(map.transform._center.lng) - playerWidth, getCoordinateY(map.transform._center.lat) - playerWidth]
+        [0 , 0],
+        [0,0 + playerWidth],
+        [0 + playerWidth, 0 + playerWidth],
+        [0 + playerWidth , 0],
+        [0, 0]
     ];
 };
 
@@ -64,8 +64,11 @@ function init() {
     let playerRect = new createjs.Shape();
     playerRect.graphics.beginStroke("green");
     playerRect.name = "playerRect";
-
-    playerRect.graphics.moveTo(getCoordinateX(playerGetPos(map)[0][0]), getCoordinateY(playerGetPos(map)[0][1])).beginFill("green");
+    console.log(map.transform._center.lng);
+    console.log(getCoordinateX(playerGetPos(map)[0][0]));
+    console.log((playerGetPos(map)[0][0]));
+    console.log((playerGetPos(map)));
+    playerRect.graphics.moveTo((playerGetPos(map)[0][0]), (playerGetPos(map)[0][1])).beginFill("green");
     playerGetPos(map).forEach(point => {
             playerRect.graphics.lineTo(point[0], point[1]);
         }
