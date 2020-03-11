@@ -1,10 +1,19 @@
 var stage;
+var displacement=0.000002;
+/*
+* setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
+* 1) coordonatele 200,200
+* 2) add child
+*  3) set transform (10,0)
+*  => l-a mutat 10 px in drepta
+* */
 
 var playerPos = [27.598505, 47.162098];//to rename to center pos
-const playerWidth = 5;
-var ZOOM = 60000;
-var offsetx = 160;
-var offsety = 90;
+const playerWidth = 20;
+var ZOOM = 1000000;
+var scale = 4;
+var offsetx = window.innerWidth / (2*scale);
+var offsety = window.innerHeight / (2 * scale);
 
 function getCoordinateX(point){
     return -(playerPos[0]-point)*ZOOM+offsetx;
@@ -13,25 +22,53 @@ function getCoordinateY(point){
     return (playerPos[1]-point)*ZOOM+ offsety;
 }
 
-var isRunning = false;
+function getReverseCoordinateX(point){
+    return playerPos[0] - ((point - offsetx) / (-ZOOM));
+}
+
+function getReverseCoordinateY(point){
+    return playerPos[1] - ((point - offsety) / ZOOM);
+}
+
 var idSet = new Set();
 var buildings = [];
 
 //Map
 var map;
-const deltaDistance = 500; // pixels the map pans when the up or down arrow is clicked
-const deltaDegrees = 25; // degrees the map rotates when the left or right arrow is clicked
+const deltaDistance = 250/10; // pixels the map pans when the up or down arrow is clicked
+const deltaDegrees = 12.5/10; // degrees the map rotates when the left or right arrow is clicked
 mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
-var playerGetPos = map => {
+function getScreenCoordinates(arr){
+    let new_arr = [];
+    arr.forEach(point => {
+       new_arr.push([getCoordinateX(point[0]), getCoordinateY(point[1])]);
+    });
+    return new_arr;
+}
+
+/**
+ *
+ * @param x, y real coordinate values - they are offsets from playerPos
+ * @returns {*[]}
+ */
+var playerGetPos = (x=0, y=0, z=0, t=0) => {
     return [
-        [0 , 0],
-        [0,0 + playerWidth],
-        [0 + playerWidth, 0 + playerWidth],
-        [0 + playerWidth , 0],
-        [0, 0]
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t],
+        [getCoordinateX(map.transform._center.lng + x) + playerWidth + z, getCoordinateY(map.transform._center.lat + y) + playerWidth + t],
+        [getCoordinateX(map.transform._center.lng + x) + playerWidth  + z,getCoordinateY(map.transform._center.lat + y) + t],
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t]
     ];
 };
+
+function getReverseCoordinates(arr){
+    let new_arr = [];
+    arr.forEach(point => {
+        new_arr.push([getReverseCoordinateX(point[0]), getReverseCoordinateY(point[1])]);
+    });
+    return new_arr;
+}
 
 //initializing objects
 
@@ -40,71 +77,61 @@ function init() {
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
     stage.update();
-    stage.scaleX = 4;
-    stage.scaleY = 4;
-
-    let data = {
-        images: ["./../sprites/spritesheet_grant.png"],
-        frames: {
-            width: 165,
-            height: 292
-        },
-        animations: {
-            idle: 0,
-            "run": [0, 25, "run", 1.5],
-            "jump": [26, 63, "run"]
-        },
-        framerate: 30
-    };
-    let spriteSheet = new createjs.SpriteSheet(data);
-    let sprite = new createjs.Sprite(spriteSheet, "idle");
-    sprite.name = "player";
-    stage.addChild(sprite);
+    stage.scaleX = scale;
+    stage.scaleY = scale;
 
     let playerRect = new createjs.Shape();
     playerRect.graphics.beginStroke("green");
     playerRect.name = "playerRect";
-    console.log(map.transform._center.lng);
-    console.log(getCoordinateX(playerGetPos(map)[0][0]));
-    console.log((playerGetPos(map)[0][0]));
-    console.log((playerGetPos(map)));
-    playerRect.graphics.moveTo((playerGetPos(map)[0][0]), (playerGetPos(map)[0][1])).beginFill("green");
-    playerGetPos(map).forEach(point => {
+
+    playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("green");
+    playerGetPos().forEach(point => {
             playerRect.graphics.lineTo(point[0], point[1]);
         }
     );
-
-    //drawPointArray(playerRect, playerGetPos());
 
     stage.addChild(playerRect);
 
     createjs.Ticker.on("tick", tick);
 }
 
+
+function isPolygonCollidingWithBuildings(target){
+    if (buildings.length !== 0) {
+        for (let i=0; i<buildings.length; i++){
+            if (buildings[i].geometry.type === "MultiPolygon"){
+                for (let j=0; j<buildings[i].geometry.coordinates.length; j++){
+                    for (let k=0; k<buildings[i].geometry.coordinates[j].length; k++){
+                        let x = greinerHormann.intersection(getScreenCoordinates(buildings[i].geometry.coordinates[j][k]), target);
+                        if (x!=null)
+                            return true;
+                    }
+                }
+            }else{
+                for (let j=0; j<buildings[i].geometry.coordinates.length; j++){
+                    let x=greinerHormann.intersection(getScreenCoordinates(buildings[i].geometry.coordinates[j]), target);
+                    if (x!=null)
+                        return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 //update()
 function tick(event) {
-    stage.getChildByName("player").setTransform(130, 30, 0.2, 0.2);
-    if (isRunning) {
-        if (stage.getChildByName("player").currentAnimation !== "run")
-            stage.getChildByName("player").gotoAndPlay("run");
-    } else {
-        if (stage.getChildByName("player").currentAnimation !== "idle")
-            stage.getChildByName("player").gotoAndPlay("idle");
+    if (stage.getChildByName("playerRect") != null) {
+        stage.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
     }
 
-    if (stage.getChildByName("playerRect") != null) {
-        stage.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng), getCoordinateY(map.transform._center.lat));
-    }
+    console.log(isPolygonCollidingWithBuildings(playerGetPos()));
 
     stage.update(event); // important!!
 }
 
-function setup(){
-    createCanvas();
-}
-
 function easing(t) {
-    return t * (2 - t);
+    return t;
 }
 
 function hash(obj){
@@ -127,6 +154,83 @@ function validateId(obj){
     idSet.add(id);
     return true;
 }
+
+/**
+ *
+ * >>>>>>>>>>> Functia checkCollisions ar trebuii ca pentru 4 linii reprexentate de punctele
+ * (map.transform._center.lng, map.transform._center.lat)
+ * (map.transform._center.lng+x, map.transform._center.lat)
+ * (map.transform._center.lat +x, map.transform._center.lat + y)
+ * (map.transform._center.lat, map.transform._center.lat + y)
+ *
+ *
+ * sa verifice daca aceste 4 linii se intersecteaza cu liniile oricarui poligon.
+ * Ma voi ocupa EU de aceasta operatie, functiile de mai jos fac acest lucru doar pentru un punct, nu pentru 4 linii.
+ *
+ * Varianta punct este corecta cu conditia ca sa fie terminata functia isInside
+ *
+ * 
+ */
+
+/*
+function checkCollisions(x, y) {
+    let playerX=map.transform._center.lng+x;
+    let playerY=map.transform._center.lat+y;
+    for (let i=0; i<buildings.length; i++){
+        let coords=buildings[i].geometry.coordinates;
+        if (collision(playerX, playerY, coords, buildings[i].geometry.type))
+            return false;
+    }
+    return true;
+}
+
+// returns true iff the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
+function intersects(a,b,c,d,p,q,r,s) {
+    var det, gamma, lambda;
+    det = (c - a) * (s - q) - (r - p) * (d - b);
+    if (det === 0) {
+        return false;
+    } else {
+        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
+        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
+        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
+    }
+};
+
+function isInside(x, y, coords){
+    let intersections = 0;
+    let intpointx = (coords[0][0]+coords[1][0])/2;
+    let intpointy = (coords[0][1]+coords[1][1])/2;
+    let numberOfSides=coords.length;
+    for (let side = 0; side < numberOfSides; side++) {
+        // Test if current side intersects with ray.
+        // If yes, intersections++;
+    }
+    if ((intersections & 1) == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function collision(x, y, coords, type){
+    if (type==="MultiPolygon"){
+        for (let i=0; i<coords.length; i++)
+            if (isInside(x, y, coords[i]))
+                return true;
+    }else
+        return isInside(x, y, coords);
+
+    return false;
+}
+*/
+
+
+
+
+
+
+
 
 function setMap(lat = 27.598505, long = 47.162098) {
     playerPos[0] = lat;
@@ -175,37 +279,41 @@ function setMap(lat = 27.598505, long = 47.162098) {
             'keydown',
             function(e) {
                 e.preventDefault();
-                isRunning = true;
-                if (e.which === 38) {
+                let code;
+
+                if (e.key !== undefined) {
+                    code = e.key;
+                } else if (e.keyIdentifier !== undefined) {
+                    code = e.keyIdentifier;
+                } else if (e.keyCode !== undefined) {
+                    code = e.keyCode;
+                }
+
+                if (e.which === 38 ) {
                     // up
-                    map.panBy([0, -deltaDistance], {
-                        easing: easing
-                    });
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
+                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
                 } else if (e.which === 40) {
                     // down
-                    map.panBy([0, deltaDistance], {
-                        easing: easing
-                    });
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
+                    (playerGetPos(0, - displacement, 0, 0)))
+                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
                 } else if (e.which === 37) {
                     // left
-                    map.easeTo({
-                        bearing: map.getBearing() - deltaDegrees,
-                        easing: easing
-                    });
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
+                        map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 } else if (e.which === 39) {
                     // right
-                    map.easeTo({
-                        bearing: map.getBearing() + deltaDegrees,
-                        easing: easing
-                    });
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
+                        !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
+                        map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 }
-
             },
             true
         );
     });
-
+    map["keyboard"].disable();
 
     setInterval(function() {
 
@@ -274,7 +382,7 @@ function drawPointArray(object, array, fill = false, color = 0) {
 
 function drawRoad(geometry, color) {
     let road = new createjs.Shape();
-    road.graphics.beginStroke(color);
+    road.graphics.setStrokeStyle(30,"round").beginStroke(color);
 
     if (geometry.type === "MultiLineString") {
         geometry.coordinates.forEach(function(array) {
@@ -309,6 +417,7 @@ function drawFeature(feature) {
     //TODO check if feature not already drawn
     //if feature.id in our array
     //return
+    stage.setChildIndex( stage.getChildByName("playerRect"), stage.getNumChildren()-1);
     switch (feature.sourceLayer) {
         case "road": {
             drawRoad(feature.geometry, "gray");
@@ -326,9 +435,5 @@ function drawFeature(feature) {
         default:
             break;
     }
-}
-
-function isPlayerCollidingWith(polygon2){
-
 }
 
