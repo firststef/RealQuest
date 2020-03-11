@@ -170,61 +170,77 @@ function validateId(obj){
  *
  * 
  */
+function min(a, b){
+    if(a<b)
+        return a;
+    return b;
+}
+function max(a, b){
+    if (a<b)
+        return b;
+    return a;
+}
+function fabs(a){
+    if (a<0)
+        return -a;
+    return a;
+}
+function d(x1, y1, x2, y2){
+    return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
 
-/*
-function checkCollisions(x, y) {
-    let playerX=map.transform._center.lng+x;
-    let playerY=map.transform._center.lat+y;
+function checkIfPointOnLine(x, y, x1, y1, x2, y2){
+    if (d(x, y, x1, y1)+d(x, y, x2, y2)==d(x1, y1, x2, y2))
+        return true;
+    return false;
+}
+function pointLineDistance(x0, y0, a, b, c){
+    return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
+}
+function distance(x1, y1, x2, y2, x3, y3){
+    let x=0, y=0;
+    let val1=0, val2=0, val3=0;
+    if (x2==x3){
+        if (y1<=max(y2, y3)&&y1>=min(y2, y3))
+            return fabs(x1-x3);
+        return min(d(x1, y1, x2, y2), d(x1, y1, x3, y3));
+    }
+    let m=(y3-y2)/(x3-x2);//ax+by+c=0, y-y1=m(x-x1)
+    let d=pointLineDistance(x1, y1, m, -1, y2-m*x2);
+    if (checkIfPointOnLine(d[0], d[1], x2, y2, x3, y3))
+        return d(x, y, d[0], d[1]);
+    return min(d(x1, y1, x2, y2), d(x1, y1, x3, y3));
+}
+
+function isInside(x, y, radius, coords) {
+    for (let i=1; i<coords.length; i++){
+        if (distance(x, y, coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1])<radius)
+            return true;
+    }
+    if (distance(x, y, coords[0][0], coords[0][1], coords[coords.length-1][0], coords[coords.length-1][1])<radius)
+        return true;
+    return false;
+}
+
+function collision(x, y, radius, coords, type){
+    if (type==="MultiPolygon"){
+        for (let i=0; i<coords.length; i++)
+            if (isInside(x, y, radius, coords[i]))
+                return true;
+    }else
+        return isInside(x, y, radius, coords);
+
+    return false;
+}
+
+function checkCollisions(x, y, radius){
     for (let i=0; i<buildings.length; i++){
         let coords=buildings[i].geometry.coordinates;
-        if (collision(playerX, playerY, coords, buildings[i].geometry.type))
+        if (collision(x, y, radius, coords, buildings[i].geometry.type))
             return false;
     }
     return true;
 }
-
-// returns true iff the line from (a,b)->(c,d) intersects with (p,q)->(r,s)
-function intersects(a,b,c,d,p,q,r,s) {
-    var det, gamma, lambda;
-    det = (c - a) * (s - q) - (r - p) * (d - b);
-    if (det === 0) {
-        return false;
-    } else {
-        lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det;
-        gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det;
-        return (0 < lambda && lambda < 1) && (0 < gamma && gamma < 1);
-    }
-};
-
-function isInside(x, y, coords){
-    let intersections = 0;
-    let intpointx = (coords[0][0]+coords[1][0])/2;
-    let intpointy = (coords[0][1]+coords[1][1])/2;
-    let numberOfSides=coords.length;
-    for (let side = 0; side < numberOfSides; side++) {
-        // Test if current side intersects with ray.
-        // If yes, intersections++;
-    }
-    if ((intersections & 1) == 1) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-function collision(x, y, coords, type){
-    if (type==="MultiPolygon"){
-        for (let i=0; i<coords.length; i++)
-            if (isInside(x, y, coords[i]))
-                return true;
-    }else
-        return isInside(x, y, coords);
-
-    return false;
-}
-*/
-
-
 
 
 
@@ -292,22 +308,20 @@ function setMap(lat = 27.598505, long = 47.162098) {
 
                 if (e.which === 38 ) {
                     // up
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
+                    if (checkCollisions(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], 5))
                         map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
                 } else if (e.which === 40) {
                     // down
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
-                    (playerGetPos(0, - displacement, 0, 0)))
+                    if (checkCollisions(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], 5))
                         map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
                 } else if (e.which === 37) {
                     // left
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
+                    if (checkCollisions(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], 5))
                         map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 } else if (e.which === 39) {
                     // right
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
-                        !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
+                    if (checkCollisions(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], 5))
                         map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 }
             },
