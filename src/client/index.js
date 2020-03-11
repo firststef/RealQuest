@@ -1,4 +1,5 @@
 var stage;
+var radius=10;
 var displacement=0.000002;
 /*
 * setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
@@ -83,11 +84,13 @@ function init() {
     playerRect.graphics.beginStroke("green");
     playerRect.name = "playerRect";
 
-    playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("green");
-    playerGetPos().forEach(point => {
-            playerRect.graphics.lineTo(point[0], point[1]);
-        }
-    );
+    playerRect.graphics.beginFill("green");
+    playerRect.graphics.drawCircle(playerGetPos()[0][0], playerGetPos()[0][1], radius);
+    //playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("green");
+    //playerGetPos().forEach(point => {
+     //       playerRect.graphics.lineTo(point[0], point[1]);
+     //   }
+    //);
 
     stage.addChild(playerRect);
 
@@ -185,16 +188,27 @@ function fabs(a){
         return -a;
     return a;
 }
-function d(x1, y1, x2, y2){
+function distanceBetweenPoints(x1, y1, x2, y2){
     return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
 
 function checkIfPointOnLine(x, y, x1, y1, x2, y2){
-    if (d(x, y, x1, y1)+d(x, y, x2, y2)==d(x1, y1, x2, y2))
+    if (distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)===distanceBetweenPoints(x1, y1, x2, y2))
         return true;
     return false;
 }
 function pointLineDistance(x0, y0, a, b, c){
+    console.log("X= "+x0 +" Y= " + y0 +" a= " + a + " b= " + b +"  c= " +c);
+    var vec=[(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
+    console.log(b*x0);
+    console.log(a*y0);
+    console.log(b*x0-a*y0);
+    console.log(b*(b*x0-a*y0));
+    console.log(a*c);
+    console.log(b*(b*x0-a*y0)-a*c);
+    console.log(a*a+b*b);
+    console.log((b*(b*x0-a*y0)-a*c)/(a*a+b*b));
+    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>");
     return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
 }
 function distance(x1, y1, x2, y2, x3, y3){
@@ -203,21 +217,28 @@ function distance(x1, y1, x2, y2, x3, y3){
     if (x2==x3){
         if (y1<=max(y2, y3)&&y1>=min(y2, y3))
             return fabs(x1-x3);
-        return min(d(x1, y1, x2, y2), d(x1, y1, x3, y3));
+        return min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
     }
     let m=(y3-y2)/(x3-x2);//ax+by+c=0, y-y1=m(x-x1)
     let d=pointLineDistance(x1, y1, m, -1, y2-m*x2);
+    console.log(d);
     if (checkIfPointOnLine(d[0], d[1], x2, y2, x3, y3))
-        return d(x, y, d[0], d[1]);
-    return min(d(x1, y1, x2, y2), d(x1, y1, x3, y3));
+        return distanceBetweenPoints(x, y, d[0], d[1]);
+    return min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
 }
 
 function isInside(x, y, radius, coords) {
+    //console.log(getCoordinateX(coords[0][0]));
+    //console.log(coords.length);
+    //console.log(coords);
     for (let i=1; i<coords.length; i++){
-        if (distance(x, y, coords[i-1][0], coords[i-1][1], coords[i][0], coords[i][1])<radius)
+        console.log(getCoordinateX(coords[i-1][0]));
+        if (distance(x, y, getCoordinateX(coords[i-1][0]), getCoordinateY(coords[i-1][1]), getCoordinateX(coords[i][0]),
+            getCoordinateY(coords[i][1]))<radius)
             return true;
     }
-    if (distance(x, y, coords[0][0], coords[0][1], coords[coords.length-1][0], coords[coords.length-1][1])<radius)
+    if (distance(x, y, getCoordinateX(coords[0][0]), getCoordinateY(coords[0][1]), getCoordinateX(coords[coords.length-1][0]),
+        getCoordinateY(coords[coords.length-1][1]))<radius)
         return true;
     return false;
 }
@@ -225,10 +246,10 @@ function isInside(x, y, radius, coords) {
 function collision(x, y, radius, coords, type){
     if (type==="MultiPolygon"){
         for (let i=0; i<coords.length; i++)
-            if (isInside(x, y, radius, coords[i]))
+            if (isInside(x, y, radius, coords[i][0]))//TODO check if coords[i][0] or coords[i]
                 return true;
     }else
-        return isInside(x, y, radius, coords);
+        return isInside(x, y, radius, coords[0]);
 
     return false;
 }
@@ -308,20 +329,27 @@ function setMap(lat = 27.598505, long = 47.162098) {
 
                 if (e.which === 38 ) {
                     // up
-                    if (checkCollisions(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], 5))
+
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
+                        if (checkCollisions(playerGetPos(0, displacement)[0][0], playerGetPos(0, displacement)[0][1], radius))
                         map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
                 } else if (e.which === 40) {
                     // down
-                    if (checkCollisions(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], 5))
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
+                    (playerGetPos(0, - displacement, 0, 0)))
+                    if (checkCollisions(playerGetPos(0, -displacement)[0][0], playerGetPos(0, -displacement)[0][1], radius))
                         map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
                 } else if (e.which === 37) {
                     // left
-                    if (checkCollisions(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], 5))
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
+                    if (checkCollisions(playerGetPos(-displacement, 0)[0][0], playerGetPos(-displacement, 0)[0][1], radius))
                         map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 } else if (e.which === 39) {
                     // right
-                    if (checkCollisions(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], 5))
+                    if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
+                        !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
+                    if (checkCollisions(playerGetPos(displacement, 0)[0][0], playerGetPos(displacement, 0)[0][1], radius))
                         map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
                 }
             },
