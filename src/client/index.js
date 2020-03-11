@@ -71,7 +71,6 @@ function getReverseCoordinates(arr){
 }
 
 //initializing objects
-
 function init() {
     stage = new createjs.Stage("gameCanvas");
     stage.canvas.width = window.innerWidth;
@@ -278,6 +277,8 @@ function setMap(lat = 27.598505, long = 47.162098) {
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
+                //console.log(buildings);
+                //console.log(map.transform._center);
                 e.preventDefault();
                 let code;
 
