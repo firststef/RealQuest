@@ -1,5 +1,6 @@
 var stage;
-var displacement=0.000002;
+var world;
+
 /*
 * setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
 * 1) coordonatele 200,200
@@ -14,6 +15,7 @@ var ZOOM = 1000000;
 var scale = 4;
 var offsetx = window.innerWidth / (2*scale);
 var offsety = window.innerHeight / (2 * scale);
+var displacement=0.000002;
 
 function getCoordinateX(point){
     return -(playerPos[0]-point)*ZOOM+offsetx;
@@ -75,9 +77,13 @@ function init() {
     stage = new createjs.Stage("gameCanvas");
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
-    stage.update();
     stage.scaleX = scale;
     stage.scaleY = scale;
+
+    world = new createjs.Container();
+    world.x = stage.x;
+    world.y = stage.y;
+    stage.addChild(world);
 
     let playerRect = new createjs.Shape();
     playerRect.graphics.beginStroke("green");
@@ -89,7 +95,8 @@ function init() {
         }
     );
 
-    stage.addChild(playerRect);
+    world.addChild(playerRect);
+    stage.update();
 
     createjs.Ticker.on("tick", tick);
 }
@@ -120,9 +127,13 @@ function isPolygonCollidingWithBuildings(target){
 
 //update()
 function tick(event) {
-    if (stage.getChildByName("playerRect") != null) {
-        stage.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
+    if (world.getChildByName("playerRect") != null) {
+        world.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
     }
+
+    //world.removeChild("tracer");
+    console.log(getReverseCoordinates(playerGetPos()));
+    drawPolygon({coordinates: getReverseCoordinates(playerGetPos()), type:""}, false, "blue");
 
     console.log(isPolygonCollidingWithBuildings(playerGetPos()));
 
@@ -168,7 +179,7 @@ function validateId(obj){
  *
  * Varianta punct este corecta cu conditia ca sa fie terminata functia isInside
  *
- * 
+ *
  */
 
 /*
@@ -392,13 +403,14 @@ function drawRoad(geometry, color) {
     } else {
         drawPointArray(road, geometry.coordinates);
     }
-    stage.addChild(road);
+    world.addChild(road);
 }
 
 //TODO: rename to instantiate
-function drawPolygon(geometry, fill = false, color) {
+function drawPolygon(geometry, fill = false, color, name) {
     let polygon = new createjs.Shape();
     polygon.graphics.beginStroke(color);
+    polygon.name = name;
 
     if (geometry.type === "MultiPolygon") {
         geometry.coordinates.forEach(function(multiPolygon) {
@@ -411,14 +423,14 @@ function drawPolygon(geometry, fill = false, color) {
             drawPointArray(polygon, figure, fill, color);
         });
     }
-    stage.addChild(polygon);
+    world.addChild(polygon);
 }
 
 function drawFeature(feature) {
     //TODO check if feature not already drawn
     //if feature.id in our array
     //return
-    stage.setChildIndex( stage.getChildByName("playerRect"), stage.getNumChildren()-1);
+    //world.setChildIndex( world.getChildByName("playerRect"), world.getNumChildren()-1);
     switch (feature.sourceLayer) {
         case "road": {
             drawRoad(feature.geometry, "gray");
