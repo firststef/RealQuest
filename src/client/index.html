@@ -7,47 +7,27 @@
 		<meta name="description" content="Cancertopia" />
 		<meta name="keywords" content="Cancertopia best game 2020 anime rpg role playing" />
 		<meta name="distribution" content="Global" />
-		<meta name="author" content="Cosmin Vârlan" />
-		<meta name="owner"  content="Cosmin Vârlan" />			
-		<link rel="icon" href="https://profs.info.uaic.ro/~vcosmin/img/favicon_cv.ico" type="image/x-icon">
-		<link rel="stylesheet" href="style.css" />
+		<meta name="author" content="Crainiciuc Calin, Petrovici Stefan, Stoica George" />
+		<meta name="owner"  content="Petrovici Stefan" />			
+		<link rel="icon" href="./../sprites/rq_icon.ico" type="image/x-icon">
+        <link rel="stylesheet" href="style.css" />
+        <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
         <script src="index.js"></script> 
     </head>
     <body>
+        <header>RealQuest 2020 best game © Petrovici Stefan, Stoica George, Crainiciuc Calin</header>
         <div id="div_main_page">
-            <div id="div_header">
-                <div id="div_header_text">
-                    <h3> This is header </h3>
+            <div id="div_start_game">
+                <div id="div_start_game_title">
+                    <img id="rq_logo_1" src="./../sprites/realquest-logo.png" alt="RealQuest logo">
                 </div>
-            </div>
-            <div id="div_enter_game">
-                <div id="div_enter_game_text">
-                    <h3> This is enter game </h3>
-                </div>
-                <div id="div_enter_game_button">
-                
-                 <button class="button" id="showForm" onclick="showForm(false);">Start joc</button>
-                 <form id="form" target="_self" action="game.html" method="GET" hidden>
+                <div id="div_start_game_form">
+                    <form id="form">
                         <p id="formMessage"> Enter coordinates: </p>
-                        <input type="text" id="latitude" name="var1" placeholder="[-90, +90]">
-                        <input type="text" id="longitude" name="var2" placeholder="[-180, +180]">
-                        <input type="submit" onclick="showForm(true);" value="Submit request" />
-                        <!--
-                        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
-                        -->
+                        <input type="text" id="latitude_button" name="latitude" placeholder="[-90, +90]">
+                        <input type="text" id="longitude_button" name="longitude" placeholder="[-180, +180]">
+                    <input type="submit" id="submit_button" onclick="if(!getFormInput()){ return false;}" value="Submit request" />
                     </form>
-                 <!--
-                 <div id="coordinatesForm">
-                    <button type="button" id="showForm" onclick="showForm(false)">+</button>
-                    <form id="form" hidden>
-                        <p id="formMessage"> Enter coordinates: </p>
-                        <input type="text" id="latitude" placeholder="[-90, +90]">
-                        <input type="text" id="longitude" placeholder="[-180, +180]">
-                        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
-                    </form>
-                </div>
--->
-
                 </div>
             </div>
             <div id="div_lore">
@@ -55,22 +35,38 @@
                     <h3> Malesuada fames ac turpis egestas sed tempus urna. Varius morbi enim nunc faucibus a pellentesque. Morbi non arcu risus quis. Dolor sit amet consectetur adipiscing elit duis tristique sollicitudin. Tincidunt vitae semper quis lectus nulla at. Dui vivamus arcu felis bibendum. Pulvinar etiam non quam lacus suspendisse. Leo integer malesuada nunc vel risus. Pretium aenean pharetra magna ac placerat vestibulum lectus mauris. A arcu cursus vitae congue mauris rhoncus aenean. Volutpat ac tincidunt vitae semper quis lectus. Condimentum vitae sapien pellentesque habitant morbi tristique. Augue ut lectus arcu bibendum at varius vel. </h3>
                 </div>
                 <div id="div_lore_image">
-                    <img id="lore_image" src="./../sprites/cat1.jpg">
+                    <img id="lore_image" src="./../sprites/cat1.jpg" alt="cute cat">
                 </div>
             </div>
             <div id="div_specs">
                 <div id="div_specs_image">
-                    <img id="specs_image" src="./../sprites/cat2.jpg">
+                    <img id="specs_image" src="./../sprites/cat2.jpg" alt="cuter cat">
                 </div>
                 <div id="div_specs_text">
                   <h3>  Sed arcu non odio euismod lacinia at quis risus sed. Morbi blandit cursus risus at ultrices. Condimentum lacinia quis vel eros donec ac odio tempor orci. Adipiscing elit pellentesque habitant morbi. Maecenas sed enim ut sem viverra aliquet. Lorem ipsum dolor sit amet consectetur adipiscing elit. Condimentum vitae sapien pellentesque habitant morbi tristique senectus. Quam adipiscing vitae proin sagittis nisl rhoncus mattis rhoncus urna. Ullamcorper malesuada proin libero nunc. Ut eu sem integer vitae justo eget magna fermentum. Interdum varius sit amet mattis vulputate enim nulla aliquet. Ac ut consequat semper viverra nam. Urna nec tincidunt praesent semper. Blandit cursus risus at ultrices. Ut tellus elementum sagittis vitae et leo duis ut diam. </h3>
                 </div>
             </div>
-            <div id="div_footer">
-                <div id="div_footer_text">
-                    <h3> This is footer </h3>
+        </div>
+        <footer class = "footer">
+            <div id="div_coloana1">
+                <img id="rq_logo_2" src="./../sprites/realquest-logo.png" alt="RealQuest logo">    
+            </div>
+            <div id="div_coloana2"> 
+                <div id="col2_title">
+                    <p>Tehnologii utilizate</p>
+                </div>
+                <div id="createjs_desc">
+                    <a href="https://createjs.com/"><img id="createjs_logo" src="./../sprites/createjs-logo.png" alt="createjs logo"></a>
+                </div>
+                <div id="mapbox_desc">
+                    <a href="https://www.mapbox.com/maps/"><img id="mapbox_logo" src="./../sprites/mapbox-logo.png" alt="mapbox logo"></a>
                 </div>
             </div>
-        </div>
+            <!--    
+            <div id="div_coloana3">
+                Praesent tristique magna sit amet purus. Eu non diam phasellus vestibulum lorem sed.
+            </div>
+        -->
+        </footer>
     </body>
 </html>
