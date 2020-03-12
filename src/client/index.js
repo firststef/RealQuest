@@ -1,21 +1,25 @@
 var stage;
 var world;
 
-/*
-* setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
-* 1) coordonatele 200,200
-* 2) add child
-*  3) set transform (10,0)
-*  => l-a mutat 10 px in drepta
-* */
+var map;
+mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
-var playerPos = [27.598505, 47.162098];//to rename to center pos
+const playerPos = [27.598505, 47.162098];//to rename to center pos
 const playerWidth = 20;
-var ZOOM = 1000000;
-var scale = 4;
-var offsetx = window.innerWidth / (2*scale);
-var offsety = window.innerHeight / (2 * scale);
-var displacement=0.000002;
+const ZOOM = 1000000;
+const scale = 4;
+const offsetx = window.innerWidth / (2*scale);
+const offsety = window.innerHeight / (2 * scale);
+const displacement=0.000002;
+const groundColor = "#379481";
+const buildingsColor = "#956c6c";
+const roadsColor = "#d3d3d3";
+const waterColor = "blue";
+const deltaDistance = 250/10; // pixels the map pans when the up or down arrow is clicked
+const deltaDegrees = 12.5/10; // degrees the map rotates when the left or right arrow is clicked
+
+var idSet = new Set();
+var buildings = [];
 
 function getCoordinateX(point){
     return -(playerPos[0]-point)*ZOOM+offsetx;
@@ -32,15 +36,6 @@ function getReverseCoordinateY(point){
     return playerPos[1] - ((point - offsety) / ZOOM);
 }
 
-var idSet = new Set();
-var buildings = [];
-
-//Map
-var map;
-const deltaDistance = 250/10; // pixels the map pans when the up or down arrow is clicked
-const deltaDegrees = 12.5/10; // degrees the map rotates when the left or right arrow is clicked
-mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
-
 function getScreenCoordinates(arr){
     let new_arr = [];
     arr.forEach(point => {
@@ -56,11 +51,11 @@ function getScreenCoordinates(arr){
  */
 var playerGetPos = (x=0, y=0, z=0, t=0) => {
     return [
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
         [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t],
         [getCoordinateX(map.transform._center.lng + x) + playerWidth + z, getCoordinateY(map.transform._center.lat + y) + playerWidth + t],
         [getCoordinateX(map.transform._center.lng + x) + playerWidth  + z,getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t]
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t]
     ];
 };
 
@@ -72,13 +67,21 @@ function getReverseCoordinates(arr){
     return new_arr;
 }
 
-//initializing objects
 function init() {
-    stage = new createjs.Stage("gameCanvas");
+    let canvas = document.getElementById("gameCanvas");
+    canvas.focus();
+    stage = new createjs.Stage(canvas);
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
     stage.scaleX = scale;
     stage.scaleY = scale;
+
+    let background = new createjs.Shape();
+    background.graphics.beginFill(groundColor);
+    background.name = "Background";
+    background.graphics.drawRect(0, 0, offsetx*2, offsety*2);
+    background.graphics.endFill();
+    stage.addChild(background);
 
     world = new createjs.Container();
     world.x = stage.x;
@@ -86,10 +89,10 @@ function init() {
     stage.addChild(world);
 
     let playerRect = new createjs.Shape();
-    playerRect.graphics.beginStroke("green");
+    playerRect.graphics.beginStroke("#81f542");
     playerRect.name = "playerRect";
 
-    playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("green");
+    playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("#81f542");
     playerGetPos().forEach(point => {
             playerRect.graphics.lineTo(point[0], point[1]);
         }
@@ -125,23 +128,43 @@ function isPolygonCollidingWithBuildings(target){
     return false;
 }
 
-//update()
+/**
+* setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
+* 1) coordonatele 200,200
+* 2) add child
+* 3) set transform (10,0)
+* => l-a mutat 10 px in drepta
+* */
 function tick(event) {
     if (world.getChildByName("playerRect") != null) {
+        let plRect = world.getChildByName("playerRect");
         world.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
+        world.setTransform(-plRect.x, -plRect.y);
     }
 
-    //world.removeChild("tracer");
-    console.log(getReverseCoordinates(playerGetPos()));
-    drawPolygon({coordinates: getReverseCoordinates(playerGetPos()), type:""}, false, "blue");
+    if (Key.isDown(Key.UP)) {
+        // up
+        if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
+            map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
-    console.log(isPolygonCollidingWithBuildings(playerGetPos()));
+    } else if (Key.isDown(Key.DOWN)) {
+        // down
+        if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
+        (playerGetPos(0, - displacement, 0, 0)))
+            map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
+    }
+    if (Key.isDown(Key.LEFT)) {
+        // left
+        if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
+            map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
+    } else if (Key.isDown(Key.RIGHT)) {
+        // right
+        if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
+            !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
+            map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
+    }
 
     stage.update(event); // important!!
-}
-
-function easing(t) {
-    return t;
 }
 
 function hash(obj){
@@ -235,11 +258,29 @@ function collision(x, y, coords, type){
 }
 */
 
+var Key = {
+    _pressed: {},
 
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
 
+    isDown: function(keyCode) {
+        return this._pressed[keyCode];
+    },
 
+    onKeydown: function(event) {
+        this._pressed[event.keyCode] = true;
+    },
 
+    onKeyup: function(event) {
+        delete this._pressed[event.keyCode];
+    }
+};
 
+window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
+window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
 
 function setMap(lat = 27.598505, long = 47.162098) {
@@ -288,39 +329,7 @@ function setMap(lat = 27.598505, long = 47.162098) {
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
-                //console.log(buildings);
-                //console.log(map.transform._center);
                 e.preventDefault();
-                let code;
-
-                if (e.key !== undefined) {
-                    code = e.key;
-                } else if (e.keyIdentifier !== undefined) {
-                    code = e.keyIdentifier;
-                } else if (e.keyCode !== undefined) {
-                    code = e.keyCode;
-                }
-
-                if (e.which === 38 ) {
-                    // up
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
-                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
-
-                } else if (e.which === 40) {
-                    // down
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
-                    (playerGetPos(0, - displacement, 0, 0)))
-                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
-                } else if (e.which === 37) {
-                    // left
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
-                        map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
-                } else if (e.which === 39) {
-                    // right
-                    if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
-                        !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
-                        map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
-                }
             },
             true
         );
@@ -329,22 +338,15 @@ function setMap(lat = 27.598505, long = 47.162098) {
 
     setInterval(function() {
 
-        var features = map.queryRenderedFeatures({
-            /*sourceLayer: ["road", "building"]*/ }); // This is where I get building
+        var features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
 
         features.forEach(function(feature) {
-            //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-
+            // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
+            // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
             if (validateId(feature.geometry)){
                 drawFeature(feature);
             }
 
-            //console.log(feature);
-
-            // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
-            // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
-            //console.log(feature.properties.height); // this is the building height
-            //console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
         });
     }, 1000);
 
@@ -409,7 +411,7 @@ function drawRoad(geometry, color) {
 //TODO: rename to instantiate
 function drawPolygon(geometry, fill = false, color, name) {
     let polygon = new createjs.Shape();
-    polygon.graphics.beginStroke(color);
+    polygon.graphics.beginFill(color);
     polygon.name = name;
 
     if (geometry.type === "MultiPolygon") {
@@ -430,19 +432,19 @@ function drawFeature(feature) {
     //TODO check if feature not already drawn
     //if feature.id in our array
     //return
-    //world.setChildIndex( world.getChildByName("playerRect"), world.getNumChildren()-1);
+    world.setChildIndex( world.getChildByName("playerRect"), world.numChildren-1);
     switch (feature.sourceLayer) {
         case "road": {
-            drawRoad(feature.geometry, "gray");
+            drawRoad(feature.geometry, roadsColor);
             break;
         }
         case "building": {
             buildings.push(feature);
-            drawPolygon(feature.geometry, false, "red");
+            drawPolygon(feature.geometry, false, buildingsColor);
             break;
         }
         case "water": {
-            drawPolygon(feature.geometry, true, "blue");
+            drawPolygon(feature.geometry, true, waterColor);
             break;
         }
         default:
