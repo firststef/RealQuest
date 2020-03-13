@@ -1,16 +1,12 @@
-function showForm(value) {
-    document.getElementById("form").hidden = value;
-    document.getElementById("showForm").hidden = !value;
-}
 var longitude;
 var lat;
 
 
 function getFormInput() {
-     longitude = document.getElementById("longitude_button").value;
-     lat = document.getElementById("latitude_button").value;
+    longitude = document.getElementById("longitude_button").value;
+    lat = document.getElementById("latitude_button").value;
     var ok=formValidation(lat, longitude);
-     if (ok) {
+    if (ok) {
         //setMap(longitude, lat);
         //init();
         document.getElementById("form").target="_self";
