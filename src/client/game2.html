@@ -26,17 +26,6 @@ BUG:lat=86, long=89 should be valid, it doesn't display what it should
 
 <body onload="init();">
 
-
-<div id="coordinatesForm">
-    <button type="button" id="showForm" onclick="showForm(false)">+</button>
-    <form id="form" hidden>
-        <p id="formMessage"> Enter coordinates: </p>
-        <input type="text" id="latitude" placeholder="[-90, +90]">
-        <input type="text" id="longitude" placeholder="[-180, +180]">
-        <button type="button" id="latLongSubmit" onclick="getFormInput()">Submit</button>
-    </form>
-</div>
-
 <div id="map"></div>
 
 <canvas id="gameCanvas">
