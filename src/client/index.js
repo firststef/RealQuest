@@ -86,11 +86,6 @@ function init() {
 
     playerRect.graphics.beginFill("green");
     playerRect.graphics.drawCircle(playerGetPos()[0][0], playerGetPos()[0][1], radius);
-    //playerRect.graphics.moveTo((playerGetPos()[0][0]), (playerGetPos()[0][1])).beginFill("green");
-    //playerGetPos().forEach(point => {
-     //       playerRect.graphics.lineTo(point[0], point[1]);
-     //   }
-    //);
 
     stage.addChild(playerRect);
 
@@ -226,18 +221,13 @@ function distance(x1, y1, x2, y2, x3, y3){
     }
     let m=(y3-y2)/(x3-x2);//ax+by+c=0, y-y1=m(x-x1)
     let d=pointLineDistance(x1, y1, m, -1, y2-m*x2);
-    //console.log(d);
     if (checkIfPointOnLine(d[0], d[1], x2, y2, x3, y3))
         return distanceBetweenPoints(x1, y1, d[0], d[1]);
     return min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
 }
 
 function isInside(x, y, radius, coords) {
-    //console.log(getCoordinateX(coords[0][0]));
-    //console.log(coords.length);
-    //console.log(coords);
     for (let i=1; i<coords.length; i++){
-        //console.log(getCoordinateX(coords[i-1][0]));
         if (distance(x, y, getCoordinateX(coords[i-1][0]), getCoordinateY(coords[i-1][1]), getCoordinateX(coords[i][0]),
             getCoordinateY(coords[i][1]))<radius)
             return true;
@@ -268,14 +258,7 @@ function checkCollisions(x, y, radius){
     return true;
 }
 
-
-
-
-
-
-function setMap(lat = 27.598505, long = 47.162098) {
-    playerPos[0] = lat;
-    playerPos[1] = long;
+function setMap() {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
@@ -283,39 +266,7 @@ function setMap(lat = 27.598505, long = 47.162098) {
         zoom: 20
     });
     map.on('load', function() {
-        map.loadImage(
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png',
-            function(error, image) {
-                if (error) throw error;
-                map.addImage('cat', image);
-                map.addSource('point', {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': [{
-                            'type': 'Feature',
-                            'geometry': {
-                                'type': 'Point',
-                                'coordinates': [0, 0]
-                            }
-                        }]
-                    }
-                });
-                map.addLayer({
-                    'id': 'points',
-                    'type': 'symbol',
-                    'source': 'point',
-                    'layout': {
-                        'icon-image': 'cat',
-                        'icon-size': 0.25
-                    }
-                });
-            }
-        );
-
-
         map.getCanvas().focus();
-
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
@@ -369,52 +320,19 @@ function setMap(lat = 27.598505, long = 47.162098) {
             /*sourceLayer: ["road", "building"]*/ }); // This is where I get building
 
         features.forEach(function(feature) {
-            //console.log(feature.geometry);  // feature.geometry getter returns building shape points (basement)
-
             if (validateId(feature.geometry)){
                 drawFeature(feature);
+                if (feature.sourceLayer === "building"){
+                    buildings.push(feature);
+                }
             }
 
-            //console.log(feature);
-
-            // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
-            // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
             //console.log(feature.properties.height); // this is the building height
             //console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
         });
     }, 1000);
 
 }
-
-function formValidation(lat, long) {
-    let val2 = parseFloat(long);
-    let val1 = parseFloat(lat);
-    if (!isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180)
-        return true;
-    else
-        return false;
-}
-
-function getFormInput() {
-    let long = document.getElementById("longitude").value;
-    let lat = document.getElementById("latitude").value;
-    if (formValidation(lat, long)) {
-        setMap(long, lat);
-        init();
-        document.getElementById("formMessage").innerHTML = "Enter coordinates: ";
-        showForm(true);
-    } else {
-        let str = "Enter valid coordinates: ";
-        document.getElementById("formMessage").innerHTML = str.fontcolor("red");
-    }
-}
-
-function showForm(value) {
-    document.getElementById("form").hidden = value;
-    document.getElementById("showForm").hidden = !value;
-}
-
-
 
 function drawPointArray(object, array, fill = false, color = 0) {
     let line_x=getCoordinateX(array[0][0]);
@@ -443,6 +361,8 @@ function drawRoad(geometry, color) {
 }
 
 //TODO: rename to instantiate
+// Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
+// MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
 function drawPolygon(geometry, fill = false, color) {
     let polygon = new createjs.Shape();
     polygon.graphics.beginStroke(color);
@@ -462,9 +382,6 @@ function drawPolygon(geometry, fill = false, color) {
 }
 
 function drawFeature(feature) {
-    //TODO check if feature not already drawn
-    //if feature.id in our array
-    //return
     stage.setChildIndex( stage.getChildByName("playerRect"), stage.getNumChildren()-1);
     switch (feature.sourceLayer) {
         case "road": {
@@ -472,7 +389,6 @@ function drawFeature(feature) {
             break;
         }
         case "building": {
-            buildings.push(feature);
             drawPolygon(feature.geometry, false, "red");
             break;
         }
