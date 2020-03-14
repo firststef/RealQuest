@@ -15,22 +15,27 @@ function parseParameters(){
 parseParameters();
 
 var stage;
-var radius=10;
-var displacement=0.000002;
-/*
-* setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
-* 1) coordonatele 200,200
-* 2) add child
-*  3) set transform (10,0)
-*  => l-a mutat 10 px in drepta
-* */
+var world;
 
+var map;
+mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
 const playerWidth = 20;
-var ZOOM = 1000000;
-var scale = 4;
-var offsetx = window.innerWidth / (2*scale);
-var offsety = window.innerHeight / (2 * scale);
+const ZOOM = 1000000;
+const scale = 4;
+const offsetx = window.innerWidth / (2*scale);
+const offsety = window.innerHeight / (2 * scale);
+const radius=10;
+const displacement=0.000002;
+const groundColor = "#379481";
+const buildingsColor = "#956c6c";
+const roadsColor = "#d3d3d3";
+const waterColor = "blue";
+const deltaDistance = 250/10; // pixels the map pans when the up or down arrow is clicked
+const deltaDegrees = 12.5/10; // degrees the map rotates when the left or right arrow is clicked
+
+var idSet = new Set();
+var buildings = [];
 
 function getCoordinateX(point){
     return -(playerPos[0]-point)*ZOOM+offsetx;
@@ -46,15 +51,6 @@ function getReverseCoordinateX(point){
 function getReverseCoordinateY(point){
     return playerPos[1] - ((point - offsety) / ZOOM);
 }
-
-var idSet = new Set();
-var buildings = [];
-
-//Map
-var map;
-const deltaDistance = 250/10; // pixels the map pans when the up or down arrow is clicked
-const deltaDegrees = 12.5/10; // degrees the map rotates when the left or right arrow is clicked
-mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
 function getScreenCoordinates(arr){
     let new_arr = [];
@@ -87,14 +83,26 @@ function getReverseCoordinates(arr){
     return new_arr;
 }
 
-//initializing objects
 function init() {
-    stage = new createjs.Stage("gameCanvas");
+    let canvas = document.getElementById("gameCanvas");
+    canvas.focus();
+    stage = new createjs.Stage(canvas);
     stage.canvas.width = window.innerWidth;
     stage.canvas.height = window.innerHeight;
-    stage.update();
     stage.scaleX = scale;
     stage.scaleY = scale;
+
+    let background = new createjs.Shape();
+    background.graphics.beginFill(groundColor);
+    background.name = "Background";
+    background.graphics.drawRect(0, 0, offsetx*2, offsety*2);
+    background.graphics.endFill();
+    stage.addChild(background);
+
+    world = new createjs.Container();
+    world.x = stage.x;
+    world.y = stage.y;
+    stage.addChild(world);
 
     let playerRect = new createjs.Shape();
     playerRect.graphics.beginStroke("green");
@@ -103,8 +111,11 @@ function init() {
     playerRect.graphics.beginFill("green");
     playerRect.graphics.drawCircle(playerGetPos()[0][0], playerGetPos()[0][1], radius);
 
-    stage.addChild(playerRect);
+    world.addChild(playerRect);
+    stage.update();
 
+    createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
+    createjs.Ticker.framerate = 60;
     createjs.Ticker.on("tick", tick);
 }
 
@@ -132,19 +143,44 @@ function isPolygonCollidingWithBuildings(target){
     return false;
 }
 
-//update()
+/**
+* setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
+* 1) coordonatele 200,200
+* 2) add child
+* 3) set transform (10,0)
+* => l-a mutat 10 px in drepta
+* */
 function tick(event) {
-    if (stage.getChildByName("playerRect") != null) {
-        stage.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
+    if (world.getChildByName("playerRect") != null) {
+        let plRect = world.getChildByName("playerRect");//todo optimizare verificare schimbare
+        world.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
+        world.setTransform(-plRect.x, -plRect.y);
     }
 
-    console.log(isPolygonCollidingWithBuildings(playerGetPos()));
+    if (Key.isDown(Key.UP)) {
+        // up
+        if (checkCollisions(playerGetPos(0, displacement)[0][0], playerGetPos(0, displacement)[0][1], radius))
+        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
+
+    } else if (Key.isDown(Key.DOWN)) {
+        // down
+        if (checkCollisions(playerGetPos(0, -displacement)[0][0], playerGetPos(0, -displacement)[0][1], radius))
+            map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
+    } 
+    if (Key.isDown(Key.LEFT)) {
+        // left
+        if (checkCollisions(playerGetPos(-displacement, 0)[0][0], playerGetPos(-displacement, 0)[0][1], radius))
+            map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
+    } else if (Key.isDown(Key.RIGHT)) {
+        // right
+        if (checkCollisions(playerGetPos(displacement, 0)[0][0], playerGetPos(displacement, 0)[0][1], radius))
+            map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
+    }
+
+    //console.log(createjs.Ticker.getMeasuredFPS());
+    //world.updateCache(-1000, -1000, 2000, 2000, 5);
 
     stage.update(event); // important!!
-}
-
-function easing(t) {
-    return t;
 }
 
 function hash(obj){
@@ -168,22 +204,6 @@ function validateId(obj){
     return true;
 }
 
-/**
- *
- * >>>>>>>>>>> Functia checkCollisions ar trebuii ca pentru 4 linii reprexentate de punctele
- * (map.transform._center.lng, map.transform._center.lat)
- * (map.transform._center.lng+x, map.transform._center.lat)
- * (map.transform._center.lat +x, map.transform._center.lat + y)
- * (map.transform._center.lat, map.transform._center.lat + y)
- *
- *
- * sa verifice daca aceste 4 linii se intersecteaza cu liniile oricarui poligon.
- * Ma voi ocupa EU de aceasta operatie, functiile de mai jos fac acest lucru doar pentru un punct, nu pentru 4 linii.
- *
- * Varianta punct este corecta cu conditia ca sa fie terminata functia isInside
- *
- * 
- */
 function min(a, b){
     if(a<b)
         return a;
@@ -207,8 +227,8 @@ function checkIfPointOnLine(x, y, x1, y1, x2, y2){
     let precision = 6;
     if (parseFloat((distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)).toFixed(precision))===
         parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision))) {
-        console.log(parseFloat((distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)).toFixed(precision)),
-            parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision)));
+        //console.log(parseFloat((distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)).toFixed(precision)),
+           // parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision)));
         return true;
     }
     return false;
@@ -274,6 +294,31 @@ function checkCollisions(x, y, radius){
     return true;
 }
 
+var Key = {
+    _pressed: {},
+
+    LEFT: 37,
+    UP: 38,
+    RIGHT: 39,
+    DOWN: 40,
+
+    isDown: function(keyCode) {
+        return this._pressed[keyCode];
+    },
+
+    onKeydown: function(event) {
+        this._pressed[event.keyCode] = true;
+    },
+
+    onKeyup: function(event) {
+        delete this._pressed[event.keyCode];
+    }
+};
+
+window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
+window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+
+
 function setMap() {
     map = new mapboxgl.Map({
         container: 'map',
@@ -286,44 +331,7 @@ function setMap() {
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
-                //console.log(buildings);
-                //console.log(map.transform._center);
                 e.preventDefault();
-                let code;
-
-                if (e.key !== undefined) {
-                    code = e.key;
-                } else if (e.keyIdentifier !== undefined) {
-                    code = e.keyIdentifier;
-                } else if (e.keyCode !== undefined) {
-                    code = e.keyCode;
-                }
-
-                if (e.which === 38 ) {
-                    // up
-
-                    //if (!isPolygonCollidingWithBuildings(playerGetPos(0, displacement)))
-                        if (checkCollisions(playerGetPos(0, displacement)[0][0], playerGetPos(0, displacement)[0][1], radius))
-                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
-
-                } else if (e.which === 40) {
-                    // down
-                    //if (!isPolygonCollidingWithBuildings(playerGetPos(0, - displacement))&&!isPolygonCollidingWithBuildings
-                    //(playerGetPos(0, - displacement, 0, 0)))
-                    if (checkCollisions(playerGetPos(0, -displacement)[0][0], playerGetPos(0, -displacement)[0][1], radius))
-                        map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
-                } else if (e.which === 37) {
-                    // left
-                    //if (!isPolygonCollidingWithBuildings(playerGetPos(-displacement, 0)))
-                    if (checkCollisions(playerGetPos(-displacement, 0)[0][0], playerGetPos(-displacement, 0)[0][1], radius))
-                        map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
-                } else if (e.which === 39) {
-                    // right
-                    //if (!isPolygonCollidingWithBuildings(playerGetPos(displacement, 0))&&
-                       // !isPolygonCollidingWithBuildings(playerGetPos(displacement, 0, 0, 0)))
-                    if (checkCollisions(playerGetPos(displacement, 0)[0][0], playerGetPos(displacement, 0)[0][1], radius))
-                        map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
-                }
             },
             true
         );
@@ -332,8 +340,7 @@ function setMap() {
 
     setInterval(function() {
 
-        var features = map.queryRenderedFeatures({
-            /*sourceLayer: ["road", "building"]*/ }); // This is where I get building
+        var features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
 
         features.forEach(function(feature) {
             if (validateId(feature.geometry)){
@@ -341,10 +348,9 @@ function setMap() {
                 if (feature.sourceLayer === "building"){
                     buildings.push(feature);
                 }
+                //world.cache(-1000, -1000, 2000, 2000, 5);
             }
 
-            //console.log(feature.properties.height); // this is the building height
-            //console.log(feature.properties.min_height); // this is the building part elevation from groung (e.g. a bridge)
         });
     }, 1000);
 
@@ -353,13 +359,39 @@ function setMap() {
 function drawPointArray(object, array, fill = false, color = 0) {
     let line_x=getCoordinateX(array[0][0]);
     let line_y=getCoordinateY(array[0][1]);
+    let mx = line_x;
+    let my = line_y;
+    let Mx = line_x;
+    let My = line_y;
     if (fill === true)
         object.graphics.moveTo(line_x, line_y).beginFill(color);
     else
         object.graphics.moveTo(line_x, line_y);
     array.forEach(function(point) {
+        let x = getCoordinateX(point[0]);
+        let y = getCoordinateY(point[1]);
+        if (x != undefined){
+            if (x < mx)
+                mx = x;
+            if (x > Mx)
+                Mx = x;
+        }
+        else{
+            console.log("err on getcordx", point[0]);
+        }
+        if (y != undefined){
+            if (y < my)
+                my = y;
+            if (y > My)
+                My = y;
+        }
+        else{
+            console.log("err on getcordy", point[1]);
+        }
         object.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
     });
+
+    return [mx, my, Mx, My];
 }
 
 function drawRoad(geometry, color) {
@@ -373,15 +405,16 @@ function drawRoad(geometry, color) {
     } else {
         drawPointArray(road, geometry.coordinates);
     }
-    stage.addChild(road);
+    world.addChild(road);
 }
 
 //TODO: rename to instantiate
 // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
-function drawPolygon(geometry, fill = false, color) {
+function drawPolygon(geometry, fill = false, color, name) {
     let polygon = new createjs.Shape();
-    polygon.graphics.beginStroke(color);
+    polygon.graphics.beginFill(color);
+    polygon.name = name;
 
     if (geometry.type === "MultiPolygon") {
         geometry.coordinates.forEach(function(multiPolygon) {
@@ -391,25 +424,30 @@ function drawPolygon(geometry, fill = false, color) {
         });
     } else {
         geometry.coordinates.forEach(function(figure) {
-            drawPointArray(polygon, figure, fill, color);
+            let limits = drawPointArray(polygon, figure, fill, color);
+            //polygon.cache(...limits);
         });
     }
-    stage.addChild(polygon);
+    world.addChild(polygon);
 }
 
 function drawFeature(feature) {
-    stage.setChildIndex( stage.getChildByName("playerRect"), stage.getNumChildren()-1);
+    //TODO check if feature not already drawn
+    //if feature.id in our array
+    //return
+    if (world.getChildByName("playerRect") != null)
+        world.setChildIndex( world.getChildByName("playerRect"), world.numChildren-1);
     switch (feature.sourceLayer) {
         case "road": {
-            drawRoad(feature.geometry, "gray");
+            drawRoad(feature.geometry, roadsColor);
             break;
         }
         case "building": {
-            drawPolygon(feature.geometry, false, "red");
+            drawPolygon(feature.geometry, false, buildingsColor);
             break;
         }
         case "water": {
-            drawPolygon(feature.geometry, true, "blue");
+            drawPolygon(feature.geometry, true, waterColor);
             break;
         }
         default:
