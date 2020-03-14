@@ -1,10 +1,25 @@
+const defaultPos = [27.598505, 47.162098];//to rename to center pos
+var playerPos = defaultPos;
+
+function parseParameters(){
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    let lat = urlParams.get("latitude");
+    let lng = urlParams.get("longitude");
+
+    if (lat != null && lng != null){
+        playerPos = [lat, lng];
+    }
+}
+
+parseParameters();
+
 var stage;
 var world;
 
 var map;
 mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
 
-const playerPos = [27.598505, 47.162098];//to rename to center pos
 const playerWidth = 20;
 const ZOOM = 1000000;
 const scale = 4;
@@ -52,11 +67,11 @@ function getScreenCoordinates(arr){
  */
 var playerGetPos = (x=0, y=0, z=0, t=0) => {
     return [
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
         [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t],
         [getCoordinateX(map.transform._center.lng + x) + playerWidth + z, getCoordinateY(map.transform._center.lat + y) + playerWidth + t],
         [getCoordinateX(map.transform._center.lng + x) + playerWidth  + z,getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t]
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t]
     ];
 };
 
@@ -304,9 +319,7 @@ window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false)
 window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
 
-function setMap(lat = 27.598505, long = 47.162098) {
-    playerPos[0] = lat;
-    playerPos[1] = long;
+function setMap() {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
@@ -314,39 +327,7 @@ function setMap(lat = 27.598505, long = 47.162098) {
         zoom: 20
     });
     map.on('load', function() {
-        map.loadImage(
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Cat_silhouette.svg/400px-Cat_silhouette.svg.png',
-            function(error, image) {
-                if (error) throw error;
-                map.addImage('cat', image);
-                map.addSource('point', {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': [{
-                            'type': 'Feature',
-                            'geometry': {
-                                'type': 'Point',
-                                'coordinates': [0, 0]
-                            }
-                        }]
-                    }
-                });
-                map.addLayer({
-                    'id': 'points',
-                    'type': 'symbol',
-                    'source': 'point',
-                    'layout': {
-                        'icon-image': 'cat',
-                        'icon-size': 0.25
-                    }
-                });
-            }
-        );
-
-
         map.getCanvas().focus();
-
         map.getCanvas().addEventListener(
             'keydown',
             function(e) {
@@ -362,10 +343,11 @@ function setMap(lat = 27.598505, long = 47.162098) {
         var features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
 
         features.forEach(function(feature) {
-            // Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
-            // MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
             if (validateId(feature.geometry)){
                 drawFeature(feature);
+                if (feature.sourceLayer === "building"){
+                    buildings.push(feature);
+                }
                 //world.cache(-1000, -1000, 2000, 2000, 5);
             }
 
@@ -373,36 +355,6 @@ function setMap(lat = 27.598505, long = 47.162098) {
     }, 1000);
 
 }
-
-function formValidation(lat, long) {
-    let val2 = parseFloat(long);
-    let val1 = parseFloat(lat);
-    if (!isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180)
-        return true;
-    else
-        return false;
-}
-
-function getFormInput() {
-    let long = document.getElementById("longitude").value;
-    let lat = document.getElementById("latitude").value;
-    if (formValidation(lat, long)) {
-        setMap(long, lat);
-        init();
-        document.getElementById("formMessage").innerHTML = "Enter coordinates: ";
-        showForm(true);
-    } else {
-        let str = "Enter valid coordinates: ";
-        document.getElementById("formMessage").innerHTML = str.fontcolor("red");
-    }
-}
-
-function showForm(value) {
-    document.getElementById("form").hidden = value;
-    document.getElementById("showForm").hidden = !value;
-}
-
-
 
 function drawPointArray(object, array, fill = false, color = 0) {
     let line_x=getCoordinateX(array[0][0]);
@@ -457,6 +409,8 @@ function drawRoad(geometry, color) {
 }
 
 //TODO: rename to instantiate
+// Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
+// MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
 function drawPolygon(geometry, fill = false, color, name) {
     let polygon = new createjs.Shape();
     polygon.graphics.beginFill(color);
@@ -489,7 +443,6 @@ function drawFeature(feature) {
             break;
         }
         case "building": {
-            buildings.push(feature);
             drawPolygon(feature.geometry, false, buildingsColor);
             break;
         }
