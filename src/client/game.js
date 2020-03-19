@@ -8,7 +8,7 @@ function parseParameters(){
     let lng = urlParams.get("longitude");
 
     if (lat != null && lng != null){
-        playerPos = [lat, lng];
+        playerPos = [lng, lat];
     }
 }
 
