@@ -1,5 +1,20 @@
 const defaultPos = [27.598505, 47.162098];//to rename to center pos
 var playerPos = defaultPos;
+var gameStartTime;
+
+/**
+ * returneaza timpul exact, dinamic, poate duce la variatii dese ale culorii daca se fataie jucatorul la stanga si la dreapta longitudinilor M15
+ * @returns {number} = minutul si ora curenta a jocului la coordonatele actuale, pentru a fi eventula afisate intr-o parte a ecranului
+ */
+function getCurrentTime(){
+    let offset=Math.floor(playerPos[0]/15);
+    if (offset<0) offset++;
+    let d=new Date();
+    let n=d.getUTCHours()+offset;
+    if (n<0) n=24-n;
+    if (n>=24) n=n-24;
+    return n*60+d.getUTCMinutes();
+}
 
 function parseParameters(){
     const queryString = window.location.search;
@@ -12,8 +27,20 @@ function parseParameters(){
     }
 }
 
-parseParameters();
+function setGameStartTime(){
+    let offset=Math.floor(playerPos[0]/15);
+    if (offset<0) offset++;
+    let d=new Date();
+    let n=d.getUTCHours()+offset;
+    if (n<0) n=24-n;
+    if (n>=24) n=n-24;
+    gameStartTime=n*60+d.getUTCMinutes(); //am pus minutul de inceput in gameStartTime
+    //TODO pentru eventuale operatii mai complexe pe timp, de retinut data completa de inceput a jocului,
+    // si de revizuit data de sfarsit a jocului
+}
 
+parseParameters();
+setGameStartTime();
 var stage;
 var world;
 
