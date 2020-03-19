@@ -1,7 +1,8 @@
 const defaultPos = [27.598505, 47.162098];//to rename to center pos
 var playerPos = defaultPos;
 var gameStartTime;
-
+var gameWeather;
+var openWeatherAccessToken="8fbb3329e2b667344c3392d6aea9362e";
 /**
  * returneaza timpul exact, dinamic, poate duce la variatii dese ale culorii daca se fataie jucatorul la stanga si la dreapta longitudinilor M15
  * @returns {number} = minutul si ora curenta a jocului la coordonatele actuale, pentru a fi eventula afisate intr-o parte a ecranului
@@ -39,8 +40,18 @@ function setGameStartTime(){
     // si de revizuit data de sfarsit a jocului
 }
 
+function getWeather(){
+    let weatherRequest="https://api.openweathermap.org/data/2.5/weather?lat="+playerPos[1]+"&lon="+playerPos[0]
+    +"&appid="+openWeatherAccessToken;
+    //TODO in weatherRequest am adresa de unde ar trebuii sa iau JSON-ul pt vreme, dar habar nam cum sa il accesez
+    //id-ul pt vreme ar trebuii sa se afle in gameWeather.weather[0].id
+}
+
+
 parseParameters();
 setGameStartTime();
+getWeather();
+
 var stage;
 var world;
 
