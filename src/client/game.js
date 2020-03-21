@@ -18,6 +18,7 @@ const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera
 const offsety = window.innerHeight / (2 * scale);
 const playerWidth = 20;
 const radius = 10; //radius of the player collision
+const projectileRadius=5;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 
 //Palette
@@ -279,6 +280,10 @@ function tick(event) {
             let obj = projectileLayer.getChildAt(value.index);
             obj.x = obj.x + value.velocityX;
             obj.y = obj.y + value.velocityY;
+            //TODO ar fi perfect daca ai stii cu ce sa schimbi value.index ca sa fie ce trebuie, ca eu sunt incapabil
+            console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
+            if (checkCollisions(obj.x, obj.y, projectileRadius)==false)
+                Projectile.removeProjectileWithId(value.index);
         }
     });
 
@@ -349,6 +354,7 @@ class Projectile {
 
     /** attempt to (safely) delete a projectile */
     static removeProjectileWithId(id) {
+        console.log(id, projectileMap.has(id) + "DA");
         if (projectileMap.has(id)) {
             let projectileObj = projectileMap.get(id); // luam indexul proiectilului nostru
             for (let i = projectileObj.index + 1; i < projectileMap.size; i++) { // si pentru toate care sunt dupa, ele vor scadea cu 1 dupa stergere
@@ -722,6 +728,11 @@ function checkCollisions(x, y, radius){
     }
     return true;
 }
+
+
+
+
+
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
 
