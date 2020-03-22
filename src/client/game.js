@@ -18,7 +18,7 @@ const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera
 const offsety = window.innerHeight / (2 * scale);
 const playerWidth = 20;
 const radius = 10; //radius of the player collision
-const projectileRadius=5;
+const projectileRadius=4;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 
 //Palette
@@ -173,10 +173,15 @@ function loadComplete(){
         arrowSprite.scaleX = 2;
         arrowSprite.scaleY = 2;
         arrowSprite.rotation = Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) ) * (180/Math.PI) - 45;
+        //console.log("evt.stageX - offsetx*scale", (evt.stageX - offsetx*scale)/ (180/Math.PI) )
+        //console.log(playerGetPos()[0]+(evt.stageX - offsetx*scale)/ (180/Math.PI));
+        //console.log("- (evt.stageY - offsety*scale)", - (evt.stageY - offsety*scale)/ (180/Math.PI))
         var p = new Projectile(
             arrowSprite,
             playerGetPos()[0],
             playerGetPos()[1],
+            (evt.stageX - offsetx*scale)/ (180/Math.PI),
+            - (evt.stageY - offsety*scale)/ (180/Math.PI),
             Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) )  - Math.PI / 2,
             4,
             3000
@@ -280,9 +285,12 @@ function tick(event) {
             let obj = projectileLayer.getChildAt(value.index);
             obj.x = obj.x + value.velocityX;
             obj.y = obj.y + value.velocityY;
-            //console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
-            if (checkCollisions(obj.x, obj.y, projectileRadius)==false)
+            //console.log(obj.x, obj.y);
+            //console.log(value.originX, value.originY)
+            if (checkCollisions(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
                 Projectile.removeProjectileWithId(key);
+            //console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
+
         }
     });
 
@@ -322,12 +330,12 @@ window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, fa
 * a trajectory with a given velocity until timeToLive is expired */
 class Projectile {
     // fiecare primeste un id in nume, cand sterg unul, vad indexul curent, pentru cei ce urmeaza, iau id-urile si scad indecsii lor
-    constructor(sprite, x, y, angle, velocity, timeToLive) {
+    constructor(sprite, x, y, projectileOffsetX, projectileOffsetY, angle, velocity, timeToLive) {
         if (Number.isInteger(timeToLive) && timeToLive > 0){
             this.validProjectile = true;
             this.timeToLive = timeToLive;
-            this.originX = x;
-            this.originY = y;
+            this.originX = projectileOffsetX;
+            this.originY = projectileOffsetY;
             this.angle = angle;
             this.velocityX = velocity * Math.cos(angle);
             this.velocityY = velocity * Math.sin(angle);
@@ -336,13 +344,26 @@ class Projectile {
             sprite.name = id;
             sprite.x = x;
             sprite.y = y;
+            /*
+            let projectileCircle = new createjs.Shape();
+            projectileCircle.graphics.beginStroke("green");
+            projectileCircle.name = "projectileCircle";
+            projectileCircle.graphics.beginFill("green");
+            projectileCircle.graphics.drawCircle(x+sprite.getBounds().height, y+sprite.getBounds().width, projectileRadius);
+            console.log("x =", x, " y= ", y, sprite.getBounds());
+            projectileLayer.addChild(projectileCircle);
+
+             */
+
             projectileLayer.addChild(sprite);
+
+
 
             this.index = projectileMap.size;
             projectileMap.set(id, this);
             // projectileMap si projectileLayer au acelasi numar de proiectile, se seteaza in map indexul sau pentru a se sti de unde sa stergem proiectilul
 
-            setInterval(function () { // daca a expirat timeToLive stergem proiectilul
+            setTimeout(function () { // daca a expirat timeToLive stergem proiectilul
                 Projectile.removeProjectileWithId(id);
             }, timeToLive);
         }
