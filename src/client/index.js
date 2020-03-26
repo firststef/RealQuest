@@ -7,8 +7,6 @@ function getFormInput() {
     lat = document.getElementById("latitude_button").value;
     var ok=formValidation(lat, longitude);
     if (ok) {
-        //setMap(longitude, lat);
-        //init();
         document.getElementById("form").target="_self";
         document.getElementById("form").action= "game.html";
         document.getElementById("form").method="GET";

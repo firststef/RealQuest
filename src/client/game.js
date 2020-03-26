@@ -1,3 +1,5 @@
+var monsterShee;
+
 /*
 SECTIONS:
 1.CONSTANTS AND GLOBALS
@@ -15,10 +17,12 @@ const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
 const scale = 4; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
 const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera" center
-const offsety = window.innerHeight / (2 * scale);
+const offsety = window.innerHeight / (2*scale);
 const playerWidth = 20;
 const radius = 10; //radius of the player collision
 const projectileRadius=4;
+const monsterRadius=6;
+const maxNrOfMonsters =5;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 
 //Palette
@@ -49,6 +53,8 @@ var map;
 var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
 var projectileMap = new Map(); // used to retain current projectiles data
 var buildings = [];
+
+var monsterMap = new Map();
 
 /* --------------------------------------------------------------------------------------------------------- GAME INIT */
 
@@ -101,6 +107,10 @@ function init() {
     projectileLayer.x = stage.x;
     projectileLayer.y = stage.y;
 
+    monsterLayer = new createjs.Container();
+    monsterLayer.x = stage.x;
+    monsterLayer.y = stage.y;
+
     stage.addChild(background);
     stage.addChild(camera);
     camera.addChild(roadsLayer);
@@ -108,11 +118,13 @@ function init() {
     camera.addChild(buildingsLayer);
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
+    camera.addChild(monsterLayer);
 
     //Loader
     loader = new createjs.LoadQueue(false);
     loader.loadFile({id:"players", src:"../sprites/players.png"});
     loader.loadFile({id:"projectiles", src:"../sprites/lofiProjs.png"});
+    loader.loadFile({id:"monsters", src:"../sprites/monsters.png"});
     loader.addEventListener("complete", loadComplete);
 
     //Tick settings
@@ -152,6 +164,21 @@ function loadComplete(){
             "attack": 70
         }
     });
+    
+    let monsterSheet = new createjs.SpriteSheet({
+        framerate: 8,
+        "images": [loader.getResult("monsters")],
+        "frames": {"height": 8, "width": 8, "regX": 0, "regY":0, "spacing":0, "margin":0},
+        "animations": {
+            "move": {
+                frames: [0,1,2,3,4,5,6,7],
+                speed: 1
+            }
+        }
+    });
+
+    monsterShee=monsterSheet;
+
     let player = new createjs.Sprite(spriteSheet, "idle");
     player.scaleX = 0.5;
     player.scaleY = 0.5;
@@ -207,7 +234,34 @@ function parseParameters(){
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
 
 /** game update loop */
+
+var monsterSpawnTime=100;
+var nrOfMonsters=0;
+
 function tick(event) {
+    
+    monsterSpawnTime--;
+    if(monsterSpawnTime<=0 && nrOfMonsters<maxNrOfMonsters){
+        monsterSpawnTime=100;
+        nrOfMonsters++;
+        let monsterSprite = new createjs.Sprite(monsterShee, "move");
+
+        monsterSprite.x = playerGetPos()[0];
+        monsterSprite.y = playerGetPos()[1];
+        monsterSprite.scaleX = 3;
+        monsterSprite.scaleY = 3;
+
+        let player = baseLayer.getChildByName("player");
+        var p = new Monster(
+            monsterSprite,
+            playerGetPos()[0] + Math.random()*200-100,
+            playerGetPos()[1] + Math.random()*200-100,
+            1,
+            Math.PI / 2 - Math.atan2(player.x - offsetx*scale, - (player.y - offsety*scale)),
+            100
+        );
+    }
+
     if (baseLayer.getChildByName("player") != null) {
         let plRect = baseLayer.getChildByName("player");//todo optimizare verificare schimbare
         baseLayer.getChildByName("player").setTransform( //TODO: player is not exactly in the center of the map
@@ -279,7 +333,7 @@ function tick(event) {
             0
         );
     }
-
+    //bullet move = hit
     projectileMap.forEach((value, key) =>{
         if (value.validProjectile){
             let obj = projectileLayer.getChildAt(value.index);
@@ -290,9 +344,21 @@ function tick(event) {
             if (checkCollisions(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
                 Projectile.removeProjectileWithId(key);
             //console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
-
+            if (checkCollisionWithMonsters(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
+                Projectile.removeProjectileWithId(key);
         }
     });
+    
+    monsterMap.forEach((value,key) => {
+        let obj = monsterLayer.getChildAt(value.index);
+        
+        obj.x = obj.x + value.velocityX;
+        obj.y = obj.y + value.velocityY;
+        obj.velocityX = obj.velocity * Math.cos(obj.angle);
+        obj.velocityY = obj.velocity * Math.sin(obj.angle);
+
+    });
+    
 
     stage.update(event);
 }
@@ -344,6 +410,7 @@ class Projectile {
             sprite.name = id;
             sprite.x = x;
             sprite.y = y;
+
             /*
             let projectileCircle = new createjs.Shape();
             projectileCircle.graphics.beginStroke("green");
@@ -352,8 +419,7 @@ class Projectile {
             projectileCircle.graphics.drawCircle(x+sprite.getBounds().height, y+sprite.getBounds().width, projectileRadius);
             console.log("x =", x, " y= ", y, sprite.getBounds());
             projectileLayer.addChild(projectileCircle);
-
-             */
+            */
 
             projectileLayer.addChild(sprite);
 
@@ -389,6 +455,44 @@ class Projectile {
             //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + projectileObj, projectileObj);
         }
     }
+}
+
+class Monster{
+    constructor(sprite, x, y, velocity, angle,hp) {
+        let id = getUniqueId();
+
+        sprite.name = id;
+        sprite.x = x;
+        sprite.y = y;
+
+        this.hp=hp;
+        this.velocityX = velocity * Math.cos(angle);
+        this.velocityY = velocity * Math.sin(angle);
+
+        monsterLayer.addChild(sprite);
+
+        this.index = monsterMap.size;
+        monsterMap.set(id, this);
+
+        
+    }
+    static removeMonsterWithId(id) {
+        if (monsterMap.has(id)) {
+            let monsterObj = monsterMap.get(id); // luam indexul proiectilului nostru
+            for (let i = monsterObj.index + 1; i < monsterMap.size; i++) { // si pentru toate care sunt dupa, ele vor scadea cu 1 dupa stergere
+                let searchId = monsterLayer.getChildAt(i).name;
+                let searchObj = monsterMap.get(searchId);
+                monsterMap.set(searchId, {
+                    ...searchObj,
+                    index: searchObj.index - 1
+                });
+            }
+            monsterMap.delete(id); //stergem in final proiectilul din ambele locuri
+            monsterLayer.removeChildAt(monsterObj.index);
+            //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + projectileObj, projectileObj);
+        }
+    }
+    
 }
 
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
@@ -748,7 +852,23 @@ function checkCollisions(x, y, radius){
     return true;
 }
 
+function checkCollisionWithMonsters(x,y,radius){
+    var ok=true;
+    monsterMap.forEach((value,key) => {
+        let monsterObj = monsterLayer.getChildAt(value.index);
+        if((monsterObj.x+monsterRadius/2-x)*(monsterObj.x+monsterRadius/2-x)+(monsterObj.y+monsterRadius/2-y)*(monsterObj.y+monsterRadius/2-y) < (radius+monsterRadius)*(radius+monsterRadius)){
+            //console.log("Removing 25 hp from monster" + key);
+            value.hp -= 25;
+            if(value.hp<=0){
+                nrOfMonsters--;
+                Monster.removeMonsterWithId(key);
+            }
+            ok=false;
+        }
+    });
 
+    return ok;
+}
 
 
 
