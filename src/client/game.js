@@ -20,9 +20,9 @@ const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera
 const offsety = window.innerHeight / (2*scale);
 const playerWidth = 20;
 const radius = 10; //radius of the player collision
-const projectileRadius=4;
-const monsterRadius=6;
-const maxNrOfMonsters =5;
+const projectileRadius = 4;
+const monsterRadius = 10;
+const maxNrOfMonsters = 5;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 
 //Palette
@@ -240,6 +240,8 @@ var nrOfMonsters=0;
 
 function tick(event) {
     
+    let player = baseLayer.getChildByName("player");
+
     monsterSpawnTime--;
     if(monsterSpawnTime<=0 && nrOfMonsters<maxNrOfMonsters){
         monsterSpawnTime=100;
@@ -251,32 +253,30 @@ function tick(event) {
         monsterSprite.scaleX = 3;
         monsterSprite.scaleY = 3;
 
-        let player = baseLayer.getChildByName("player");
         var p = new Monster(
             monsterSprite,
             playerGetPos()[0] + Math.random()*200-100,
             playerGetPos()[1] + Math.random()*200-100,
             1,
-            Math.PI / 2 - Math.atan2(player.x - offsetx*scale, - (player.y - offsety*scale)),
             100
         );
     }
 
-    if (baseLayer.getChildByName("player") != null) {
-        let plRect = baseLayer.getChildByName("player");//todo optimizare verificare schimbare
-        baseLayer.getChildByName("player").setTransform( //TODO: player is not exactly in the center of the map
-            getCoordinateX(map.transform._center.lng) - (plRect.getBounds().width*Math.abs(plRect.scaleX))/2,
-            getCoordinateY(map.transform._center.lat) - (plRect.getBounds().height*Math.abs(plRect.scaleY))/2,
-            plRect.scaleX,
-            plRect.scaleY,
+    if (player != null) {
+                            //todo optimizare verificare schimbare
+        player.setTransform( //TODO: player is not exactly in the center of the map
+            getCoordinateX(map.transform._center.lng) - (player.getBounds().width*Math.abs(player.scaleX))/2,
+            getCoordinateY(map.transform._center.lat) - (player.getBounds().height*Math.abs(player.scaleY))/2,
+            player.scaleX,
+            player.scaleY,
             0,
             0,
             0,
-            plRect.regX,
+            player.regX,
             0
         );
         baseLayer.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
-        camera.setTransform(-plRect.x + offsetx, -plRect.y + offsety);
+        camera.setTransform(-player.x + offsetx, -player.y + offsety);
     }
 
     if (Key.isDown(Key.W)) {
@@ -284,30 +284,30 @@ function tick(event) {
         if (checkCollisions(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], radius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
-        if (baseLayer.getChildByName("player").currentAnimation !== "runUp"&&baseLayer.getChildByName("player").currentAnimation !== "runSideways")
-            baseLayer.getChildByName("player").gotoAndPlay("runUp");
+        if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
+            player.gotoAndPlay("runUp");
 
     } else if (Key.isDown(Key.S)) {
         // down
         if (checkCollisions(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], radius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
 
-        if (baseLayer.getChildByName("player").currentAnimation !== "runDown"&&baseLayer.getChildByName("player").currentAnimation !== "runSideways")
-            baseLayer.getChildByName("player").gotoAndPlay("runDown");
+        if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
+            player.gotoAndPlay("runDown");
     }
     if (Key.isDown(Key.A)) {
         // left
         if (checkCollisions(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], radius))
             map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
-        if (baseLayer.getChildByName("player").currentAnimation !== "runSideways")
-            baseLayer.getChildByName("player").gotoAndPlay("runSideways");
+        if (player.currentAnimation !== "runSideways")
+            player.gotoAndPlay("runSideways");
 
-        baseLayer.getChildByName("player").setTransform(
-            baseLayer.getChildByName("player").x,
-            baseLayer.getChildByName("player").y,
-            (-1)*Math.abs(baseLayer.getChildByName("player").scaleX),
-            baseLayer.getChildByName("player").scaleY,
+            player.setTransform(
+                player.x,
+                player.y,
+            (-1)*Math.abs(player.scaleX),
+            player.scaleY,
             0,
             0,
             0,
@@ -319,14 +319,14 @@ function tick(event) {
         if (checkCollisions(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], radius))
             map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
-        if (baseLayer.getChildByName("player").currentAnimation !== "runSideways")
-            baseLayer.getChildByName("player").gotoAndPlay("runSideways");
+        if (player.currentAnimation !== "runSideways")
+        player.gotoAndPlay("runSideways");
 
-        baseLayer.getChildByName("player").setTransform(
-            baseLayer.getChildByName("player").x,
-            baseLayer.getChildByName("player").y,
-            Math.abs(baseLayer.getChildByName("player").scaleX),
-            baseLayer.getChildByName("player").scaleY,
+        player.setTransform(
+            player.x,
+            player.y,
+            Math.abs(player.scaleX),
+            player.scaleY,
             0,
             0,
             0,
@@ -340,7 +340,7 @@ function tick(event) {
             obj.x = obj.x + value.velocityX;
             obj.y = obj.y + value.velocityY;
             //console.log(obj.x, obj.y);
-            //console.log(value.originX, value.originY)
+            //console.log(value.originX, value.originY);
             if (checkCollisions(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
                 Projectile.removeProjectileWithId(key);
             //console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
@@ -352,11 +352,16 @@ function tick(event) {
     monsterMap.forEach((value,key) => {
         let obj = monsterLayer.getChildAt(value.index);
         
-        obj.x = obj.x + value.velocityX;
-        obj.y = obj.y + value.velocityY;
-        obj.velocityX = obj.velocity * Math.cos(obj.angle);
-        obj.velocityY = obj.velocity * Math.sin(obj.angle);
+        let dx = player.x - obj.x;
+        let dy = player.y - obj.y;
 
+        let angle = Math.atan2(dy,dx);
+
+        let velocityX = value.velocity * Math.cos(angle);
+        let velocityY = value.velocity * Math.sin(angle);
+        
+        obj.x = obj.x + velocityX;
+        obj.y = obj.y + velocityY;
     });
     
 
@@ -407,27 +412,15 @@ class Projectile {
             this.velocityY = velocity * Math.sin(angle);
 
             let id = getUniqueId();
+
             sprite.name = id;
             sprite.x = x;
             sprite.y = y;
 
-            /*
-            let projectileCircle = new createjs.Shape();
-            projectileCircle.graphics.beginStroke("green");
-            projectileCircle.name = "projectileCircle";
-            projectileCircle.graphics.beginFill("green");
-            projectileCircle.graphics.drawCircle(x+sprite.getBounds().height, y+sprite.getBounds().width, projectileRadius);
-            console.log("x =", x, " y= ", y, sprite.getBounds());
-            projectileLayer.addChild(projectileCircle);
-            */
-
             projectileLayer.addChild(sprite);
-
-
 
             this.index = projectileMap.size;
             projectileMap.set(id, this);
-            // projectileMap si projectileLayer au acelasi numar de proiectile, se seteaza in map indexul sau pentru a se sti de unde sa stergem proiectilul
 
             setTimeout(function () { // daca a expirat timeToLive stergem proiectilul
                 Projectile.removeProjectileWithId(id);
@@ -456,9 +449,9 @@ class Projectile {
         }
     }
 }
-
+//offsetx, offsety, necesare pt hit detection
 class Monster{
-    constructor(sprite, x, y, velocity, angle,hp) {
+    constructor(sprite, x, y, velocity,hp) {
         let id = getUniqueId();
 
         sprite.name = id;
@@ -466,15 +459,15 @@ class Monster{
         sprite.y = y;
 
         this.hp=hp;
-        this.velocityX = velocity * Math.cos(angle);
-        this.velocityY = velocity * Math.sin(angle);
+        this.velocity = velocity;
+        this.velocityX;
+        this.velocityY;
 
         monsterLayer.addChild(sprite);
 
         this.index = monsterMap.size;
         monsterMap.set(id, this);
 
-        
     }
     static removeMonsterWithId(id) {
         if (monsterMap.has(id)) {
@@ -489,10 +482,8 @@ class Monster{
             }
             monsterMap.delete(id); //stergem in final proiectilul din ambele locuri
             monsterLayer.removeChildAt(monsterObj.index);
-            //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + projectileObj, projectileObj);
         }
-    }
-    
+    }    
 }
 
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
@@ -857,7 +848,6 @@ function checkCollisionWithMonsters(x,y,radius){
     monsterMap.forEach((value,key) => {
         let monsterObj = monsterLayer.getChildAt(value.index);
         if((monsterObj.x+monsterRadius/2-x)*(monsterObj.x+monsterRadius/2-x)+(monsterObj.y+monsterRadius/2-y)*(monsterObj.y+monsterRadius/2-y) < (radius+monsterRadius)*(radius+monsterRadius)){
-            //console.log("Removing 25 hp from monster" + key);
             value.hp -= 25;
             if(value.hp<=0){
                 nrOfMonsters--;
