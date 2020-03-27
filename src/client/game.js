@@ -67,6 +67,13 @@ getWeather();
 
 /** initializes the game */
 function init() {
+    createjs.DisplayObject.prototype.centerX = function() {
+        return  this.x + this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+    };
+    createjs.DisplayObject.prototype.centerY = function() {
+        return  this.y + this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
+    };
+    
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
 
