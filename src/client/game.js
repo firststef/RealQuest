@@ -11,7 +11,7 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = false;
+const DEBUG = true;
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -54,6 +54,7 @@ var map;
 var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
 var buildings = [];
 
+var monsterMap = new Map();
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -174,7 +175,7 @@ function loadComplete(){
             "attack": 70
         }
     });
-    
+
     monsterSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [loader.getResult("monsters")],
@@ -208,7 +209,7 @@ function loadComplete(){
         arrowSprite.scaleX = 2;
         arrowSprite.scaleY = 2;
         arrowSprite.rotation = Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) ) * (180/Math.PI) - 45;
-        let p = new Projectile(
+        new Projectile(
             arrowSprite,
             playerGetPos()[0],
             playerGetPos()[1],
@@ -218,7 +219,6 @@ function loadComplete(){
             4,
             3000
         );
-        //console.log(p.sprite.name);
     });
 
     baseLayer.addChild(playerRect);
@@ -241,8 +241,28 @@ function parseParameters(){
 /** game update loop */
 
 function tick(event) {
-    
+
     let player = baseLayer.getChildByName("player");
+
+    monsterSpawnTime--;
+    if(monsterSpawnTime<=0 && nrOfMonsters<maxNrOfMonsters){
+        monsterSpawnTime=100;
+        nrOfMonsters++;
+        let monsterSprite = new createjs.Sprite(monsterSheet, "move");
+
+        monsterSprite.x = playerGetPos()[0];
+        monsterSprite.y = playerGetPos()[1];
+        monsterSprite.scaleX = 3;
+        monsterSprite.scaleY = 3;
+
+        var p = new Monster(
+            monsterSprite,
+            playerGetPos()[0] + Math.random()*200-100,
+            playerGetPos()[1] + Math.random()*200-100,
+            1,
+            100
+        );
+    }
 
     if (player != null) {
         player.setTransform( //TODO: player is not exactly in the center of the map
@@ -262,7 +282,7 @@ function tick(event) {
 
     if (Key.isDown(Key.W)) {
         // up
-        if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], radius))
+        if (checkCollisions(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], radius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
@@ -270,7 +290,7 @@ function tick(event) {
 
     } else if (Key.isDown(Key.S)) {
         // down
-        if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], radius))
+        if (checkCollisions(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], radius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
@@ -278,15 +298,15 @@ function tick(event) {
     }
     if (Key.isDown(Key.A)) {
         // left
-        if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], radius))
+        if (checkCollisions(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], radius))
             map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runSideways");
 
-            player.setTransform(
-                player.x,
-                player.y,
+        player.setTransform(
+            player.x,
+            player.y,
             (-1)*Math.abs(player.scaleX),
             player.scaleY,
             0,
@@ -297,11 +317,11 @@ function tick(event) {
         );
     } else if (Key.isDown(Key.D)) {
         // right
-        if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], radius))
+        if (checkCollisions(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], radius))
             map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
-        player.gotoAndPlay("runSideways");
+            player.gotoAndPlay("runSideways");
 
         player.setTransform(
             player.x,
@@ -323,56 +343,28 @@ function tick(event) {
                 sprite.collider.x += sprite.velocityX;
                 sprite.collider.y += sprite.velocityY;
             }
-            if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius)===false)
+            if (checkCollisions(sprite.x+sprite.projectileOffsetY*2, sprite.y+sprite.projectileOffsetX*2, projectileRadius)===false)
                 Projectile.removeProjectileWithId(sprite.name);
-            else if (checkCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius)===false)
+            if (checkCollisionWithMonsters(sprite.x+sprite.projectileOffsetY*2, sprite.y+sprite.projectileOffsetX*2, projectileRadius)===false)
                 Projectile.removeProjectileWithId(sprite.name);
         }
     });
 
-    monsterLayer.children.forEach((sprite) => {
-        if (sprite.isMonster === true) {
-            let dx = player.x - sprite.x;
-            let dy = player.y - sprite.y;
+    monsterMap.forEach((value,key) => {
+        let obj = monsterLayer.getChildAt(value.index);
 
-            let angle = Math.atan2(dy, dx);
+        let dx = player.x - obj.x;
+        let dy = player.y - obj.y;
 
-            let velocityX = sprite.velocity * Math.cos(angle);
-            let velocityY = sprite.velocity * Math.sin(angle);
+        let angle = Math.atan2(dy,dx);
 
-            sprite.x += velocityX;
-            sprite.y += velocityY;
-            if (DEBUG === true) {
-                sprite.collider.x += velocityX;
-                sprite.collider.y += velocityY;
-            }
-        }
+        let velocityX = value.velocity * Math.cos(angle);
+        let velocityY = value.velocity * Math.sin(angle);
+
+        obj.x = obj.x + velocityX;
+        obj.y = obj.y + velocityY;
     });
 
-    monsterSpawnTime--;
-    if(monsterSpawnTime<=0 && nrOfMonsters<maxNrOfMonsters){
-        monsterSpawnTime=100;
-        nrOfMonsters++;
-        let monsterSprite = new createjs.Sprite(monsterSheet, "move");
-
-        monsterSprite.x = playerGetPos()[0];
-        monsterSprite.y = playerGetPos()[1];
-        monsterSprite.scaleX = 3;
-        monsterSprite.scaleY = 3;
-
-        let randomX = Math.random()*200-100;
-        let randomY = Math.random()*200-100;
-        randomX += Math.sign(randomX) * 50;
-        randomY += Math.sign(randomY) * 50;
-
-        new Monster(
-            monsterSprite,
-            playerGetPos()[0] + randomX,
-            playerGetPos()[1] + randomY,
-            1,
-            100
-        );
-    }
 
     stage.update(event);
 }
@@ -456,52 +448,45 @@ class Projectile {
                 if (DEBUG === true){
                     projectileLayer.removeChildAt(i-1);
                 }
-                console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
+                //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
                 break;
             }
         }
     }
 }
-
+//offsetx, offsety, necesare pt hit detection
 class Monster{
     constructor(sprite, x, y, velocity,hp) {
         let id = getUniqueId();
 
-        this.sprite = sprite;
-        this.isMonster = true;
-
         sprite.name = id;
-        sprite.isMonster = true;
         sprite.x = x;
         sprite.y = y;
-        sprite.monsterHP = hp;
-        sprite.velocity = velocity;
 
-        if (DEBUG === true){
-            let monsterCircle = new createjs.Shape();
-            monsterCircle.graphics.beginStroke("green");
-            monsterCircle.name = id + "circle";
-            monsterCircle.graphics.beginFill("green");
-            monsterCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), monsterRadius);
-            sprite.collider = monsterCircle;
-            monsterLayer.addChild(monsterCircle);
-        }
+        this.hp=hp;
+        this.velocity = velocity;
+
         monsterLayer.addChild(sprite);
-    }
 
+        this.index = monsterMap.size;
+        monsterMap.set(id, this);
+
+    }
     static removeMonsterWithId(id) {
-        for (let i = 0; i < monsterLayer.children.length; i++) {
-            let sprite = monsterLayer.children[i];
-            if (sprite.isMonster === true && sprite.name === id) {
-                monsterLayer.removeChildAt(i);
-                if (DEBUG === true){
-                    monsterLayer.removeChildAt(i-1);
-                }
-                //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
-                break;
+        if (monsterMap.has(id)) {
+            let monsterObj = monsterMap.get(id); // luam indexul proiectilului nostru
+            for (let i = monsterObj.index + 1; i < monsterMap.size; i++) { // si pentru toate care sunt dupa, ele vor scadea cu 1 dupa stergere
+                let searchId = monsterLayer.getChildAt(i).name;
+                let searchObj = monsterMap.get(searchId);
+                monsterMap.set(searchId, {
+                    ...searchObj,
+                    index: searchObj.index - 1
+                });
             }
+            monsterMap.delete(id); //stergem in final proiectilul din ambele locuri
+            monsterLayer.removeChildAt(monsterObj.index);
         }
-    }    
+    }
 }
 
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
@@ -551,7 +536,7 @@ function setGameStartTime(){
 
     /**
      * mai jos se afla varianta mai eficienta de determinare a orii prin cunostinte standard de geografie/google search
-    */
+     */
     /*
     let offset=Math.floor(playerPos[0]/15);
     if (offset<0) offset++;
@@ -570,7 +555,7 @@ function setGameStartTime(){
 function getWeather(){
     const openWeatherAccessToken="8fbb3329e2b667344c3392d6aea9362e";
     let weatherRequest="https://api.openweathermap.org/data/2.5/weather?lat="+playerPos[1]+"&lon="+playerPos[0]
-    +"&appid="+openWeatherAccessToken;
+        +"&appid="+openWeatherAccessToken;
     fetch(weatherRequest)
         .then((response) => {
             return response.json();
@@ -637,7 +622,7 @@ function getReverseCoordinateY(point){
 function getScreenCoordinates(arr){
     let new_arr = [];
     arr.forEach(point => {
-       new_arr.push([getCoordinateX(point[0]), getCoordinateY(point[1])]);
+        new_arr.push([getCoordinateX(point[0]), getCoordinateY(point[1])]);
     });
     return new_arr;
 }
@@ -699,7 +684,6 @@ function drawPointArray(object, array, fill = false, color = "red") {
         }
         object.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
     });
-    object.setBounds(mx, my, Mx-mx, My-my);
 
     return [mx, my, Mx, My];
 }
@@ -852,8 +836,7 @@ function collision(x, y, radius, coords, type){
     return false;
 }
 
-/** returns true if there is no collision */
-function checkCollisionWithBuildings(x, y, radius){
+function checkCollisions(x, y, radius){
     for (let i=0; i<buildings.length; i++){
         let coords=buildings[i].geometry.coordinates;
         if (collision(x, y, radius, coords, buildings[i].geometry.type))
@@ -863,20 +846,20 @@ function checkCollisionWithBuildings(x, y, radius){
 }
 
 function checkCollisionWithMonsters(x,y,radius){
-    for (let i=0; i<monsterLayer.children.length; i++) {
-        let sprite = monsterLayer.children[i];
-        if (sprite.isMonster === true) {
-            if (Math.pow(Math.abs(x - sprite.centerX()),2) * Math.pow(Math.abs(y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
-                sprite.monsterHP -= 25;
-                if (sprite.monsterHP <= 0) {
-                    nrOfMonsters--;
-                    Monster.removeMonsterWithId(sprite.name);
-                }
-                return false;
+    var ok=true;
+    monsterMap.forEach((value,key) => {
+        let monsterObj = monsterLayer.getChildAt(value.index);
+        if((monsterObj.x+monsterRadius/2-x)*(monsterObj.x+monsterRadius/2-x)+(monsterObj.y+monsterRadius/2-y)*(monsterObj.y+monsterRadius/2-y) < (radius+monsterRadius)*(radius+monsterRadius)){
+            value.hp -= 25;
+            if(value.hp<=0){
+                nrOfMonsters--;
+                Monster.removeMonsterWithId(key);
             }
+            ok=false;
         }
-    }
-    return true;
+    });
+
+    return ok;
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
