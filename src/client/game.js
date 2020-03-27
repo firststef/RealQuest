@@ -1,5 +1,3 @@
-var monsterShee;
-
 /*
 SECTIONS:
 1.CONSTANTS AND GLOBALS
@@ -13,6 +11,8 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
+const DEBUG = true;
+
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
 const scale = 4; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
@@ -41,6 +41,7 @@ var roadsLayer; // contains all roads
 var waterLayer; // contains all water polygons
 var buildingsLayer; // contains all the buildings
 var baseLayer; // contains the player and other movable objects - projectiles, monsters
+var monsterLayer;
 var projectileLayer; // contains all the projectiles
 
 var gameWeather;
@@ -51,10 +52,12 @@ var playerPos = defaultPos;
 var map;
 
 var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
-var projectileMap = new Map(); // used to retain current projectiles data
 var buildings = [];
 
 var monsterMap = new Map();
+var monsterSheet;
+var monsterSpawnTime=100;
+var nrOfMonsters=0;
 
 /* --------------------------------------------------------------------------------------------------------- GAME INIT */
 
@@ -73,7 +76,7 @@ function init() {
     createjs.DisplayObject.prototype.centerY = function() {
         return  this.y + this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
     };
-    
+
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
 
@@ -163,6 +166,7 @@ function loadComplete(){
             "idleUp":14
         }
     });
+
     let projectileSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [loader.getResult("projectiles")],
@@ -172,7 +176,7 @@ function loadComplete(){
         }
     });
     
-    let monsterSheet = new createjs.SpriteSheet({
+    monsterSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [loader.getResult("monsters")],
         "frames": {"height": 8, "width": 8, "regX": 0, "regY":0, "spacing":0, "margin":0},
@@ -184,13 +188,11 @@ function loadComplete(){
         }
     });
 
-    monsterShee=monsterSheet;
-
     let player = new createjs.Sprite(spriteSheet, "idle");
     player.scaleX = 0.5;
     player.scaleY = 0.5;
     player.x = playerGetPos()[0] - (player.getBounds().width*Math.abs(player.scaleX));
-    player.y = playerGetPos()[1] - (player.getBounds().width*Math.abs(player.scaleY));
+    player.y = playerGetPos()[1] - (player.getBounds().height*Math.abs(player.scaleY));
     player.name = "player";
 
     let playerRect = new createjs.Shape();
@@ -207,10 +209,7 @@ function loadComplete(){
         arrowSprite.scaleX = 2;
         arrowSprite.scaleY = 2;
         arrowSprite.rotation = Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) ) * (180/Math.PI) - 45;
-        //console.log("evt.stageX - offsetx*scale", (evt.stageX - offsetx*scale)/ (180/Math.PI) )
-        //console.log(playerGetPos()[0]+(evt.stageX - offsetx*scale)/ (180/Math.PI));
-        //console.log("- (evt.stageY - offsety*scale)", - (evt.stageY - offsety*scale)/ (180/Math.PI))
-        var p = new Projectile(
+        new Projectile(
             arrowSprite,
             playerGetPos()[0],
             playerGetPos()[1],
@@ -220,7 +219,6 @@ function loadComplete(){
             4,
             3000
         );
-        //console.log(evt.stageX, evt.stageY, Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) )*(180/Math.PI));
     });
 
     baseLayer.addChild(playerRect);
@@ -242,9 +240,6 @@ function parseParameters(){
 
 /** game update loop */
 
-var monsterSpawnTime=100;
-var nrOfMonsters=0;
-
 function tick(event) {
     
     let player = baseLayer.getChildByName("player");
@@ -253,7 +248,7 @@ function tick(event) {
     if(monsterSpawnTime<=0 && nrOfMonsters<maxNrOfMonsters){
         monsterSpawnTime=100;
         nrOfMonsters++;
-        let monsterSprite = new createjs.Sprite(monsterShee, "move");
+        let monsterSprite = new createjs.Sprite(monsterSheet, "move");
 
         monsterSprite.x = playerGetPos()[0];
         monsterSprite.y = playerGetPos()[1];
@@ -270,7 +265,6 @@ function tick(event) {
     }
 
     if (player != null) {
-                            //todo optimizare verificare schimbare
         player.setTransform( //TODO: player is not exactly in the center of the map
             getCoordinateX(map.transform._center.lng) - (player.getBounds().width*Math.abs(player.scaleX))/2,
             getCoordinateY(map.transform._center.lat) - (player.getBounds().height*Math.abs(player.scaleY))/2,
@@ -341,18 +335,18 @@ function tick(event) {
         );
     }
     //bullet move = hit
-    projectileMap.forEach((value, key) =>{
-        if (value.validProjectile){
-            let obj = projectileLayer.getChildAt(value.index);
-            obj.x = obj.x + value.velocityX;
-            obj.y = obj.y + value.velocityY;
-            //console.log(obj.x, obj.y);
-            //console.log(value.originX, value.originY);
-            if (checkCollisions(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
-                Projectile.removeProjectileWithId(key);
-            //console.log(value.index, checkCollisions(obj.x, obj.y, projectileRadius));
-            if (checkCollisionWithMonsters(obj.x+value.originY*2, obj.y+value.originX*2, projectileRadius)==false)
-                Projectile.removeProjectileWithId(key);
+    projectileLayer.children.forEach((sprite) =>{
+        if (sprite.isProjectile === true){
+            sprite.x += sprite.velocityX;
+            sprite.y += sprite.velocityY;
+            if (DEBUG === true) {
+                sprite.collider.x += sprite.velocityX;
+                sprite.collider.y += sprite.velocityY;
+            }
+            if (checkCollisions(sprite.x+sprite.projectileOffsetY*2, sprite.y+sprite.projectileOffsetX*2, projectileRadius)===false)
+                Projectile.removeProjectileWithId(sprite.name);
+            if (checkCollisionWithMonsters(sprite.x+sprite.projectileOffsetY*2, sprite.y+sprite.projectileOffsetX*2, projectileRadius)===false)
+                Projectile.removeProjectileWithId(sprite.name);
         }
     });
     
@@ -407,52 +401,56 @@ window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, fa
 /* On creation a projectile is added to the projectileLayer with the given sprite, at the x,y origin and an angle - following
 * a trajectory with a given velocity until timeToLive is expired */
 class Projectile {
-    // fiecare primeste un id in nume, cand sterg unul, vad indexul curent, pentru cei ce urmeaza, iau id-urile si scad indecsii lor
     constructor(sprite, x, y, projectileOffsetX, projectileOffsetY, angle, velocity, timeToLive) {
         if (Number.isInteger(timeToLive) && timeToLive > 0){
-            this.validProjectile = true;
-            this.timeToLive = timeToLive;
-            this.originX = projectileOffsetX;
-            this.originY = projectileOffsetY;
-            this.angle = angle;
-            this.velocityX = velocity * Math.cos(angle);
-            this.velocityY = velocity * Math.sin(angle);
-
             let id = getUniqueId();
 
+            this.isProjectile = true;
+            this.sprite = sprite;
+
+            sprite.isProjectile = true;
+            sprite.timeToLive = timeToLive;
+            sprite.projectileOffsetX = projectileOffsetX;
+            sprite.projectileOffsetY = projectileOffsetY;
+            sprite.angle = angle;
+            sprite.velocityX = velocity * Math.cos(angle);
+            sprite.velocityY = velocity * Math.sin(angle); //de pus velocity in loc
             sprite.name = id;
             sprite.x = x;
             sprite.y = y;
 
-            projectileLayer.addChild(sprite);
-
-            this.index = projectileMap.size;
-            projectileMap.set(id, this);
-
-            setTimeout(function () { // daca a expirat timeToLive stergem proiectilul
+            sprite.timeout = setTimeout(function () { // daca a expirat timeToLive stergem proiectilul
                 Projectile.removeProjectileWithId(id);
             }, timeToLive);
+
+            if (DEBUG === true){
+                let projectileCircle = new createjs.Shape();
+                projectileCircle.graphics.beginStroke("green");
+                projectileCircle.name = id + "circle";
+                projectileCircle.graphics.beginFill("green");
+                projectileCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), projectileRadius);
+                sprite.collider = projectileCircle;
+                projectileLayer.addChild(projectileCircle);
+            }
+            projectileLayer.addChild(sprite);
         }
         else{
-            this.validProjectile = false;
+            this.isProjectile = false;
         }
     }
 
-    /** attempt to (safely) delete a projectile */
     static removeProjectileWithId(id) {
-        if (projectileMap.has(id)) {
-            let projectileObj = projectileMap.get(id); // luam indexul proiectilului nostru
-            for (let i = projectileObj.index + 1; i < projectileMap.size; i++) { // si pentru toate care sunt dupa, ele vor scadea cu 1 dupa stergere
-                let searchId = projectileLayer.getChildAt(i).name;
-                let searchObj = projectileMap.get(searchId);
-                projectileMap.set(searchId, {
-                    ...searchObj,
-                    index: searchObj.index - 1
-                });
+        for (let i = 0; i < projectileLayer.children.length; i++) {
+            let sprite = projectileLayer.children[i];
+            if (sprite.isProjectile === true && sprite.name === id) {
+                clearTimeout(sprite.timeout);
+                projectileLayer.removeChildAt(i);
+                if (DEBUG === true){
+                    projectileLayer.removeChildAt(i-1);
+                }
+                //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
+                break;
             }
-            projectileMap.delete(id); //stergem in final proiectilul din ambele locuri
-            projectileLayer.removeChildAt(projectileObj.index);
-            //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + projectileObj, projectileObj);
         }
     }
 }
@@ -467,8 +465,6 @@ class Monster{
 
         this.hp=hp;
         this.velocity = velocity;
-        this.velocityX;
-        this.velocityY;
 
         monsterLayer.addChild(sprite);
 
@@ -515,7 +511,6 @@ function getCurrentTime(){
  * /daca se considera necesar sa se adauge 1 daca Number(timeOffset.split(':')[0]) este mai mic ca 0
  */
 function setGameStartTime(){
-    //AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7
     //https://dev.virtualearth.net/REST/v1/timezone/61.768335,-158.808765?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7
     let timeRequest="https://dev.virtualearth.net/REST/v1/timezone/"+playerPos[1]+","+playerPos[0]
         +"?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7";
@@ -781,13 +776,9 @@ function distanceBetweenPoints(x1, y1, x2, y2){
 
 function checkIfPointOnLine(x, y, x1, y1, x2, y2){
     let precision = 6;
-    if (parseFloat((distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)).toFixed(precision))===
-        parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision))) {
-        //console.log(parseFloat((distanceBetweenPoints(x, y, x1, y1)+distanceBetweenPoints(x, y, x2, y2)).toFixed(precision)),
-        // parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision)));
-        return true;
-    }
-    return false;
+    return parseFloat((distanceBetweenPoints(x, y, x1, y1) + distanceBetweenPoints(x, y, x2, y2)).toFixed(precision)) ===
+        parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision));
+
 }
 function pointLineDistance(x0, y0, a, b, c){
     //console.log("X= "+x0 +" Y= " + y0 +" a= " + a + " b= " + b +"  c= " +c);
@@ -824,10 +815,14 @@ function isInside(x, y, radius, coords) {
             getCoordinateY(coords[i][1]))<radius)
             return true;
     }
-    if (distance(x, y, getCoordinateX(coords[0][0]), getCoordinateY(coords[0][1]), getCoordinateX(coords[coords.length-1][0]),
-        getCoordinateY(coords[coords.length-1][1]))<radius)
-        return true;
-    return false;
+    return distance(
+        x,
+        y,
+        getCoordinateX(coords[0][0]),
+        getCoordinateY(coords[0][1]),
+        getCoordinateX(coords[coords.length - 1][0]),
+        getCoordinateY(coords[coords.length - 1][1])
+    ) < radius;
 }
 
 function collision(x, y, radius, coords, type){
@@ -866,9 +861,6 @@ function checkCollisionWithMonsters(x,y,radius){
 
     return ok;
 }
-
-
-
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
 
@@ -924,6 +916,7 @@ function fabs(a){
 //TODO: make parallax background
 //TODO: use update in tick() only when something changed
 //TODO: make the DrawFeatures functions pass less feature objects, only type and arrays
+//todo optimizare verificare schimbare - update() only when the game changes
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
