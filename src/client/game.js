@@ -11,7 +11,7 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = true;
+const DEBUG = false;
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -218,7 +218,7 @@ function loadComplete(){
             4,
             3000
         );
-        console.log(p.sprite.name);
+        //console.log(p.sprite.name);
     });
 
     baseLayer.addChild(playerRect);
@@ -456,7 +456,7 @@ class Projectile {
                 if (DEBUG === true){
                     projectileLayer.removeChildAt(i-1);
                 }
-                //console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
+                console.log('time for me to die ' + id + ' projectileLayer has ' + projectileLayer.children.length + ' children left i had ' + id);
                 break;
             }
         }
@@ -866,7 +866,7 @@ function checkCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
         if (sprite.isMonster === true) {
-            if (Math.abs(x - sprite.centerX()) <= (monsterRadius + radius) || Math.abs(y - sprite.centerY()) <= (monsterRadius + radius)) {
+            if (Math.pow(Math.abs(x - sprite.centerX()),2) * Math.pow(Math.abs(y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
                 sprite.monsterHP -= 25;
                 if (sprite.monsterHP <= 0) {
                     nrOfMonsters--;
