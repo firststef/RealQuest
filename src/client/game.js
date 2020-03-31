@@ -11,7 +11,7 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = true;
+const DEBUG = false;
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -20,6 +20,7 @@ const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera
 const offsety = window.innerHeight / (2*scale);
 const playerWidth = 20;
 const playerRadius = 10; //radius of the player collision
+const collisionDelta=5;
 const projectileRadius = 4;
 const monsterRadius = 10;
 const maxNrOfMonsters = 5;
@@ -206,12 +207,6 @@ function loadComplete(){
     player.y = playerGetPos()[1] - (player.getBounds().height*Math.abs(player.scaleY));
     player.name = "player";
 
-    let playerRect = new createjs.Shape();
-    playerRect.graphics.beginStroke("green");
-    playerRect.name = "playerRect";
-    playerRect.graphics.beginFill("green");
-    playerRect.graphics.drawCircle(playerGetPos()[0], playerGetPos()[1], playerRadius);
-
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
         let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
@@ -230,7 +225,14 @@ function loadComplete(){
         );
     });
 
-    baseLayer.addChild(playerRect);
+    if (DEBUG === true) {
+        let playerRect = new createjs.Shape();
+        playerRect.graphics.beginStroke("green");
+        playerRect.name = "playerRect";
+        playerRect.graphics.beginFill("green");
+        playerRect.graphics.drawCircle(playerGetPos()[0], playerGetPos()[1], playerRadius);
+        baseLayer.addChild(playerRect);
+    }
     baseLayer.addChild(player);
 }
 
@@ -265,14 +267,17 @@ function tick(event) {
             player.regX,
             0
         );
-        baseLayer.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng)-offsetx, getCoordinateY(map.transform._center.lat)-offsety);
+        if (DEBUG === true) {
+            baseLayer.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng) - offsetx, getCoordinateY(map.transform._center.lat) - offsety);
+        }
         camera.setTransform(-player.x + offsetx, -player.y + offsety);
     }
 
     if (Key.isDown(Key.W)) {
         // up
         if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
-            map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
+            if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runUp");
@@ -280,7 +285,8 @@ function tick(event) {
     } else if (Key.isDown(Key.S)) {
         // down
         if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
-            map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
+            if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runDown");
@@ -288,7 +294,8 @@ function tick(event) {
     if (Key.isDown(Key.A)) {
         // left
         if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
-            map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
+            if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runSideways");
@@ -307,7 +314,8 @@ function tick(event) {
     } else if (Key.isDown(Key.D)) {
         // right
         if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
-            map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
+            if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runSideways");
@@ -348,12 +356,13 @@ function tick(event) {
 
             let velocityX = sprite.velocity * Math.cos(angle);
             let velocityY = sprite.velocity * Math.sin(angle);
-
-            sprite.x += velocityX;
-            sprite.y += velocityY;
-            if (DEBUG === true) {
-                sprite.collider.x += velocityX;
-                sprite.collider.y += velocityY;
+            if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY())){
+                sprite.x += velocityX;
+                sprite.y += velocityY;
+                if (DEBUG === true) {
+                    sprite.collider.x += velocityX;
+                    sprite.collider.y += velocityY;
+                }
             }
         }
     });
@@ -823,15 +832,15 @@ function distance(x1, y1, x2, y2, x3, y3){
     let x=0, y=0;
     let val1=0, val2=0, val3=0;
     if (x2==x3){
-        if (y1<=max(y2, y3)&&y1>=min(y2, y3))
-            return fabs(x1-x3);
-        return min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
+        if (y1<=Math.max(y2, y3)&&y1>=Math.min(y2, y3))
+            return Math.abs(x1-x3);
+        return Math.min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
     }
     let m=(y3-y2)/(x3-x2);//ax+by+c=0, y-y1=m(x-x1)
     let d=pointLineDistance(x1, y1, m, -1, y2-m*x2);
     if (checkIfPointOnLine(d[0], d[1], x2, y2, x3, y3))
         return distanceBetweenPoints(x1, y1, d[0], d[1]);
-    return min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
+    return Math.min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
 }
 
 function isInside(x, y, radius, coords) {
@@ -875,7 +884,7 @@ function checkCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
         if (sprite.isMonster === true) {
-            if (Math.pow(Math.abs(x - sprite.centerX()),2) + Math.pow(Math.abs(y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
+            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
                 sprite.monsterHP -= 25;
                 if (sprite.monsterHP <= 0) {
                     nrOfMonsters--;
@@ -885,6 +894,24 @@ function checkCollisionWithMonsters(x,y,radius){
             }
         }
     }
+    return true;
+}
+
+function checkPlayerCollisionWithMonsters(x,y,radius){
+    for (let i=0; i<monsterLayer.children.length; i++) {
+        let sprite = monsterLayer.children[i];
+        if (sprite.isMonster === true) {
+            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+function checkMonsterCollisionWithPlayer(x,y){
+    if (Math.pow(playerGetPos()[0]-x, 2)+Math.pow(playerGetPos()[1]-y, 2)<=Math.pow(monsterRadius+playerRadius+collisionDelta, 2))
+        return false;
     return true;
 }
 
@@ -915,23 +942,6 @@ function validateAndAddId(obj){
         return false;
     polygonShapesIdSet.add(id);
     return true;
-}
-
-//TODO: replace these with Math.()
-function min(a, b){
-    if(a<b)
-        return a;
-    return b;
-}
-function max(a, b){
-    if (a<b)
-        return b;
-    return a;
-}
-function fabs(a){
-    if (a<0)
-        return -a;
-    return a;
 }
 
 /* --------------------------------------------------------------------------------------------------------- NOTES
