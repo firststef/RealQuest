@@ -19,11 +19,12 @@ const scale = 4; // world pixel scale - every logical pixel is represented by (s
 const offsetx = window.innerWidth / (2*scale); //used for offsetting the "camera" center
 const offsety = window.innerHeight / (2*scale);
 const playerWidth = 20;
-const radius = 10; //radius of the player collision
+const playerRadius = 10; //radius of the player collision
 const projectileRadius = 4;
 const monsterRadius = 10;
 const maxNrOfMonsters = 5;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
+var map;
 
 //Palette
 const groundColor = "#379481";
@@ -43,16 +44,16 @@ var buildingsLayer; // contains all the buildings
 var baseLayer; // contains the player and other movable objects - projectiles, monsters
 var monsterLayer;
 var projectileLayer; // contains all the projectiles
+var uiLayer;
+
+var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
+var buildings = [];
 
 var gameWeather;
 var gameStartTime=-1;
 
 var playerPos = defaultPos;
-
-var map;
-
-var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
-var buildings = [];
+var playerHealth = 100;
 
 var monsterSheet;
 var monsterSpawnTime=100;
@@ -74,6 +75,12 @@ function init() {
     };
     createjs.DisplayObject.prototype.centerY = function() {
         return  this.y + this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
+    };
+    createjs.DisplayObject.prototype.reverseCenterX = function(centerX) {
+        return  centerX - this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+    };
+    createjs.DisplayObject.prototype.reverseCenterY = function(centerY) {
+        return  centerY - this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
     };
 
     let canvas = document.getElementById("gameCanvas");
@@ -120,6 +127,10 @@ function init() {
     monsterLayer.x = stage.x;
     monsterLayer.y = stage.y;
 
+    uiLayer = new createjs.Container();
+    uiLayer.x = stage.x;
+    uiLayer.y = stage.y;
+
     stage.addChild(background);
     stage.addChild(camera);
     camera.addChild(roadsLayer);
@@ -128,6 +139,7 @@ function init() {
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
     camera.addChild(monsterLayer);
+    stage.addChild(uiLayer);
 
     //Loader
     loader = new createjs.LoadQueue(false);
@@ -198,27 +210,24 @@ function loadComplete(){
     playerRect.graphics.beginStroke("green");
     playerRect.name = "playerRect";
     playerRect.graphics.beginFill("green");
-    playerRect.graphics.drawCircle(playerGetPos()[0], playerGetPos()[1], radius);
+    playerRect.graphics.drawCircle(playerGetPos()[0], playerGetPos()[1], playerRadius);
 
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
         let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
-        arrowSprite.x = playerGetPos()[0];
-        arrowSprite.y = playerGetPos()[1];
         arrowSprite.scaleX = 2;
         arrowSprite.scaleY = 2;
-        arrowSprite.rotation = Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) ) * (180/Math.PI) - 45;
+        let angle = Math.atan2(evt.stageX - offsetx*scale, -(evt.stageY - offsety*scale) );
+        console.log(Math.sin(angle));
+        arrowSprite.rotation = angle * (180/Math.PI) - 45;
         let p = new Projectile(
             arrowSprite,
-            playerGetPos()[0],
-            playerGetPos()[1],
-            (evt.stageX - offsetx*scale)/ (180/Math.PI),
-            - (evt.stageY - offsety*scale)/ (180/Math.PI),
-            Math.atan2(evt.stageX - offsetx*scale, - (evt.stageY - offsety*scale) )  - Math.PI / 2,
+            arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
+            arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * playerRadius),
+            angle  - Math.PI / 2,
             4,
             3000
         );
-        //console.log(p.sprite.name);
     });
 
     baseLayer.addChild(playerRect);
@@ -262,7 +271,7 @@ function tick(event) {
 
     if (Key.isDown(Key.W)) {
         // up
-        if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], radius))
+        if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
@@ -270,7 +279,7 @@ function tick(event) {
 
     } else if (Key.isDown(Key.S)) {
         // down
-        if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], radius))
+        if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
             map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
@@ -278,7 +287,7 @@ function tick(event) {
     }
     if (Key.isDown(Key.A)) {
         // left
-        if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], radius))
+        if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
             map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
@@ -297,7 +306,7 @@ function tick(event) {
         );
     } else if (Key.isDown(Key.D)) {
         // right
-        if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], radius))
+        if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
             map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
 
         if (player.currentAnimation !== "runSideways")
@@ -409,7 +418,7 @@ window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, fa
 /* On creation a projectile is added to the projectileLayer with the given sprite, at the x,y origin and an angle - following
 * a trajectory with a given velocity until timeToLive is expired */
 class Projectile {
-    constructor(sprite, x, y, projectileOffsetX, projectileOffsetY, angle, velocity, timeToLive) {
+    constructor(sprite, x, y, angle, velocity, timeToLive) {
         if (Number.isInteger(timeToLive) && timeToLive > 0){
             let id = getUniqueId();
 
@@ -418,8 +427,6 @@ class Projectile {
 
             sprite.isProjectile = true;
             sprite.timeToLive = timeToLive;
-            sprite.projectileOffsetX = projectileOffsetX;
-            sprite.projectileOffsetY = projectileOffsetY;
             sprite.angle = angle;
             sprite.velocityX = velocity * Math.cos(angle);
             sprite.velocityY = velocity * Math.sin(angle); //de pus velocity in loc
@@ -706,6 +713,7 @@ function drawPointArray(object, array, fill = false, color = "red") {
 
 function drawRoad(geometry, color) {
     let road = new createjs.Shape();
+    road.tickEnabled = false;
     road.graphics.setStrokeStyle(30,"round").beginStroke(color);
 
     if (geometry.type === "MultiLineString") {
@@ -722,6 +730,7 @@ function drawRoad(geometry, color) {
 function drawPolygon(geometry, fill = false, color, name) {
     let polygon = new createjs.Shape();
     polygon.graphics.beginFill(color);
+    polygon.tickEnabled = false;
     polygon.name = name;
 
     if (geometry.type === "MultiPolygon") {
@@ -934,6 +943,7 @@ function fabs(a){
 //TODO: use update in tick() only when something changed
 //TODO: make the DrawFeatures functions pass less feature objects, only type and arrays
 //todo optimizare verificare schimbare - update() only when the game changes
+//todo: on resize event
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
@@ -943,5 +953,7 @@ setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla
 2) add child
 3) set transform (10,0)
 => a fost mutat 10 px in drepta
+
+cache functionality was moved to BitmapCache
 
 */
