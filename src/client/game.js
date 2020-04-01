@@ -7,8 +7,9 @@ SECTIONS:
 5.API FUNCTIONS
 6.GAME MAP FUNCTIONS
 7.GAME COLLISIONS FUNCTIONS
-8.UTILS
-9.NOTES
+8.UI FUNCTIONS
+9.UTILS
+10.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
@@ -25,7 +26,7 @@ const projectileRadius = 4;
 const monsterRadius = 10;
 const maxNrOfMonsters = 5;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
-var map;
+const playerMaxHealth = 100;
 
 //Palette
 const groundColor = "#379481";
@@ -45,20 +46,27 @@ var buildingsLayer; // contains all the buildings
 var baseLayer; // contains the player and other movable objects - projectiles, monsters
 var monsterLayer;
 var projectileLayer; // contains all the projectiles
-var uiLayer;
+var uiScreen;
 
 var polygonShapesIdSet = new Set(); // used to retain the hashId for buildings, roads and water shapes - for optimization
 var buildings = [];
 
+//Api
 var gameWeather;
 var gameStartTime=-1;
+var map;
 
+//Game Vars
+var player;
 var playerPos = defaultPos;
-var playerHealth = 100;
+var playerHealth = playerMaxHealth;
 
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
+
+//UI vars
+var playerLifeBar;
 
 /* --------------------------------------------------------------------------------------------------------- GAME INIT */
 
@@ -86,6 +94,8 @@ function init() {
 
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
+
+    playerLifeBar = document.getElementById('lifebar');
 
     //GameObjects
     stage = new createjs.Stage(canvas);
@@ -128,9 +138,7 @@ function init() {
     monsterLayer.x = stage.x;
     monsterLayer.y = stage.y;
 
-    uiLayer = new createjs.Container();
-    uiLayer.x = stage.x;
-    uiLayer.y = stage.y;
+    uiScreen = new createjs.DOMElement("uiScreen");
 
     stage.addChild(background);
     stage.addChild(camera);
@@ -140,7 +148,7 @@ function init() {
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
     camera.addChild(monsterLayer);
-    stage.addChild(uiLayer);
+    stage.addChild(uiScreen);
 
     //Loader
     loader = new createjs.LoadQueue(false);
@@ -148,6 +156,9 @@ function init() {
     loader.loadFile({id:"projectiles", src:"../sprites/lofiProjs.png"});
     loader.loadFile({id:"monsters", src:"../sprites/monsters.png"});
     loader.addEventListener("complete", loadComplete);
+
+    //Map
+    setMap();
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
@@ -200,12 +211,12 @@ function loadComplete(){
         }
     });
 
-    let player = new createjs.Sprite(spriteSheet, "idle");
-    player.scaleX = 0.5;
-    player.scaleY = 0.5;
-    player.x = playerGetPos()[0] - (player.getBounds().width*Math.abs(player.scaleX));
-    player.y = playerGetPos()[1] - (player.getBounds().height*Math.abs(player.scaleY));
-    player.name = "player";
+    let playerSprite = new createjs.Sprite(spriteSheet, "idle");
+    playerSprite.scaleX = 0.5;
+    playerSprite.scaleY = 0.5;
+    playerSprite.x = playerGetPos()[0] - (playerSprite.getBounds().width*Math.abs(playerSprite.scaleX));
+    playerSprite.y = playerGetPos()[1] - (playerSprite.getBounds().height*Math.abs(playerSprite.scaleY));
+    playerSprite.name = "player";
 
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
@@ -213,7 +224,6 @@ function loadComplete(){
         arrowSprite.scaleX = 2;
         arrowSprite.scaleY = 2;
         let angle = Math.atan2(evt.stageX - offsetx*scale, -(evt.stageY - offsety*scale) );
-        console.log(Math.sin(angle));
         arrowSprite.rotation = angle * (180/Math.PI) - 45;
         let p = new Projectile(
             arrowSprite,
@@ -233,7 +243,8 @@ function loadComplete(){
         playerRect.graphics.drawCircle(playerGetPos()[0], playerGetPos()[1], playerRadius);
         baseLayer.addChild(playerRect);
     }
-    baseLayer.addChild(player);
+    baseLayer.addChild(playerSprite);
+    player = baseLayer.getChildByName("player");
 }
 
 function parseParameters(){
@@ -252,32 +263,32 @@ function parseParameters(){
 /** game update loop */
 
 function tick(event) {
+    if (player === undefined)
+        return;
 
-    let player = baseLayer.getChildByName("player");
-
-    if (player != null) {
-        player.setTransform( //TODO: player is not exactly in the center of the map
-            getCoordinateX(map.transform._center.lng) - (player.getBounds().width*Math.abs(player.scaleX))/2,
-            getCoordinateY(map.transform._center.lat) - (player.getBounds().height*Math.abs(player.scaleY))/2,
-            player.scaleX,
-            player.scaleY,
-            0,
-            0,
-            0,
-            player.regX,
-            0
-        );
-        if (DEBUG === true) {
-            baseLayer.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng) - offsetx, getCoordinateY(map.transform._center.lat) - offsety);
-        }
-        camera.setTransform(-player.x + offsetx, -player.y + offsety);
+    player.setTransform( //TODO: player is not exactly in the center of the map
+        getCoordinateX(map.transform._center.lng) - (player.getBounds().width*Math.abs(player.scaleX))/2,
+        getCoordinateY(map.transform._center.lat) - (player.getBounds().height*Math.abs(player.scaleY))/2,
+        player.scaleX,
+        player.scaleY,
+        0,
+        0,
+        0,
+        player.regX,
+        0
+    );
+    if (DEBUG === true) {
+        baseLayer.getChildByName("playerRect").setTransform(getCoordinateX(map.transform._center.lng) - offsetx, getCoordinateY(map.transform._center.lat) - offsety);
     }
+    camera.setTransform(-player.x + offsetx, -player.y + offsety);
 
+    let axisX = 0;
+    let axisY = 0;
     if (Key.isDown(Key.W)) {
         // up
         if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
             if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
-                map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat + displacement], zoom: map.transform.zoom});
+                axisY = 1;
 
         if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runUp");
@@ -286,7 +297,7 @@ function tick(event) {
         // down
         if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
             if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
-                map.jumpTo({center: [map.transform.center.lng, map.transform.center.lat - displacement], zoom: map.transform.zoom});
+                axisY = -1;
 
         if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runDown");
@@ -295,7 +306,7 @@ function tick(event) {
         // left
         if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
             if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
-                map.jumpTo({center: [map.transform.center.lng - displacement, map.transform.center.lat], zoom: map.transform.zoom});
+                axisX = -1;
 
         if (player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runSideways");
@@ -311,11 +322,12 @@ function tick(event) {
             32,
             0
         );
+
     } else if (Key.isDown(Key.D)) {
         // right
         if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
             if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
-                map.jumpTo({center: [map.transform.center.lng + displacement, map.transform.center.lat], zoom: map.transform.zoom});
+                axisX = 1;
 
         if (player.currentAnimation !== "runSideways")
             player.gotoAndPlay("runSideways");
@@ -331,6 +343,22 @@ function tick(event) {
             0
         );
     }
+
+    if (axisX !== 0 || axisY !== 0){
+        let directionalDisplacement;
+        if (axisX !== 0 && axisY !== 0){
+            directionalDisplacement = displacement / Math.sqrt(2);
+        }
+        else{
+            directionalDisplacement = displacement;
+        }
+
+        map.jumpTo({
+            center: [map.transform.center.lng + axisX * directionalDisplacement, map.transform.center.lat + axisY * directionalDisplacement],
+            zoom: map.transform.zoom
+        });
+    }
+
     //bullet move = hit
     projectileLayer.children.forEach((sprite) =>{
         if (sprite.isProjectile === true){
@@ -363,6 +391,12 @@ function tick(event) {
                     sprite.collider.x += velocityX;
                     sprite.collider.y += velocityY;
                 }
+            }
+            else{
+                playerHealth -= 0.1;
+                if (playerHealth < 0)
+                    playerHealth = 0;
+                updatePlayerLifeBar();
             }
         }
     });
@@ -633,7 +667,6 @@ function setMap() {
         //let b = baseLayer.getBounds();
         //baseLayer.cache(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height, scale);
     }, 1000);
-
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME MAP FUNCTIONS */
@@ -880,6 +913,7 @@ function checkCollisionWithBuildings(x, y, radius){
     return true;
 }
 
+//TODO: the function should be named checkProjectileCollisionWithMonsters
 function checkCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
@@ -910,9 +944,16 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
 }
 
 function checkMonsterCollisionWithPlayer(x,y){
-    if (Math.pow(playerGetPos()[0]-x, 2)+Math.pow(playerGetPos()[1]-y, 2)<=Math.pow(monsterRadius+playerRadius+collisionDelta, 2))
-        return false;
-    return true;
+    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
+}
+
+/* --------------------------------------------------------------------------------------------------------- UI FUNCTIONS */
+
+function updatePlayerLifeBar() {
+    let percent = Math.trunc(playerHealth / playerMaxHealth * 100);
+    if (percent < 0)
+        percent = 0;
+    playerLifeBar.style.width = percent.toString() + '%';
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
@@ -948,12 +989,14 @@ function validateAndAddId(obj){
 
 //TODO: to rename to center pos - the default spawn position
 //TODO: playerWidth seems useless, collision will be made after radius
-//TODO add player as global var
 //TODO: make parallax background
 //TODO: use update in tick() only when something changed
 //TODO: make the DrawFeatures functions pass less feature objects, only type and arrays
 //todo optimizare verificare schimbare - update() only when the game changes
 //todo: on resize event
+//TODO: responsive UI
+//TODO: monster mini health-bar
+//TODO: we might wanna add a function to subtract from player the damage, but in this function we select only the highest damage in the recent seconds
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
@@ -965,5 +1008,8 @@ setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla
 => a fost mutat 10 px in drepta
 
 cache functionality was moved to BitmapCache
+
+note: optimization: the player already checks collision with monsters, but monsters check again to see if they can move:
+- what if we can return an array with collided monsters ids?
 
 */

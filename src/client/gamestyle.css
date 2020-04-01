@@ -17,14 +17,46 @@ body {
     pointer-events: none;
 }
 
-#gameCanvas {
+#gameCanvas, #gameContainer {
     position: fixed;
     z-index: -1;
     width: 100%;
     height: 100%;
 }
 
-#coordinatesForm{
-    z-index: 0;
+#uiScreen {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+    cursor: default;
+}
 
+.non-blocking {
+    pointer-events:none;
+}
+
+.blocking {
+    pointer-events:auto;
+}
+
+.lifebar-container {
+    margin: 3px;
+    padding: 1px;
+    background-color: #72e7a8;
+    border-radius: 3px;
+    width: 8%;
+    height: 1%;
+}
+
+#lifebar {
+    background-color: #f21000;
+    width: 100%;
+    height: 100%;
+    border-radius: 3px;
 }

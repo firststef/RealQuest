@@ -15,25 +15,18 @@
     </style>
 </head>
 
-<!--
-TODO: to change "showForm" button's width because it makes a non colorable stripe
-!making form not hidden moves the drawn lines down
-BUG:lat=86, long=89 should be valid, it doesn't display what it should
--->
-<!--
-<body>
--->
-
 <body onload="init();">
+    <div id="map"></div>
 
-<div id="map"></div>
-
-<canvas id="gameCanvas">
-    alternate content
-</canvas>
-
-
-<script>setMap();</script>
-
+    <div id="gameContainer">
+        <div id="uiScreen" class="non-blocking">
+            <div class="lifebar-container blocking">
+                <div id="lifebar"></div>
+            </div>
+        </div>
+        <canvas id="gameCanvas">
+            alternate content
+        </canvas>
+    </div>
 </body>
 </html>
