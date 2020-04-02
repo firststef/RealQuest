@@ -58,10 +58,11 @@ var map;
 
 //Game Vars
 var GPXString = "";
+var GPXInterval;
 var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
-var gameOver=0;
+var gameOver = false;
 
 var monsterSheet;
 var monsterSpawnTime=100;
@@ -84,8 +85,8 @@ function init() {
     
     GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
     
-    setInterval(function() {
-        if(gameOver==0)
+    GPXInterval = setInterval(function() {
+        if(gameOver == false)
             GPXString = GPXString.concat("\t<trkpt lat=\"" + map.transform._center.lat + "\" lon=\"" + map.transform._center.lng + "\">\n\t</trkpt>\n");
     },1000);
 
@@ -173,7 +174,7 @@ function init() {
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
     createjs.Ticker.framerate = 60;
-    createjs.Ticker.on("tick", tick);
+    createjs.Ticker.addEventListener("tick", tick);
 }
 
 /** runs after all resources have been loaded */
@@ -270,20 +271,10 @@ function parseParameters(){
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
 
-var isLogged = 0;
-
-function LogOnce(){
-    if(isLogged == 0){
-        GPXString = GPXString.concat("\t</trkseg>\n</trk>\n</gpx>");
-        console.log(GPXString);
-        isLogged = 1;
-    }
-}
-
 /** game update loop */
 
 function tick(event) {
-    if(gameOver==0){
+    if(gameOver == false){
     if (player === undefined)
         return;
 
@@ -451,7 +442,14 @@ function tick(event) {
 
     stage.update(event);
     } else {
+
         createjs.Ticker.paused = true;
+        createjs.Ticker.removeEventListener("tick", tick);
+        clearInterval(GPXInterval);
+
+
+        GPXString = GPXString.concat("\t</trkseg>\n</trk>\n</gpx>");
+        console.log(GPXString);
 
         let canvas = document.getElementById("gameCanvas");
         let context = canvas.getContext('2d');
@@ -459,7 +457,7 @@ function tick(event) {
         
         let divMap = document.getElementById("map");
 
-        LogOnce();
+        //LogOnce();
 
         divMap.style.width='50%';
         divMap.style.height='50%';
