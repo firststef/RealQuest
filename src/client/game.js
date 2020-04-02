@@ -57,9 +57,11 @@ var gameStartTime=-1;
 var map;
 
 //Game Vars
+var GPXString = "";
 var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
+var gameOver=0;
 
 var monsterSheet;
 var monsterSpawnTime=100;
@@ -79,6 +81,14 @@ getWeather();
 
 /** initializes the game */
 function init() {
+    
+    GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
+    
+    setInterval(function() {
+        if(gameOver==0)
+            GPXString = GPXString.concat("\t<trkpt lat=\"" + map.transform._center.lat + "\" lon=\"" + map.transform._center.lng + "\">\n\t</trkpt>\n");
+    },1000);
+
     createjs.DisplayObject.prototype.centerX = function() {
         return  this.x + this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
     };
@@ -260,9 +270,20 @@ function parseParameters(){
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
 
+var isLogged = 0;
+
+function LogOnce(){
+    if(isLogged == 0){
+        GPXString = GPXString.concat("\t</trkseg>\n</trk>\n</gpx>");
+        console.log(GPXString);
+        isLogged = 1;
+    }
+}
+
 /** game update loop */
 
 function tick(event) {
+    if(gameOver==0){
     if (player === undefined)
         return;
 
@@ -394,8 +415,10 @@ function tick(event) {
             }
             else{
                 playerHealth -= 0.1;
-                if (playerHealth < 0)
+                if (playerHealth < 0){
                     playerHealth = 0;
+                    gameOver=1;
+                }
                 updatePlayerLifeBar();
             }
         }
@@ -427,6 +450,27 @@ function tick(event) {
     }
 
     stage.update(event);
+    } else {
+        createjs.Ticker.paused = true;
+
+        let canvas = document.getElementById("gameCanvas");
+        let context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        
+        let divMap = document.getElementById("map");
+
+        LogOnce();
+
+        divMap.style.width='50%';
+        divMap.style.height='50%';
+
+        map.resize();
+        
+        //gameOver=0;
+        //playerHealth=playerMaxHealth;
+        //createjs.Ticker.paused = false;    
+        //updatePlayerLifeBar();
+    }
 }
 
 /* INPUT */

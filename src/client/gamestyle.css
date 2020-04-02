@@ -60,3 +60,15 @@ body {
     height: 100%;
     border-radius: 3px;
 }
+.button { 
+    color: #fff;
+    background-color: #555;
+    padding: 1em;
+    margin: 1em;
+    position: absolute;
+    right: 1em;
+    top: 1em;
+    border-radius: 0.5em;
+    border-bottom: 2px #222 solid;
+    cursor: pointer;
+}
