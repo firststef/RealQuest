@@ -736,10 +736,8 @@ function setGameStartTime(){
         })
         .then((data) => {
             try{
-                let timeOffset=data.resourceSets[0].resources[0].timeZone["utcOffset"];
-                var today = new Date();
-                today.setHours(today.getUTCHours() + Number(timeOffset.split(':')[0]));
-                gameStartTime=today.getHours()*60+today.getMinutes();
+                let time=new Date(data.resourceSets[0].resources[0].timeZone["convertedTime"]["localTime"]);
+                gameStartTime=time.getHours()*60+time.getMinutes();
             }
             catch (e) {
                 gameStartTime=getCurrentTime();
