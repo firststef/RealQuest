@@ -71,6 +71,9 @@ var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
 
+var projectileSpawnTime=1000;
+//?/
+
 //UI vars
 var playerLifeBar;
 
@@ -211,7 +214,7 @@ function loadComplete(){
     monsterLayer.y = stage.y;
 
     luminosityOverlay = new createjs.Shape();
-    if (gameStartTime < 420 || gameStartTime > 600) {
+    if (gameStartTime < 420 || gameStartTime > 1320) {
         setNightOverlay();
     }
     luminosityOverlay.name = "luminosityOverlay";
@@ -329,7 +332,9 @@ function parseParameters(){
     const urlParams = new URLSearchParams(queryString);
     let lat = urlParams.get("latitude");
     let lng = urlParams.get("longitude");
-
+    /**
+     * daca lasam cu get ar trebuii validat lat si long si aici
+     */
     if (lat != null && lng != null){
         playerPos = [lng, lat];
     }
@@ -444,10 +449,24 @@ function tick(event) {
                     sprite.collider.x += sprite.velocityX;
                     sprite.collider.y += sprite.velocityY;
                 }
-                if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
-                    Projectile.removeProjectileWithId(sprite.name);
-                else if (checkCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
-                    Projectile.removeProjectileWithId(sprite.name);
+                if (sprite.faction==="player"){
+                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                        Projectile.removeProjectileWithId(sprite.name);
+                    else if (checkCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                        Projectile.removeProjectileWithId(sprite.name);
+                } else if (sprite.faction==="monster"){
+                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                        Projectile.removeProjectileWithId(sprite.name);
+                    else if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
+                        Projectile.removeProjectileWithId(sprite.name);
+                        playerHealth -= 0.5;
+                        if (playerHealth < 0) {
+                            playerHealth = 0;
+                            gameOver = 1;
+                        }
+                        updatePlayerLifeBar();
+                    }
+                } else Projectile.removeProjectileWithId(sprite.name);
             }
         });
 
@@ -460,7 +479,7 @@ function tick(event) {
 
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
-                if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY())) {
+                if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY(), monsterRadius, collisionDelta)) {
                     sprite.x += velocityX;
                     sprite.y += velocityY;
                     if (DEBUG === true) {
@@ -564,7 +583,7 @@ function loadKeyHandler(){
 /* On creation a projectile is added to the projectileLayer with the given sprite, at the x,y origin and an angle - following
 * a trajectory with a given velocity until timeToLive is expired */
 class Projectile {
-    constructor(sprite, x, y, angle, velocity, timeToLive) {
+    constructor(sprite, x, y, angle, velocity, timeToLive, faction="player") {
         if (Number.isInteger(timeToLive) && timeToLive > 0){
             let id = getUniqueId();
 
@@ -579,6 +598,7 @@ class Projectile {
             sprite.name = id;
             sprite.x = x;
             sprite.y = y;
+            sprite.faction=faction;
 
             sprite.timeout = setTimeout(function () { // daca a expirat timeToLive stergem proiectilul
                 Projectile.removeProjectileWithId(id);
@@ -1060,7 +1080,7 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
     return true;
 }
 
-function checkMonsterCollisionWithPlayer(x,y){
+function checkMonsterCollisionWithPlayer(x,y, monsterRadius, collisionDelta=0){
     return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
 }
 
