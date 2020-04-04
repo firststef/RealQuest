@@ -81,6 +81,9 @@ var playerLifeBar;
 var GPXString = "";
 var GPXInterval;
 
+//projectile vars
+var projectileSheet;
+
 /* --------------------------------------------------------------------------------------------------------- GAME INIT FUNCTIONS */
 
 // entry point -> load() called by the canvas element on page load
@@ -260,7 +263,7 @@ function loadComplete(){
             "idleUp":14
         }
     });
-    let projectileSheet = new createjs.SpriteSheet({
+    projectileSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("projectiles")],
         "frames": {"height": 8, "width": 8, "regX": 0, "regY":0, "spacing":0, "margin":0},
@@ -457,9 +460,9 @@ function tick(event) {
                 } else if (sprite.faction==="monster"){
                     if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
+                    else if (checkProjectileCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
                         Projectile.removeProjectileWithId(sprite.name);
-                        playerHealth -= 0.5;
+                        playerHealth -= 10;
                         if (playerHealth < 0) {
                             playerHealth = 0;
                             gameOver = 1;
@@ -472,6 +475,10 @@ function tick(event) {
 
         monsterLayer.children.forEach((sprite) => {
             if (sprite.isMonster === true) {
+                sprite.timeToShoot--;
+
+
+
                 let dx = player.x - sprite.x;
                 let dy = player.y - sprite.y;
 
@@ -479,6 +486,25 @@ function tick(event) {
 
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
+
+                if (sprite.timeToShoot==0){
+                    sprite.timeToShoot=sprite.projectileTimer;
+                    let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
+                    let arrowAngle=Math.atan2(dx, -dy);
+                    arrowSprite.scaleX = 2;
+                    arrowSprite.scaleY = 2;
+                    arrowSprite.rotation = arrowAngle * (180/Math.PI) - 45;
+                    let p = new Projectile(
+                        arrowSprite,
+                        arrowSprite.reverseCenterX(sprite.centerX() + Math.sin(arrowAngle) * monsterRadius),
+                        arrowSprite.reverseCenterY(sprite.centerY() - Math.cos(arrowAngle) * monsterRadius),
+                        arrowAngle  - Math.PI / 2,
+                        4,
+                        20000,
+                        "monster"
+                    );
+                }
+
                 if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY(), monsterRadius, collisionDelta)) {
                     sprite.x += velocityX;
                     sprite.y += velocityY;
@@ -642,6 +668,8 @@ class Monster{
 
         this.sprite = sprite;
         this.isMonster = true;
+        sprite.projectileTimer=Math.floor( (60+Math.random()*60) );
+        sprite.timeToShoot=sprite.projectileTimer;
 
         sprite.name = id;
         sprite.isMonster = true;
@@ -1081,6 +1109,11 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
 }
 
 function checkMonsterCollisionWithPlayer(x,y, monsterRadius, collisionDelta=0){
+    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
+}
+
+
+function checkProjectileCollisionWithPlayer(x,y, monsterRadius, collisionDelta=0){
     return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
 }
 
