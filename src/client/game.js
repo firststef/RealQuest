@@ -25,7 +25,7 @@ const playerRadius = 10; //radius of the player collision
 const collisionDelta=5;
 const projectileRadius = 4;
 const monsterRadius = 10;
-const maxNrOfMonsters = 5;
+
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
 
@@ -67,10 +67,12 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
+
+var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
-
+var ticks=0;
 var projectileSpawnTime=1000;
 //?/
 
@@ -481,7 +483,11 @@ function tick(event) {
 
                 let dx = player.x - sprite.x;
                 let dy = player.y - sprite.y;
+                if (dx>800||dx<-800||dy>800||dy<-800){
+                    nrOfMonsters--;
+                    Monster.removeMonsterWithId(sprite.name);
 
+                }
                 let angle = Math.atan2(dy, dx);
 
                 let velocityX = sprite.velocity * Math.cos(angle);
@@ -489,6 +495,8 @@ function tick(event) {
 
                 if (sprite.timeToShoot==0){
                     sprite.timeToShoot=sprite.projectileTimer;
+                    if (sprite.projectileTimer>35)
+                        sprite.projectileTimer--;
                     let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
                     let arrowAngle=Math.atan2(dx, -dy);
                     arrowSprite.scaleX = 2;
@@ -522,7 +530,8 @@ function tick(event) {
                 }
             }
         });
-
+        if ((ticks+1)%3600==0)
+            maxNrOfMonsters++;
         monsterSpawnTime--;
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
@@ -547,7 +556,7 @@ function tick(event) {
                 100
             );
         }
-
+        ticks++;
         stage.update(event);
     } else {
         createjs.Ticker.paused = true;
@@ -668,7 +677,7 @@ class Monster{
 
         this.sprite = sprite;
         this.isMonster = true;
-        sprite.projectileTimer=Math.floor( (60+Math.random()*60) );
+        sprite.projectileTimer=Math.floor( (60+Math.random()*120) );
         sprite.timeToShoot=sprite.projectileTimer;
 
         sprite.name = id;
