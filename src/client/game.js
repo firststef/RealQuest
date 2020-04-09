@@ -86,6 +86,11 @@ var GPXInterval;
 //projectile vars
 var projectileSheet;
 
+//points vars
+var monstersKilled=0;
+var totalPoints=0;
+
+
 /* --------------------------------------------------------------------------------------------------------- GAME INIT FUNCTIONS */
 
 // entry point -> load() called by the canvas element on page load
@@ -486,7 +491,6 @@ function tick(event) {
                 if (dx>800||dx<-800||dy>800||dy<-800){
                     nrOfMonsters--;
                     Monster.removeMonsterWithId(sprite.name);
-
                 }
                 let angle = Math.atan2(dy, dx);
 
@@ -533,6 +537,7 @@ function tick(event) {
         if ((ticks+1)%3600==0)
             maxNrOfMonsters++;
         monsterSpawnTime--;
+        totalPoints=totalPoints+1*(ticks/3600+1);
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
             nrOfMonsters++;
@@ -1095,6 +1100,8 @@ function checkCollisionWithMonsters(x,y,radius){
                 if (sprite.monsterHP <= 0) {
                     nrOfMonsters--;
                     Monster.removeMonsterWithId(sprite.name);
+                    monstersKilled++;
+                    totalPoints=totalPoints+5*600;
                 }
                 return false;
             }
