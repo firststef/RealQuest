@@ -69,7 +69,7 @@ var playerHealth = playerMaxHealth;
 var gameOver = false;
 
 
-var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -79,6 +79,7 @@ var projectileSpawnTime=1000;
 
 //UI vars
 var playerLifeBar;
+var playerTotalPoints;
 
 //GPX vars
 var GPXString = "";
@@ -189,6 +190,7 @@ function loadComplete(){
     };
 
     playerLifeBar = document.getElementById('lifebar');
+    playerTotalPoints = document.getElementById('totalPoints');
 
     //Layer initialization
     let background = new createjs.Shape();
@@ -544,8 +546,14 @@ function tick(event) {
                 }
             }
         });
-        if ((ticks+1)%3600==0)
+        if ((ticks+1)%3600==0){
+            updatePlayerTotalPoints();
             maxNrOfMonsters++;
+        }
+        // if (ticks%60==0){
+        //
+        //     console.log(nrOfMonsters);
+        // }
         monsterSpawnTime--;
         totalPoints=totalPoints+1*(ticks/3600+1);
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
@@ -1157,6 +1165,7 @@ function checkCollisionWithMonsters(x,y,radius){
                     Monster.removeMonsterWithId(sprite.name);
                     monstersKilled++;
                     totalPoints=totalPoints+5*600;
+                    updatePlayerTotalPoints();
                 }
                 return false;
             }
@@ -1193,6 +1202,12 @@ function updatePlayerLifeBar() {
     if (percent < 0)
         percent = 0;
     playerLifeBar.style.width = percent.toString() + '%';
+}
+
+
+function updatePlayerTotalPoints() {
+    let points=(totalPoints/600).toFixed(2);
+    playerTotalPoints.innerText=points;
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
