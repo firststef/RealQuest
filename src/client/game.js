@@ -74,6 +74,7 @@ var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
 var ticks=0;
+var monsterSpawner=3600;
 var projectileSpawnTime=1000;
 //?/
 
@@ -477,9 +478,9 @@ function tick(event) {
                     else if (checkCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
                 } else if (sprite.faction==="monster"){
-                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+/*                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else if (checkProjectileCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
+                    else*/ if (checkProjectileCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
                         Projectile.removeProjectileWithId(sprite.name);
                         playerHealth -= 10;
                         if (playerHealth < 0) {
@@ -512,7 +513,7 @@ function tick(event) {
                 if (sprite.timeToShoot==0){
                     sprite.timeToShoot=sprite.projectileTimer;
                     if (sprite.projectileTimer>35)
-                        sprite.projectileTimer--;
+                        sprite.projectileTimer=sprite.projectileTimer-3;
                     let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
                     let arrowAngle=Math.atan2(dx, -dy);
                     arrowSprite.scaleX = 2;
@@ -524,7 +525,7 @@ function tick(event) {
                         arrowSprite.reverseCenterY(sprite.centerY() - Math.cos(arrowAngle) * monsterRadius),
                         arrowAngle  - Math.PI / 2,
                         4,
-                        20000,
+                        5000,
                         "monster"
                     );
                 }
@@ -546,7 +547,9 @@ function tick(event) {
                 }
             }
         });
-        if ((ticks+1)%3600==0){
+        if ((ticks+1)%monsterSpawner==0){
+            if (monsterSpawner>600)
+                monsterSpawner=monsterSpawner-60;
             updatePlayerTotalPoints();
             maxNrOfMonsters++;
         }
@@ -555,7 +558,7 @@ function tick(event) {
         //     console.log(nrOfMonsters);
         // }
         monsterSpawnTime--;
-        totalPoints=totalPoints+1*(ticks/3600+1);
+        totalPoints=totalPoints+1*(ticks/monsterSpawner+1);
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
             nrOfMonsters++;
@@ -1164,7 +1167,7 @@ function checkCollisionWithMonsters(x,y,radius){
                     nrOfMonsters--;
                     Monster.removeMonsterWithId(sprite.name);
                     monstersKilled++;
-                    totalPoints=totalPoints+5*600;
+                    totalPoints=totalPoints+5*600*(ticks/monsterSpawner+1);
                     updatePlayerTotalPoints();
                 }
                 return false;

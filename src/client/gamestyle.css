@@ -46,6 +46,7 @@ body {
 }
 
 .lifebar-container {
+    float: left;
     margin: 3px;
     padding: 1px;
     background-color: #72e7a8;
@@ -54,7 +55,12 @@ body {
     height: 1%;
 }
 
+.points-container{
+    float: left;
+}
+
 #lifebar {
+
     background-color: #f21000;
     width: 100%;
     height: 100%;
@@ -62,7 +68,6 @@ body {
 }
 
 #totalPoints {
-    float: right;
     margin-left: 0;
 }
 
