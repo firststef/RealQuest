@@ -1,0 +1,16 @@
+{
+  "name": "rq_server",
+  "version": "1.0.0",
+  "description": "Server for RealQuest",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SPCCSG",
+  "license": "ISC",
+  "dependencies": {
+    "http": "0.0.1-security",
+    "mapbox-gl": "^1.9.1",
+    "url": "^0.11.0"
+  }
+}
