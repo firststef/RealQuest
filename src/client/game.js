@@ -46,6 +46,7 @@ var camera;
 var roadsLayer; // contains all roads
 var waterLayer; // contains all water polygons
 var buildingsLayer; // contains all the buildings
+var otherBaseLayer;
 var baseLayer; // contains the player and other movable objects - projectiles, monsters
 var monsterLayer;
 var projectileLayer; // contains all the projectiles
@@ -92,6 +93,9 @@ var projectileSheet;
 //points vars
 var monstersKilled=0;
 var totalPoints=0;
+
+//Socket
+var socket;
 
 
 /* --------------------------------------------------------------------------------------------------------- GAME INIT FUNCTIONS */
@@ -158,6 +162,29 @@ function load() {
         loadComplete
     );
     pageLoader.loadPage();
+
+    socket = io('http://localhost/');
+    socket.on('connect', function () {
+        socket.on('other_player', function (obj) {
+            console.log(obj);
+            let parsedObj = JSON.parse(obj);
+
+            otherBaseLayer.removeAllChildren();
+            let otherPlayer = new createjs.Shape();
+            otherPlayer.graphics.beginStroke("green");
+            otherPlayer.name = "playerRect";
+            otherPlayer.graphics.beginFill("green");
+            otherPlayer.graphics.drawCircle(getCoordinateX(parsedObj[0]), getCoordinateY(parsedObj[1]), playerRadius);
+
+            otherBaseLayer.addChild(otherPlayer);
+        });
+
+        socket.on('connect', function (obj) {
+            let parsedObj = JSON.parse(obj);
+
+
+        });
+    });
 }
 
 /** Loads needed resources before running the game */
@@ -219,6 +246,10 @@ function loadComplete(){
     baseLayer = new createjs.Container();
     baseLayer.x = stage.x;
     baseLayer.y = stage.y;
+
+    otherBaseLayer = new createjs.Container();
+    otherBaseLayer.x = stage.x;
+    otherBaseLayer.y = stage.y;
 
     projectileLayer = new createjs.Container();
     projectileLayer.x = stage.x;
@@ -307,6 +338,7 @@ function loadComplete(){
     camera.addChild(roadsLayer);
     camera.addChild(waterLayer);
     camera.addChild(buildingsLayer);
+    camera.addChild(otherBaseLayer);
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
     camera.addChild(monsterLayer);
@@ -343,9 +375,19 @@ function loadComplete(){
     window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
+    //Server communication
+    setInterval(function () {
+        console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
+        let sendObj = {
+            coordinates: [map.transform._center.lng, map.transform._center.lat],
+        };
+
+        socket.emit('coordonate', JSON.stringify(sendObj));
+    }, 1000);
+
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-    createjs.Ticker.framerate = 60;
+    createjs.Ticker.framerate = 30;
     createjs.Ticker.addEventListener("tick", tick);
 }
 
@@ -510,7 +552,7 @@ function tick(event) {
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
 
-                if (sprite.timeToShoot==0){
+                if (sprite.timeToShoot===0){
                     sprite.timeToShoot=sprite.projectileTimer;
                     if (sprite.projectileTimer>35)
                         sprite.projectileTimer=sprite.projectileTimer-3;
@@ -1057,25 +1099,7 @@ function drawFeature(feature) {
 
 //TODO: remove this if not needed
 function isPolygonCollidingWithBuildings(target){
-    if (buildings.length !== 0) {
-        for (let i=0; i<buildings.length; i++){
-            if (buildings[i].geometry.type === "MultiPolygon"){
-                for (let j=0; j<buildings[i].geometry.coordinates.length; j++){
-                    for (let k=0; k<buildings[i].geometry.coordinates[j].length; k++){
-                        let x = greinerHormann.intersection(getScreenCoordinates(buildings[i].geometry.coordinates[j][k]), target);
-                        if (x!=null)
-                            return true;
-                    }
-                }
-            }else{
-                for (let j=0; j<buildings[i].geometry.coordinates.length; j++){
-                    let x=greinerHormann.intersection(getScreenCoordinates(buildings[i].geometry.coordinates[j]), target);
-                    if (x!=null)
-                        return true;
-                }
-            }
-        }
-    }
+
     return false;
 }
 
@@ -1255,6 +1279,7 @@ function validateAndAddId(obj){
 //TODO: we might wanna add a function to subtract from player the damage, but in this function we select only the highest damage in the recent seconds
 //TODO: add grass
 //TODO: add loading screen
+//TODO: remove monster on a certain distance
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
