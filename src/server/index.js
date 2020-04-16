@@ -49,6 +49,7 @@ io.on('connection', function (socket) {
 
 const app = http.createServer((request, response) => {
         response.write("test");
+        console.log("Wow received connection");
         response.end();
 });
 
