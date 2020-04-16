@@ -19,13 +19,13 @@ function sendOtherPlayerCoordinates(){
         playerMap.forEach((otherPlayerObj, otherPlayerId) => {
             dist = distance(otherPlayerCoords.coordinates, firstPlayerCoords.coordinates);
             if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
-                otherPlayers.push(otherPlayerObj.socket);
+                otherPlayers.push(otherPlayerObj.coordinates);
             }
         });
 
         if (otherPlayers.length){
             otherPlayers.forEach((socket) => {
-                socket.emit('other_player', 'send');
+                socket.emit('other_player', otherPlayers);
             });
         }
     });
