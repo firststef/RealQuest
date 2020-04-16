@@ -163,7 +163,7 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io('http://localhost/');
+    socket = io('http://firststef.live');
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             console.log(obj);
