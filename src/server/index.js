@@ -2,7 +2,7 @@ const url = require('url');
 const http = require('http');
 var io = require('socket.io')(80);
 
-var playerMap = Map();
+var playerMap = new Map();
 //player Map -> has socket and coordinates
 
 function distance(point1, point2){
