@@ -163,6 +163,29 @@ function load() {
         loadComplete
     );
     pageLoader.loadPage();
+
+    socket = io('http://firststef.tools');
+    socket.on('connect', function () {
+        socket.on('other_player', function (obj) {
+            console.log(obj);
+            let parsedObj = JSON.parse(obj);
+
+            otherBaseLayer.removeAllChildren();
+            let otherPlayer = new createjs.Shape();
+            otherPlayer.graphics.beginStroke("green");
+            otherPlayer.name = "playerRect";
+            otherPlayer.graphics.beginFill("green");
+            otherPlayer.graphics.drawCircle(getCoordinateX(parsedObj[0]), getCoordinateY(parsedObj[1]), playerRadius);
+
+            otherBaseLayer.addChild(otherPlayer);
+        });
+
+        socket.on('connect', function (obj) {
+            let parsedObj = JSON.parse(obj);
+
+
+        });
+    });
 }
 
 /** Loads needed resources before running the game */
@@ -353,9 +376,19 @@ function loadComplete(){
     window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
+    //Server communication
+    setInterval(function () {
+        console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
+        let sendObj = {
+            coordinates: [map.transform._center.lng, map.transform._center.lat],
+        };
+
+        socket.emit('coordonate', JSON.stringify(sendObj));
+    }, 1000);
+
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
-    createjs.Ticker.framerate = 30;
+    createjs.Ticker.framerate = 60;
     createjs.Ticker.addEventListener("tick", tick);
 }
 
