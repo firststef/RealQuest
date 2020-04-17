@@ -1,9 +1,16 @@
 const url = require('url');
 const http = require('http');
-var io = require('socket.io')(80);
 
 const hostname = '127.0.0.1';
 const port = 3000;
+
+const server = http.createServer((req, res) => {
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('Wow4\n');
+});
+
+var io = require('socket.io')(server);
 
 var playerMap = new Map();
 //player Map -> has socket and coordinates
@@ -50,11 +57,8 @@ io.on('connection', function (socket) {
     });
 });
 
-const server = http.createServer((req, res) => {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end('Wow\n');
-});
+
+
 
 server.listen(port, hostname, () => {
     console.log(`Server running at http://:/`);
