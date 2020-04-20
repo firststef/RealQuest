@@ -61,7 +61,6 @@ var buildings = [];
 var gameWeather;
 var gameStartTime=-1;
 var map;
-var mapCanvas;
 var weatherSheet;
 
 //Game Vars
@@ -71,7 +70,7 @@ var playerHealth = playerMaxHealth;
 var gameOver = false;
 
 
-var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -164,26 +163,19 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io('http://firststef.tools');
+    socket = io('http://localhost');
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             console.log(obj);
-            let parsedObj = JSON.parse(obj);
 
             otherBaseLayer.removeAllChildren();
             let otherPlayer = new createjs.Shape();
             otherPlayer.graphics.beginStroke("green");
             otherPlayer.name = "playerRect";
             otherPlayer.graphics.beginFill("green");
-            otherPlayer.graphics.drawCircle(getCoordinateX(parsedObj[0]), getCoordinateY(parsedObj[1]), playerRadius);
+            otherPlayer.graphics.drawCircle(getCoordinateX(obj[0]), getCoordinateY(obj[1]), playerRadius);
 
             otherBaseLayer.addChild(otherPlayer);
-        });
-
-        socket.on('connect', function (obj) {
-            let parsedObj = JSON.parse(obj);
-
-
         });
     });
 }
@@ -378,7 +370,7 @@ function loadComplete(){
 
     //Server communication
     setInterval(function () {
-        console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
+        //console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
         };

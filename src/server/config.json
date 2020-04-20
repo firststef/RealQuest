@@ -1,0 +1,32 @@
+{
+  "resources": {
+    "/" : {
+      "path":"../client/game.html",
+      "type": "text/html"
+    },
+    "/gamestyle.css" : {
+      "path":"../client/gamestyle.css",
+      "type": "text/css"
+      },
+    "/game.js" : {
+      "path": "../client/game.js",
+      "type": "text/javascript"
+    },
+    "/sprites/players.png": {
+      "path":"../sprites/players.png",
+      "type": "image/png"
+    },
+    "/sprites/lofiProjs.png": {
+      "path":"../sprites/lofiProjs.png",
+      "type": "image/png"
+    },
+    "/sprites/monsters.png": {
+      "path":"../sprites/monsters.png",
+      "type": "image/png"
+    },
+    "/sprites/weather.png": {
+      "path":"../sprites/weather.png",
+      "type": "image/png"
+    }
+  }
+}
