@@ -35,6 +35,10 @@ const buildingsColor = "#956c6c";
 const roadsColor = "#d3d3d3";
 const waterColor = "blue";
 
+//Socket
+const slowUpdateDelta = 1000;
+const fastUpdateDelta = 250;
+
 var pageLoader;
 var resourceLoader; // resource loader
 var stage; // the master object, contains all the objects in the game
@@ -96,7 +100,9 @@ var totalPoints=0;
 
 //Socket
 var socket;
-
+var socketUpdateTimeout;
+var updateSocketCallback;
+var currentUpdateDelta = slowUpdateDelta;
 
 /* --------------------------------------------------------------------------------------------------------- GAME INIT FUNCTIONS */
 
@@ -163,19 +169,29 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io('http://localhost');
+    socket = io('http://firststef.tools');
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             console.log(obj);
 
             otherBaseLayer.removeAllChildren();
-            let otherPlayer = new createjs.Shape();
-            otherPlayer.graphics.beginStroke("green");
-            otherPlayer.name = "playerRect";
-            otherPlayer.graphics.beginFill("green");
-            otherPlayer.graphics.drawCircle(getCoordinateX(obj[0]), getCoordinateY(obj[1]), playerRadius);
 
-            otherBaseLayer.addChild(otherPlayer);
+            if (obj.length > 0){
+                currentUpdateDelta = fastUpdateDelta;
+            }
+            else {
+                currentUpdateDelta = slowUpdateDelta;
+            }
+
+            obj.forEach((player) => {
+                let otherPlayer = new createjs.Shape();
+                otherPlayer.graphics.beginStroke("green");
+                otherPlayer.name = "p";
+                otherPlayer.graphics.beginFill("green");
+                otherPlayer.graphics.drawCircle(getCoordinateX(player[0]), getCoordinateY(player[1]), playerRadius);
+
+                otherBaseLayer.addChild(otherPlayer);
+            });
         });
     });
 }
@@ -369,14 +385,16 @@ function loadComplete(){
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
     //Server communication
-    setInterval(function () {
+    updateSocketCallback = function () {
         //console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
         };
 
-        socket.emit('coordonate', JSON.stringify(sendObj));
-    }, 1000);
+        socket.emit('coordonate', sendObj);
+        socketUpdateTimeout = setTimeout(updateSocketCallback, currentUpdateDelta);
+    };
+    socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;

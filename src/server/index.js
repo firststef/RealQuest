@@ -73,12 +73,12 @@ server.listen(port);
 var io = require('socket.io')(server);
 io.origins('*:*');
 io.on('connection', function (socket) {
-    playerMap.set(socket.id, {coordinates: [0,0], socket: socket});
+    playerMap.set(socket.id, {coordinates: 0, socket: socket});
 
     socket.on('coordonate', function (obj) {
-        let parsedObj = JSON.parse(obj);
+        playerMap.set(socket.id, {coordinates: obj.coordinates, socket:socket});
 
-        playerMap.set(socket.id, {coordinates: parsedObj.coordinates, socket:socket});
+        socket.emit("other_player", getNearbyPlayers(playerMap.get(socket.id), socket.id));
     });
 
     socket.on('disconnect', function () {
@@ -93,13 +93,33 @@ function distance(point1, point2){
     return Math.sqrt(Math.pow((point1[0] - point2[0]), 2) + Math.pow((point1[1] - point2[1]), 2));
 }
 
+function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
+    let otherPlayers = [];
+    let dist;
+    playerMap.forEach((otherPlayerObj, otherPlayerId) => {
+        if (otherPlayerObj.coordinates === 0)
+            return;
+        dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
+        if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
+            otherPlayers.push(otherPlayerObj.coordinates);
+        }
+    });
+
+    return otherPlayers;
+}
+
 function sendOtherPlayerCoordinates(){
     let dist;
+    console.log("MapLength ", playerMap.size);
     playerMap.forEach((firstPlayerObj, firstPlayerId) => {
         //search through other players
+        if (firstPlayerObj.coordinates === 0)
+            return;
 
         let otherPlayers = [];
         playerMap.forEach((otherPlayerObj, otherPlayerId) => {
+            if (otherPlayerObj.coordinates === 0)
+                return;
             dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
             if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
                 otherPlayers.push(otherPlayerObj.coordinates);
@@ -111,5 +131,3 @@ function sendOtherPlayerCoordinates(){
         }
     });
 }
-
-setInterval(sendOtherPlayerCoordinates, 1000);
