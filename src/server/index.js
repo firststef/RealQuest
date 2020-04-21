@@ -48,6 +48,7 @@ function serverHandler(req, res) {
     res.setHeader('Content-Type', 'text/html');
     res.write("<h1>Continous integration works</h1>");
     res.end();
+    return;
 
     if (resource === undefined){
         logToFile("Path not registered:" + req.url);
