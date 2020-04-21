@@ -25,6 +25,9 @@ function logToFile(msg){
         console.log(msg);
     });
 }
+process.on('uncaughtException', function (err) {
+    logToFile('Caught exception: ' + err.toString());
+});
 
 //Config
 try {
