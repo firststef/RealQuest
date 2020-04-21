@@ -17,7 +17,7 @@ const port = 80;
 /** LOGIC */
 //Logger
 function logToFile(msg){
-    fs.appendFile('logs/twproj-' + (new Date()).toString()
+    fs.appendFile('twlogs/twproj-' + (new Date()).toString()
                     .replace(/ /g, "_")
                     .replace(/:/g, "_") + '.log', msg, function (err) {
         if (err)
