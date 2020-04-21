@@ -98,6 +98,7 @@ var projectileSheet;
 //points vars
 var monstersKilled=0;
 var totalPoints=0;
+var otherPlayerPoints=Array();
 
 //Socket
 var socket;
@@ -173,6 +174,7 @@ function load() {
     socket = io(socketServerAddress, {secure: true});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
+            obj=JSON.parse(obj);
             //console.log(obj);
 
             otherBaseLayer.removeAllChildren();
@@ -183,16 +185,17 @@ function load() {
             else {
                 currentUpdateDelta = slowUpdateDelta;
             }
-
+            otherPlayerPoints=Array();
             obj.forEach((player) => {
                 let otherPlayer = new createjs.Shape();
                 otherPlayer.graphics.beginStroke("green");
                 otherPlayer.name = "p";
                 otherPlayer.graphics.beginFill("green");
-                otherPlayer.graphics.drawCircle(getCoordinateX(player[0]), getCoordinateY(player[1]), playerRadius);
-
+                otherPlayer.graphics.drawCircle(getCoordinateX(player.coordinates[0]), getCoordinateY(player.coordinates[1]), playerRadius);
+                otherPlayerPoints.push({player: player.id, points: player.currentPoints});
                 otherBaseLayer.addChild(otherPlayer);
             });
+            console.log(otherPlayerPoints);
         });
     });
 }
@@ -390,6 +393,7 @@ function loadComplete(){
         //console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
+            currentPoints: (totalPoints/600).toFixed(2),
         };
 
         socket.emit('coordonate', sendObj);

@@ -76,13 +76,14 @@ server.listen(port);
 var io = require('socket.io')(server);
 io.origins('*:*');
 io.on('connection', function (socket) {
-    playerMap.set(socket.id, {coordinates: 0, socket: socket});
+    playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket});
 
     socket.on('coordonate', function (obj) {
         console.log("MapLength ", playerMap.size);
-        playerMap.set(socket.id, {coordinates: obj.coordinates, socket:socket});
+        //console.log(obj.currentPoints);
+        playerMap.set(socket.id, {coordinates: obj.coordinates, currentPoints: obj.currentPoints, socket:socket});
 
-        socket.emit("other_player", getNearbyPlayers(playerMap.get(socket.id), socket.id));
+        socket.emit("other_player", JSON.stringify(getNearbyPlayers(playerMap.get(socket.id), socket.id)));
     });
 
     socket.on('disconnect', function () {
@@ -98,14 +99,14 @@ function distance(point1, point2){
 }
 
 function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
-    let otherPlayers = [];
+    let otherPlayers=Array();
     let dist;
     playerMap.forEach((otherPlayerObj, otherPlayerId) => {
         if (otherPlayerObj.coordinates === 0)
             return;
         dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
         if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
-            otherPlayers.push(otherPlayerObj.coordinates);
+            otherPlayers.push({id: otherPlayerId, coordinates: otherPlayerObj.coordinates, currentPoints:otherPlayerObj.currentPoints});
         }
     });
 
