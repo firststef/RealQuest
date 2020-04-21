@@ -172,7 +172,7 @@ function load() {
     socket = io('https://firststef.tools', {secure: true});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
-            console.log(obj);
+            //console.log(obj);
 
             otherBaseLayer.removeAllChildren();
 
