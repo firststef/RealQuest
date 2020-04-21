@@ -169,7 +169,7 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io('https://firststef.tools');
+    socket = io('https://firststef.tools', {secure: true});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             console.log(obj);
