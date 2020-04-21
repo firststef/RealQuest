@@ -36,6 +36,7 @@ const roadsColor = "#d3d3d3";
 const waterColor = "blue";
 
 //Socket
+const socketServerAddress = 'https://firststef.tools';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
@@ -169,7 +170,7 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io('https://firststef.tools', {secure: true});
+    socket = io(socketServerAddress, {secure: true});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             //console.log(obj);

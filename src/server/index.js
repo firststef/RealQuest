@@ -79,6 +79,7 @@ io.on('connection', function (socket) {
     playerMap.set(socket.id, {coordinates: 0, socket: socket});
 
     socket.on('coordonate', function (obj) {
+        console.log("MapLength ", playerMap.size);
         playerMap.set(socket.id, {coordinates: obj.coordinates, socket:socket});
 
         socket.emit("other_player", getNearbyPlayers(playerMap.get(socket.id), socket.id));
@@ -109,28 +110,4 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
     });
 
     return otherPlayers;
-}
-
-function sendOtherPlayerCoordinates(){
-    let dist;
-    console.log("MapLength ", playerMap.size);
-    playerMap.forEach((firstPlayerObj, firstPlayerId) => {
-        //search through other players
-        if (firstPlayerObj.coordinates === 0)
-            return;
-
-        let otherPlayers = [];
-        playerMap.forEach((otherPlayerObj, otherPlayerId) => {
-            if (otherPlayerObj.coordinates === 0)
-                return;
-            dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
-            if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
-                otherPlayers.push(otherPlayerObj.coordinates);
-            }
-        });
-
-        if (otherPlayers.length){
-            firstPlayerObj.socket.emit('other_player', otherPlayers);
-        }
-    });
 }
