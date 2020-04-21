@@ -37,7 +37,7 @@ const waterColor = "blue";
 
 //Socket
 const slowUpdateDelta = 1000;
-const fastUpdateDelta = 125;
+const fastUpdateDelta = 62.5;
 
 var pageLoader;
 var resourceLoader; // resource loader
