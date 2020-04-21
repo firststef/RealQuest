@@ -44,6 +44,11 @@ function serverHandler(req, res) {
     const parsedUrl = url.parse(req.url, true);
     const resource = config.resources[parsedUrl.pathname];
 
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/html');
+    res.write("<h1>Continous integration works</h1>");
+    res.end();
+
     if (resource === undefined){
         logToFile("Path not registered:" + req.url);
         res.writeHead(404);
