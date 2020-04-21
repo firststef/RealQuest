@@ -188,7 +188,7 @@ img{
 	top:1px;
 }
 
-#latitude_button,#longitude_button{
+#latitude_button,#longitude_button,#username_input{
     background-color:white;
 	border-radius:20px;
 	display:inline-block;

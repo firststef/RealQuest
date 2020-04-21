@@ -1,20 +1,48 @@
 {
   "resources": {
     "/" : {
+      "path":"../client/index.html",
+      "type": "text/html"
+    },
+    "/sprites/rq-icon.ico": {
+      "path": "../sprites/rq-icon.ico",
+      "type": "image/x-icon"
+    },
+    "/game.html" : {
       "path":"../client/game.html",
       "type": "text/html"
+    },
+    "/style.css" : {
+      "path":"../client/style.css",
+      "type": "text/css"
     },
     "/gamestyle.css" : {
       "path":"../client/gamestyle.css",
       "type": "text/css"
       },
+    "/index.js" : {
+      "path": "../client/index.js",
+      "type": "text/javascript"
+    },
     "/game.js" : {
       "path": "../client/game.js",
       "type": "text/javascript"
     },
+    "/sprites/realquest-logo.png": {
+      "path":"../sprites/realquest-logo.png",
+      "type": "image/png"
+    },
     "/sprites/players.png": {
       "path":"../sprites/players.png",
       "type": "image/png"
+    },
+    "/sprites/cat1.jpg": {
+      "path":"../sprites/cat1.jpg",
+      "type": "image/jpg"
+    },
+    "/sprites/cat2.jpg": {
+      "path":"../sprites/cat2.jpg",
+      "type": "image/jpg"
     },
     "/sprites/lofiProjs.png": {
       "path":"../sprites/lofiProjs.png",
@@ -26,6 +54,18 @@
     },
     "/sprites/weather.png": {
       "path":"../sprites/weather.png",
+      "type": "image/png"
+    },
+    "/sprites/createjs-logo.png": {
+      "path":"../sprites/createjs-logo.png",
+      "type": "image/png"
+    },
+    "/sprites/mapbox-logo.png": {
+      "path":"../sprites/mapbox-logo.png",
+      "type": "image/png"
+    },
+    "/sprites/game_screen.png": {
+      "path":"../sprites/game_screen.png",
       "type": "image/png"
     }
   }

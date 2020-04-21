@@ -40,6 +40,8 @@ const socketServerAddress = 'https://firststef.tools';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
+var playerName = "admin";
+
 var pageLoader;
 var resourceLoader; // resource loader
 var stage; // the master object, contains all the objects in the game
@@ -413,12 +415,17 @@ function parseParameters(){
     const urlParams = new URLSearchParams(queryString);
     let lat = urlParams.get("latitude");
     let lng = urlParams.get("longitude");
-    /**
-     * daca lasam cu get ar trebuii validat lat si long si aici
-     */
+    let username = urlParams.get("username");
+
+    //Temporarily
     if (lat != null && lng != null){
         playerPos = [lng, lat];
     }
+    if (username !== null){
+        playerName = username;
+    }
+
+    window.history.pushState({}, document.title, "/game.html");
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
@@ -943,29 +950,20 @@ function setMap() {
             },
             true
         );
-        //TODO: request doar cand se paraseste view-portul curent
-        setInterval(function() {
+        let searchCallback = function() {
             let features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
-            if (features.length === 0)
-                return;
-
-            if (this.loadedFirstMap === undefined){
-                this.loadedFirstMap = true;
-                //console.log(features);
-                pageLoader.notifyCompleted('loadMap');
-            }
-
             features.forEach(function (feature) {
-                if (validateAndAddId(feature.geometry)) {
+                if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
                     if (feature.sourceLayer === "building") {
                         buildings.push(feature);
                     }
                 }
             });
-            //let b = baseLayer.getBounds();
-            //baseLayer.cache(b.x - b.width / 2, b.y - b.height / 2, b.width, b.height, scale);
-        }, 1000);
+        };
+        pageLoader.notifyCompleted('loadMap');
+        searchCallback();
+        setInterval(searchCallback, 1000); //TODO: request doar cand se paraseste view-portul curent
     });
     map["keyboard"].disable();
 }
