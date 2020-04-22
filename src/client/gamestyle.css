@@ -45,32 +45,6 @@ body {
     pointer-events:auto;
 }
 
-.lifebar-container {
-    float: left;
-    margin: 3px;
-    padding: 1px;
-    background-color: #72e7a8;
-    border-radius: 3px;
-    width: 8%;
-    height: 1%;
-}
-
-.points-container{
-    float: left;
-}
-
-#lifebar {
-
-    background-color: #f21000;
-    width: 100%;
-    height: 100%;
-    border-radius: 3px;
-}
-
-#totalPoints {
-    margin-left: 0;
-}
-
 .button { 
     color: #fff;
     background-color: #555;
@@ -84,3 +58,63 @@ body {
     cursor: pointer;
 }
 
+.upper-row {
+    all: unset;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: stretch;
+    padding: 0;
+    margin: 0;
+}
+
+.ui-cont {
+    display: flex;
+    flex-grow: 1;
+    height: 150px;
+    width: 150px;
+    margin: 10px;
+    padding: 0;
+    background-color: red;
+    flex-shrink: 1;
+    flex-basis: auto;
+    align-self: auto;
+    overflow: hidden;
+}
+
+.left-ui{
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.middle-ui {
+}
+
+.right-ui {
+    height: 400px;
+}
+
+.lifebar-container {
+    display: flex;
+    padding: 5px;
+    background-color: #72e7a8;
+    height: 40px;
+    border-radius: 20px;
+}
+
+#lifebar {
+    background-color: #f21000;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+}
+
+.points-container{
+    display: flex;
+}
+
+#totalPoints {
+    font-size: 20px;
+}

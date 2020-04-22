@@ -17,11 +17,21 @@
     <div id="map"></div>
     <div id="gameContainer">
         <div id="uiScreen" class="non-blocking" hidden>
-            <div class="lifebar-container blocking">
-                <div id="lifebar"></div>
-            </div>
-            <div class="points-container blocking">
-                <p id="totalPoints">0</p>
+            <div class="upper-row">
+                <div class="ui-cont left-ui">
+                    <div class="lifebar-container blocking">
+                        <div id="lifebar"></div>
+                    </div>
+                    <div class="points-container blocking">
+                        <p id="totalPoints">Points: 0</p>
+                    </div>
+                </div>
+                <div class="ui-cont middle-ui">
+
+                </div>
+                <div id="scoreBoards" class="ui-cont right-ui">
+                    <p>Loading live player score board... </p>
+                </div>
             </div>
         </div>
         <canvas id="gameCanvas">

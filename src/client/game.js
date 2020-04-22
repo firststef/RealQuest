@@ -36,7 +36,8 @@ const roadsColor = "#d3d3d3";
 const waterColor = "blue";
 
 //Socket
-const socketServerAddress = 'https://firststef.tools';
+const socketServerAddress = 'https://localhost';
+//const socketServerAddress = 'https://firststef.tools';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
@@ -90,6 +91,7 @@ var projectileSpawnTime=1000;
 //UI vars
 var playerLifeBar;
 var playerTotalPoints;
+var scoreBoards;
 
 //GPX vars
 var GPXString = "";
@@ -177,8 +179,6 @@ function load() {
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             obj=JSON.parse(obj);
-            //console.log(obj);
-
             otherBaseLayer.removeAllChildren();
 
             if (obj.length > 0){
@@ -197,7 +197,6 @@ function load() {
                 otherPlayerPoints.push({player: player.id, points: player.currentPoints});
                 otherBaseLayer.addChild(otherPlayer);
             });
-            console.log(otherPlayerPoints);
         });
     });
 }
@@ -234,6 +233,7 @@ function loadComplete(){
 
     playerLifeBar = document.getElementById('lifebar');
     playerTotalPoints = document.getElementById('totalPoints');
+    scoreBoards = document.getElementById('scoreBoards');
 
     //Layer initialization
     let background = new createjs.Shape();
@@ -279,6 +279,8 @@ function loadComplete(){
     }
 
     uiScreen = new createjs.DOMElement("uiScreen");
+    uiScreen.name = "uiScreen";
+    uiScreen.scale = 1/scale;
 
     //GPX
     GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
@@ -392,7 +394,6 @@ function loadComplete(){
 
     //Server communication
     updateSocketCallback = function () {
-        //console.log('Coordonatele noastre',  [map.transform._center.lng, map.transform._center.lat]);
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
             currentPoints: (totalPoints/600).toFixed(2),
@@ -402,6 +403,9 @@ function loadComplete(){
         socketUpdateTimeout = setTimeout(updateSocketCallback, currentUpdateDelta);
     };
     socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
+
+    //UpdateLeaderBoards
+    setInterval(updateScoreBoard, 3000);
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
@@ -612,7 +616,7 @@ function tick(event) {
                 }
             }
         });
-        if ((ticks+1)%monsterSpawner==0){
+        if ((ticks+1)%monsterSpawner===0){
             if (monsterSpawner>600)
                 monsterSpawner=monsterSpawner-60;
             updatePlayerTotalPoints();
@@ -669,10 +673,10 @@ function tick(event) {
         divMap.style.height='50%';
 
         map.resize();
-        
+
         //gameOver=0;
         //playerHealth=playerMaxHealth;
-        //createjs.Ticker.paused = false;    
+        //createjs.Ticker.paused = false;
         //updatePlayerLifeBar();
     }
 }
@@ -808,10 +812,9 @@ class Monster{
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
 /* GEO TIME FUNCTIONS */
 
-
 function getServerTimeAndWeather(){
-    let timeRequest="https://firststef.tools/api?lat="+playerPos[1]+"&long="+playerPos[0];
-    //let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    //let timeRequest="https://firststef.tools/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
     console.log("timeRequest", timeRequest);
     fetch(timeRequest).
     then((response) => {
@@ -875,11 +878,6 @@ function setWeatherOverlay() {
         return true;
     };
 }
-
-/* GEO WEATHER FUNCTIONS */
-
-
-
 
 /* GEO MAP FUNCTIONS */
 
@@ -1194,10 +1192,28 @@ function updatePlayerLifeBar() {
     playerLifeBar.style.width = percent.toString() + '%';
 }
 
-
 function updatePlayerTotalPoints() {
     let points=(totalPoints/600).toFixed(2);
-    playerTotalPoints.innerText=points;
+    playerTotalPoints.innerText= 'Points: ' + points.toString();
+}
+
+function updateScoreBoard() {
+    fetch("http://firststef.tools/api/livescores?count=5")
+        .then((response) => {
+            console.log(response);
+            return response.json();
+        })
+        .then((playerList) => {
+            console.log(playerList);
+
+            let domString = "<table>";
+            playerList.forEach((player) => {
+                domString.concat("<tr><td>" + player.id + "</td><td>"+ player.currentPoints.toString() +"</td></tr>");
+            });
+            domString.concat("</table>");
+
+            scoreBoards.innerHTML = domString;
+        });
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */

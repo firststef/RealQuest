@@ -99,7 +99,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', function () {
         let playerScore = playerMap.get(socket.id).currentPoints;
         console.log("Disconnected");
-        if(playerScore != 0){
+        if(playerScore !== 0){
         client
             .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({name:"test", score:playerScore}))
             .then(playerMap.delete(socket.id))
