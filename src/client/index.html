@@ -24,9 +24,9 @@
                 <div id="div_start_game_form">
                     <form id="form">
                         <p id="formMessage"> Enter coordinates: </p>
-                        <input type="text" id="latitude_button" name="latitude" placeholder="Latitude [-90, +90]">
-                        <input type="text" id="longitude_button" name="longitude" placeholder="Longitude [-180, +180]">
-                        <input type="text" id="username_input" name="username" placeholder="Username">
+                        <label for="latitude_button" hidden></label><input type="text" id="latitude_button" name="latitude" placeholder="Latitude [-90, +90]">
+                        <label for="longitude_button" hidden></label><input type="text" id="longitude_button" name="longitude" placeholder="Longitude [-180, +180]">
+                        <label for="username_input" hidden></label><input type="text" id="username_input" name="username" placeholder="Username">
                     <input type="submit" id="submit_button" onclick="if(!getFormInput()){ return false;}" value="Start playing!" />
                     </form>
                 </div>

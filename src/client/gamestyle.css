@@ -76,7 +76,6 @@ body {
     width: 150px;
     margin: 10px;
     padding: 0;
-    background-color: red;
     flex-shrink: 1;
     flex-basis: auto;
     align-self: auto;
@@ -117,4 +116,37 @@ body {
 
 #totalPoints {
     font-size: 20px;
+}
+
+table.topazCells {
+    opacity: 0.5;
+    background-color: #848C8E;
+    width: 400px;
+    text-align: center;
+    border-collapse: collapse;
+}
+table.topazCells td, table.topazCells th {
+    border: 1px solid #3B553D;
+    padding: 4px 7px;
+}
+table.topazCells tbody td {
+    font-size: 13px;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+table.topazCells tr:nth-child(even) {
+    background: #195E78;
+}
+table.topazCells tfoot td {
+    font-size: 13px;
+}
+table.topazCells tfoot .links {
+    text-align: right;
+}
+table.topazCells tfoot .links a{
+    display: inline-block;
+    background: #FFFFFF;
+    color: #A43152;
+    padding: 2px 8px;
+    border-radius: 5px;
 }

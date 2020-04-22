@@ -56,6 +56,7 @@ function serverHandler(req, res) {
     }
     else if (parsedUrl.pathname==="/api/livescores"){
         sendBackLiveScores(res, parsedUrl.query.count);
+        return;
     }
     else {
         if (resource === undefined){
@@ -101,7 +102,6 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         let playerScore = playerMap.get(socket.id).currentPoints;
-        console.log("Disconnected");
         if(playerScore !== 0){
         client
             .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({name:"test", score:playerScore}))

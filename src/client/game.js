@@ -33,10 +33,10 @@ const playerMaxHealth = 100;
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
 const roadsColor = "#d3d3d3";
-const waterColor = "blue";
+const waterColor = "#0892A5";
 
 //Socket
-const socketServerAddress = 'https://localhost';
+const socketServerAddress = 'http://localhost';
 //const socketServerAddress = 'https://firststef.tools';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
@@ -178,7 +178,7 @@ function load() {
     socket = io(socketServerAddress, {secure: true});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
-            obj=JSON.parse(obj);
+            obj = JSON.parse(obj);
             otherBaseLayer.removeAllChildren();
 
             if (obj.length > 0){
@@ -813,11 +813,11 @@ class Monster{
 /* GEO TIME FUNCTIONS */
 
 function getServerTimeAndWeather(){
-    //let timeRequest="https://firststef.tools/api?lat="+playerPos[1]+"&long="+playerPos[0];
-    let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
-    console.log("timeRequest", timeRequest);
+    //let timeRequest="https://firststef.tools/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest="http://localhost/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     fetch(timeRequest).
     then((response) => {
+        console.log("timeRequest", response);
         return response.json();
     }).then((data) => {
         gameStartTime=data.time;
@@ -1200,18 +1200,14 @@ function updatePlayerTotalPoints() {
 function updateScoreBoard() {
     fetch("http://localhost/api/livescores?count=5")
         .then((response) => {
-            console.log(response);
             return response.json();
         })
         .then((playerList) => {
-            console.log(playerList);
-
-            let domString = "<table>";
+            let domString = "<table class=\"topazCells\">";
             playerList.forEach((player) => {
-                domString.concat("<tr><td>" + player.id + "</td><td>"+ player.currentPoints.toString() +"</td></tr>");
+                domString = domString + "<tr><td>" + player.id + "</td><td>"+ player.currentPoints.toString() +"</td></tr>";
             });
-            domString.concat("</table>");
-
+            domString += "</table>";
             scoreBoards.innerHTML = domString;
         });
 }
