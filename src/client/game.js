@@ -12,6 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -36,8 +38,8 @@ const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
 //Socket
-const socketServerAddress = 'http://localhost';
-//const socketServerAddress = 'https://firststef.tools';
+const socketServerAddress = ORIGIN;
+//const socketServerAddress = ORIGIN;
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
@@ -813,8 +815,8 @@ class Monster{
 /* GEO TIME FUNCTIONS */
 
 function getServerTimeAndWeather(){
-    //let timeRequest="https://firststef.tools/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
-    let timeRequest="http://localhost/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
+    //let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     fetch(timeRequest).
     then((response) => {
         console.log("timeRequest", response);
@@ -1198,7 +1200,7 @@ function updatePlayerTotalPoints() {
 }
 
 function updateScoreBoard() {
-    fetch("http://localhost/api/livescores?count=5")
+    fetch(ORIGIN + "/api/livescores?count=5")
         .then((response) => {
             return response.json();
         })
