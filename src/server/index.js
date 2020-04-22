@@ -1,6 +1,7 @@
 /** MODULES */
 const url = require('url');
 const http = require('http');
+const https = require("https");
 const fs = require('fs');
 
 /** VARIABLES */
@@ -18,8 +19,8 @@ const port = 80;
 //Logger
 function logToFile(msg){
     fs.appendFile('twlogs/twproj-' + (new Date()).toString()
-                    .replace(/ /g, "_")
-                    .replace(/:/g, "_") + '.log', msg, function (err) {
+        .replace(/ /g, "_")
+        .replace(/:/g, "_") + '.log', msg, function (err) {
         if (err)
             throw err;
         console.log(msg);
@@ -41,29 +42,33 @@ config = JSON.parse(config);
 
 //Server
 function serverHandler(req, res) {
-    const parsedUrl = url.parse(req.url, true);
-    const resource = config.resources[parsedUrl.pathname];
-
-    if (resource === undefined){
-        logToFile("Path not registered:" + req.url);
-        res.writeHead(404);
-        res.write('<h1>Not found</h1>');
-        res.end();
-        return;
-    }
-
     let data;
-    try {
-        data = fs.readFileSync(resource.path);
-    }
-    catch (e) {
-        logToFile("File not read:" + req.url);
-        res.writeHead(404);
-        res.write('<h1>Not found</h1>');
-        res.end();
+    const parsedUrl = url.parse(req.url, true);
+    var resource= config.resources[parsedUrl.pathname];
+    if (parsedUrl.pathname==="/api") {
+        let playerPos=[parsedUrl.query.long, parsedUrl.query.lat];
+        sendBackWeatherAndTime(res, playerPos);
         return;
     }
-
+    else {
+        if (resource === undefined){
+            logToFile("Path not registered:" + req.url);
+            res.writeHead(404);
+            res.write('<h1>Not found</h1>');
+            res.end();
+            return;
+        }
+        try {
+            data = fs.readFileSync(resource.path);
+        }
+        catch (e) {
+            logToFile("File not read:" + req.url);
+            res.writeHead(404);
+            res.write('<h1>Not found</h1>');
+            res.end();
+            return;
+        }
+    }
     res.statusCode = 200;
     res.setHeader('Content-Type', resource.type);
     res.write(data);
@@ -79,7 +84,7 @@ io.on('connection', function (socket) {
     playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket});
 
     socket.on('coordonate', function (obj) {
-        console.log("MapLength ", playerMap.size);
+        //console.log("MapLength ", playerMap.size);
         //console.log(obj.currentPoints);
         playerMap.set(socket.id, {coordinates: obj.coordinates, currentPoints: obj.currentPoints, socket:socket});
 
@@ -111,4 +116,110 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
     });
 
     return otherPlayers;
+}
+
+
+
+//Time and Weather "Api"
+
+class ApiLoader{
+    constructor(callbackObject, onCallbackEnd, context) {
+        this.callbackObject = callbackObject;
+        this.completedCallbacks = [];
+        this.onCallbackEnd = onCallbackEnd;
+        this.context = context;
+        this.context.apiLoader = this;
+    }
+
+    load(){
+        Object.values(this.callbackObject).forEach((callback) => callback(this.context));
+    }
+
+    notifyCompleted(callbackKey){
+        this.completedCallbacks.push(callbackKey);
+        this.handleCompleted();
+    }
+
+    isFinished(){
+        return Object.keys(this.callbackObject).every((key) => this.completedCallbacks.includes(key));
+    }
+
+    handleCompleted(){
+        if (this.isFinished()){
+            this.onCallbackEnd(this.context);
+        }
+    }
+}
+
+function setGameStartTime(context) {
+    let playerPos = context.playerPos;
+    //https://dev.virtualearth.net/REST/v1/timezone/61.768335,-158.808765?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7
+    let timeRequest = "https://dev.virtualearth.net/REST/v1/timezone/" + playerPos[1] + "," + playerPos[0]
+        + "?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7";
+    var gameStartTime;
+    https.get(timeRequest, res=>{
+        res.setEncoding("utf8");
+        res.on("data", data => {
+            data = JSON.parse(data);
+            try {
+                let time = new Date(data.resourceSets[0].resources[0].timeZone["convertedTime"]["localTime"]);
+                gameStartTime = time.getHours() * 60 + time.getMinutes();
+            } catch (e) {
+                gameStartTime = getCurrentTime(playerPos);
+            }
+            if (gameStartTime < 0 || gameStartTime > 24 * 60 || isNaN(gameStartTime) || gameStartTime == null) {
+                gameStartTime = getCurrentTime(playerPos);
+            }
+            //console.log(gameStartTime, "1");
+            context.time=gameStartTime;
+            context.apiLoader.notifyCompleted('loadTime');
+        });
+    });
+}
+
+function getWeather(context){
+    let playerPos = context.playerPos;
+    const openWeatherAccessToken="8fbb3329e2b667344c3392d6aea9362e";
+    let weatherRequest="https://api.openweathermap.org/data/2.5/weather?lat="+playerPos[1]+"&lon="+playerPos[0]
+        +"&appid="+openWeatherAccessToken;
+    https.get(weatherRequest, res=>{
+        res.setEncoding("utf8");
+        res.on("data", data =>{
+            data=JSON.parse(data);
+            context.weather=data;
+            context.apiLoader.notifyCompleted('loadWeather');
+        });
+    });
+}
+
+function sendBackWeatherAndTime(res, playerPos) {
+    let apiLoader = new ApiLoader(
+        {
+            loadTime: setGameStartTime,
+            loadWeather: getWeather
+        },
+        (context) => {
+            context.res.statusCode = 200;
+            context.res.setHeader('Content-Type', 'text/json');
+            context.res.write(JSON.stringify({time: context.time, weather: context.weather}));
+            context.res.end();
+        },{
+            res: res,
+            playerPos: playerPos
+        }
+    );
+    apiLoader.load();
+}
+/**
+ * returneaza timpul exact, dinamic, poate duce la variatii dese ale culorii daca se fataie jucatorul la stanga si la dreapta longitudinilor M15
+ * @returns {number} = minutul si ora curenta a jocului la coordonatele actuale, pentru a fi eventula afisate intr-o parte a ecranului
+ */
+function getCurrentTime(playerPos) {
+    let offset=Math.floor(playerPos[0]/15);
+    if (offset<0) offset++;
+    let d=new Date();
+    let n=d.getUTCHours()+offset;
+    if (n<0) n=24-n;
+    if (n>=24) n=n-24;
+    return n*60+d.getUTCMinutes();
 }

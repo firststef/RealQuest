@@ -36,7 +36,7 @@ const roadsColor = "#d3d3d3";
 const waterColor = "blue";
 
 //Socket
-const socketServerAddress = 'https://firststef.tools';
+const socketServerAddress = 'http://localhost';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
@@ -67,6 +67,7 @@ var buildings = [];
 //Api
 var gameWeather;
 var gameStartTime=-1;
+var currentTime;
 var map;
 var weatherSheet;
 
@@ -165,8 +166,7 @@ function load() {
     pageLoader = new PageLoader(
         {
             loadResources: loadImages,
-            loadWeather: getWeather,
-            loadTime: setGameStartTime,
+            loadTimeAndWeather: getServerTimeAndWeather,
             loadMap: setMap
         },
         loadComplete
@@ -807,63 +807,22 @@ class Monster{
 
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
 /* GEO TIME FUNCTIONS */
-/**
- * returneaza timpul exact, dinamic, poate duce la variatii dese ale culorii daca se fataie jucatorul la stanga si la dreapta longitudinilor M15
- * @returns {number} = minutul si ora curenta a jocului la coordonatele actuale, pentru a fi eventula afisate intr-o parte a ecranului
- */
 
-function getCurrentTime(){
-    let offset=Math.floor(playerPos[0]/15);
-    if (offset<0) offset++;
-    let d=new Date();
-    let n=d.getUTCHours()+offset;
-    if (n<0) n=24-n;
-    if (n>=24) n=n-24;
-    return n*60+d.getUTCMinutes();
-}
 
-/**
- * TODO: ora data de API pt new york, washington si alte coordonate cu longitudine negativa nu pare corecta
- * /daca se considera necesar sa se adauge 1 daca Number(timeOffset.split(':')[0]) este mai mic ca 0
- */
-function setGameStartTime(){
-    //https://dev.virtualearth.net/REST/v1/timezone/61.768335,-158.808765?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7
-    let timeRequest="https://dev.virtualearth.net/REST/v1/timezone/"+playerPos[1]+","+playerPos[0]
-        +"?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7";
-    fetch(timeRequest)
-        .then((response) => {
-            return response.json();
-        })
-        .then((data) => {
-            try{
-                let time=new Date(data.resourceSets[0].resources[0].timeZone["convertedTime"]["localTime"]);
-                gameStartTime=time.getHours()*60+time.getMinutes();
-            }
-            catch (e) {
-                gameStartTime=getCurrentTime();
-            }
-            if (gameStartTime<0||gameStartTime>24*60||isNaN(gameStartTime)||gameStartTime==null){
-                gameStartTime=getCurrentTime();
-            }
-            console.log(gameStartTime);
-            pageLoader.notifyCompleted('loadTime');
-        });
-
-    /**
-     * mai jos se afla varianta mai eficienta de determinare a orii prin cunostinte standard de geografie/google search
-     */
-    /*
-    let offset=Math.floor(playerPos[0]/15);
-    if (offset<0) offset++;
-    let d=new Date();
-    let n=d.getUTCHours()+offset;
-    if (n<0) n=24-n;
-    if (n>=24) n=n-24;
-    gameStartTime=n*60+d.getUTCMinutes(); //am pus minutul de inceput in gameStartTime
-    //TODO pentru eventuale operatii mai complexe pe timp, de retinut data completa de inceput a jocului,
-    // si de revizuit data de sfarsit a jocului
-
-     */
+function getServerTimeAndWeather(){
+    //let timeRequest="https://firststef.tools/api/time?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    console.log("timeRequest", timeRequest);
+    fetch(timeRequest).
+    then((response) => {
+        return response.json();
+    }).then((data) => {
+        gameStartTime=data.time;
+        gameWeather=data.weather;
+        console.log("gameStartTime", gameStartTime);
+        console.log("gameWeather", gameWeather);
+        pageLoader.notifyCompleted('loadTimeAndWeather');
+    });
 }
 
 function setNightOverlay(){
@@ -918,19 +877,9 @@ function setWeatherOverlay() {
 }
 
 /* GEO WEATHER FUNCTIONS */
-function getWeather(){
-    const openWeatherAccessToken="8fbb3329e2b667344c3392d6aea9362e";
-    let weatherRequest="https://api.openweathermap.org/data/2.5/weather?lat="+playerPos[1]+"&lon="+playerPos[0]
-        +"&appid="+openWeatherAccessToken;
-    fetch(weatherRequest)
-        .then((response) => {
-            return response.json();
-        })
-        .then((data) => {
-            gameWeather=data;
-            pageLoader.notifyCompleted('loadWeather');
-        });
-}
+
+
+
 
 /* GEO MAP FUNCTIONS */
 
