@@ -810,8 +810,8 @@ class Monster{
 
 
 function getServerTimeAndWeather(){
-    //let timeRequest="https://firststef.tools/api/time?lat="+playerPos[1]+"&long="+playerPos[0];
-    let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest="https://firststef.tools/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    //let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
     console.log("timeRequest", timeRequest);
     fetch(timeRequest).
     then((response) => {
