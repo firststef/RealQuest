@@ -1198,7 +1198,7 @@ function updatePlayerTotalPoints() {
 }
 
 function updateScoreBoard() {
-    fetch("http://firststef.tools/api/livescores?count=5")
+    fetch("http://localhost/api/livescores?count=5")
         .then((response) => {
             console.log(response);
             return response.json();
