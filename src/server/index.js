@@ -49,10 +49,13 @@ function serverHandler(req, res) {
     let data;
     const parsedUrl = url.parse(req.url, true);
     var resource= config.resources[parsedUrl.pathname];
-    if (parsedUrl.pathname==="/api") {
+    if (parsedUrl.pathname==="/api/environment") {
         let playerPos=[parsedUrl.query.long, parsedUrl.query.lat];
         sendBackWeatherAndTime(res, playerPos);
         return;
+    }
+    else if (parsedUrl.pathname==="/api/livescores"){
+        sendBackLiveScores(res, parsedUrl.query.count);
     }
     else {
         if (resource === undefined){
@@ -129,8 +132,21 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
 
     return otherPlayers;
 }
-
-
+//Live scores api
+function sendBackLiveScores(res, count) {
+    var LiveScores=Array();
+    playerMap.forEach((otherPlayerObj, otherPlayerId) =>{
+        LiveScores.push({id:otherPlayerId, currentPoints: otherPlayerObj.currentPoints});
+    });
+    LiveScores.sort(function(a, b) {
+        return b.currentPoints-a.currentPoints;
+    });
+    LiveScores=LiveScores.slice(0, count);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/json');
+    res.write(JSON.stringify(LiveScores));
+    res.end();
+}
 
 //Time and Weather "Api"
 

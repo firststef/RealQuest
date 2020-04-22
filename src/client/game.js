@@ -197,7 +197,6 @@ function load() {
                 otherPlayerPoints.push({player: player.id, points: player.currentPoints});
                 otherBaseLayer.addChild(otherPlayer);
             });
-            console.log(otherPlayerPoints);
         });
     });
 }
@@ -810,8 +809,8 @@ class Monster{
 
 
 function getServerTimeAndWeather(){
-    let timeRequest="https://firststef.tools/api?lat="+playerPos[1]+"&long="+playerPos[0];
-    //let timeRequest="http://localhost/api?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest="https://firststef.tools/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
+    //let timeRequest="http://localhost/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     console.log("timeRequest", timeRequest);
     fetch(timeRequest).
     then((response) => {
@@ -876,8 +875,20 @@ function setWeatherOverlay() {
     };
 }
 
-/* GEO WEATHER FUNCTIONS */
+/* LIVE SCORES API */
 
+
+function getLiveScores(count){
+    let liveScores="https://firststef.tools/api/livescores?count="+count;
+    //let liveScores="http://localhost/api/livescores?count="+count;
+    console.log("liveScores", liveScores);
+    fetch(liveScores).
+    then((response) => {
+        return response.json();
+    }).then((data) => {
+        console.log(data);
+    });
+}
 
 
 
