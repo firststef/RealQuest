@@ -3,7 +3,8 @@ const url = require('url');
 const http = require('http');
 const https = require("https");
 const fs = require('fs');
-
+const MongoClient = require('mongodb').MongoClient;
+const uri = "mongodb+srv://twproj:realquest@realquest-5fa4g.gcp.mongodb.net/test?retryWrites=true&w=majority";
 /** VARIABLES */
 let config;
 
@@ -40,6 +41,9 @@ catch (e) {
 }
 config = JSON.parse(config);
 
+//MongoDB
+const client = MongoClient.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+
 //Server
 function serverHandler(req, res) {
     let data;
@@ -74,6 +78,7 @@ function serverHandler(req, res) {
     res.write(data);
     res.end();
 }
+
 server = http.createServer(serverHandler);
 server.listen(port);
 
@@ -92,7 +97,14 @@ io.on('connection', function (socket) {
     });
 
     socket.on('disconnect', function () {
-        playerMap.delete(socket.id);
+        let playerScore = playerMap.get(socket.id).currentPoints;
+        console.log("Disconnected");
+        if(playerScore != 0){
+        client
+            .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({name:"test", score:playerScore}))
+            .then(playerMap.delete(socket.id))
+            .catch(e => console.log(e));
+        }
     });
 });
 
