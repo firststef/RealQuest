@@ -36,7 +36,7 @@ const roadsColor = "#d3d3d3";
 const waterColor = "blue";
 
 //Socket
-const socketServerAddress = 'https://firststef.tools';
+const socketServerAddress = 'http://localhost';
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
