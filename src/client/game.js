@@ -34,6 +34,7 @@ const playerMaxHealth = 100;
 //Palette
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
+const buildingsColor2 = "#f7df1e";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -640,8 +641,12 @@ function tick(event) {
             monsterSprite.scaleX = 3;
             monsterSprite.scaleY = 3;
 
-            let randomX = Math.random() * 200 - 100;
-            let randomY = Math.random() * 200 - 100;
+            let randomX = Math.random() * 200-1;
+            if (randomX>100) randomX+=50;
+            else randomX-=110;
+            let randomY = Math.random() * 200-1;
+            if (randomY>100) randomY+=50;
+            else randomY-=110;
             randomX += Math.sign(randomX) * 50;
             randomY += Math.sign(randomY) * 50;
 
@@ -774,7 +779,7 @@ class Monster{
 
         this.sprite = sprite;
         this.isMonster = true;
-        sprite.projectileTimer=Math.floor( (60+Math.random()*120) );
+        sprite.projectileTimer=2*Math.floor( (60+Math.random()*120) );
         sprite.timeToShoot=sprite.projectileTimer;
 
         sprite.name = id;
@@ -904,9 +909,10 @@ function setMap() {
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
-                    if (feature.sourceLayer === "building") {
-                        buildings.push(feature);
-                    }
+                    if (!(ticks<120))
+                        if (feature.sourceLayer === "building") {
+                            buildings.push(feature);
+                        }
                 }
             });
         };
@@ -1046,7 +1052,10 @@ function drawFeature(feature) {
             break;
         }
         case "building": {
-            drawPolygon(feature.geometry, false, buildingsColor);
+            if (ticks<120)
+                drawPolygon(feature.geometry, false, buildingsColor2);
+            else
+                drawPolygon(feature.geometry, false, buildingsColor);
             break;
         }
         case "water": {
