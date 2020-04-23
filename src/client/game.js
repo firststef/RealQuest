@@ -149,7 +149,7 @@ class PageLoader{
 /** runs when the page is opened, calls PageLoader */
 function load() {
     parseParameters();
-
+    document.getElementById("endScreenContainer").style.display = "none";
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
 
@@ -443,6 +443,33 @@ function parseParameters(){
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
 
+function downloadGPX(){
+    let text = GPXString;
+    let filename = "track.gpx";
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+}
+
+function toggleScreen() {
+    let gameScreen = document.getElementById("gameContainer");
+    let endScreen = document.getElementById("endScreenContainer");
+    if (gameScreen.style.display === "block") {
+        gameScreen.style.display = "none";
+        endScreen.style.display = "block";
+    } else {
+        gameScreen.style.display = "block";
+        endScreen.style.display = "none";
+    }
+}
+
 /** game update loop */
 function tick(event) {
     if(gameOver === false) {
@@ -671,20 +698,21 @@ function tick(event) {
         clearInterval(GPXInterval);
 
         GPXString = GPXString.concat("\t</trkseg>\n</trk>\n</gpx>");
-        console.log(GPXString);
+        //console.log(GPXString);
 
         let canvas = document.getElementById("gameCanvas");
         let context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
-        
-        let divMap = document.getElementById("map");
+
+        toggleScreen();
+        //let divMap = document.getElementById("map");
 
         //LogOnce();
 
-        divMap.style.width='50%';
-        divMap.style.height='50%';
+        //divMap.style.width='50%';
+        //divMap.style.height='50%';
 
-        map.resize();
+        //map.resize();
 
         //gameOver=0;
         //playerHealth=playerMaxHealth;
