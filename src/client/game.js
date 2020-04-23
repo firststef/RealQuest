@@ -698,11 +698,11 @@ function tick(event) {
         clearInterval(GPXInterval);
 
         GPXString = GPXString.concat("\t</trkseg>\n</trk>\n</gpx>");
-        //console.log(GPXString);
 
         let canvas = document.getElementById("gameCanvas");
         let context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("map").style.display = 'none';
 
         toggleScreen();
         //let divMap = document.getElementById("map");

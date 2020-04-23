@@ -197,7 +197,7 @@ function sendBackLeaderBoards(res, count, myScore) {
     client
         .then(client => client.db("RealQuestDB")
             .collection("leaderboard")
-            .find({score: {$gt: myScore}})
+            .find({score: {$gt: myScore}}, {projection:{_id: 0}})
             .sort({score: -1, username: -1})
             .toArray(function (err, docs) {
                 if (err)
@@ -216,7 +216,7 @@ function sendBackLeaderBoards(res, count, myScore) {
         .catch(e => {
             logToFile(e);
             res.writeHead(404);
-            res.write('<h1>Not found</h1>');
+            res.write('Not found');
             res.end();
         });
 }
