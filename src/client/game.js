@@ -34,6 +34,7 @@ const playerMaxHealth = 100;
 //Palette
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
+const buildingsColor2 = "#f7df1e";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -908,9 +909,10 @@ function setMap() {
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
-                    if (feature.sourceLayer === "building") {
-                        buildings.push(feature);
-                    }
+                    if (!(ticks<120))
+                        if (feature.sourceLayer === "building") {
+                            buildings.push(feature);
+                        }
                 }
             });
         };
@@ -1050,7 +1052,10 @@ function drawFeature(feature) {
             break;
         }
         case "building": {
-            drawPolygon(feature.geometry, false, buildingsColor);
+            if (ticks<120)
+                drawPolygon(feature.geometry, false, buildingsColor2);
+            else
+                drawPolygon(feature.geometry, false, buildingsColor);
             break;
         }
         case "water": {
