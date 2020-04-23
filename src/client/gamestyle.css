@@ -80,6 +80,7 @@ body {
     flex-basis: auto;
     align-self: auto;
     overflow: hidden;
+    flex-direction: row-reverse;
 }
 
 .left-ui{

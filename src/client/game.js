@@ -1209,7 +1209,7 @@ function updatePlayerTotalPoints() {
 }
 
 function updateScoreBoard() {
-    fetch(ORIGIN + "/api/livescores?count=5")
+    fetch(ORIGIN + "/api/livescores?count=7")
         .then((response) => {
             return response.json();
         })
