@@ -45,17 +45,18 @@ body {
     pointer-events:auto;
 }
 
-.button { 
-    color: #fff;
-    background-color: #555;
-    padding: 1em;
-    margin: 1em;
-    position: absolute;
-    right: 1em;
-    top: 1em;
-    border-radius: 0.5em;
-    border-bottom: 2px #222 solid;
-    cursor: pointer;
+.button {
+    background-color:#f21000;
+    border-radius:20px;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Verdana;
+    font-size:28px;
+    font-weight:bold;
+    padding:10px 10px;
+    text-decoration:none;
+    text-shadow:0px 4px 0px #b23e35;
 }
 
 .upper-row {
