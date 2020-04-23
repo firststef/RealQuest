@@ -641,12 +641,12 @@ function tick(event) {
             monsterSprite.scaleX = 3;
             monsterSprite.scaleY = 3;
 
-            let randomX = Math.random() * 200;
+            let randomX = Math.random() * 200-1;
             if (randomX>100) randomX+=50;
-            else randomX-=100;
-            let randomY = Math.random() * 200;
+            else randomX-=110;
+            let randomY = Math.random() * 200-1;
             if (randomY>100) randomY+=50;
-            else randomY-=100;
+            else randomY-=110;
             randomX += Math.sign(randomX) * 50;
             randomY += Math.sign(randomY) * 50;
 
