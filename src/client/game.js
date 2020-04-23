@@ -399,16 +399,22 @@ function loadComplete(){
     updateSocketCallback = function () {
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
-            currentPoints: (totalPoints/600).toFixed(2),
+            currentPoints: parseFloat((totalPoints/600).toFixed(2)),
         };
 
         socket.emit('coordonate', sendObj);
-        socketUpdateTimeout = setTimeout(updateSocketCallback, currentUpdateDelta);
+        if (!gameOver) {
+            socketUpdateTimeout = setTimeout(updateSocketCallback, currentUpdateDelta);
+        }
     };
     socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
 
     //UpdateLeaderBoards
     setInterval(updateScoreBoard, 3000);
+
+    //UpdatePlayerScore
+    if (!gameOver)
+        setInterval(updatePlayerTotalPoints, 300);
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
@@ -622,7 +628,6 @@ function tick(event) {
         if ((ticks+1)%monsterSpawner===0){
             if (monsterSpawner>600)
                 monsterSpawner=monsterSpawner-60;
-            updatePlayerTotalPoints();
             maxNrOfMonsters++;
         }
         // if (ticks%60==0){

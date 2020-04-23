@@ -20,6 +20,7 @@ const port = 80;
 /** LOGIC */
 //Logger
 function logToFile(msg){
+    msg = JSON.stringify(msg);
     fs.appendFile('twlogs/twproj-' + (new Date()).toString()
         .replace(/ /g, "_")
         .replace(/:/g, "_") + '.log', msg, function (err) {
@@ -51,36 +52,44 @@ function serverHandler(req, res) {
     const parsedUrl = url.parse(req.url, true);
     var resource= config.resources[parsedUrl.pathname];
     if (parsedUrl.pathname==="/api/environment") {
-        let playerPos=[parsedUrl.query.long, parsedUrl.query.lat];
-        sendBackWeatherAndTime(res, playerPos);
-        return;
+        if (parsedUrl.query.long !== undefined && parsedUrl.query.lat !== undefined) {
+            let playerPos=[parsedUrl.query.long, parsedUrl.query.lat];
+            sendBackWeatherAndTime(res, playerPos);
+            return;
+        }
     }
-    else if (parsedUrl.pathname==="/api/livescores"){
-        sendBackLiveScores(res, parsedUrl.query.count);
-        return;
+    else if (parsedUrl.pathname==="/api/livescores") {
+        if (parsedUrl.query.count !== undefined && parsedUrl.query.count > 0) {
+            sendBackLiveScores(res, parsedUrl.query.count);
+            return;
+        }
+    }
+    else if (parsedUrl.pathname==="/api/leaderboards"){
+        if (parsedUrl.query.count !== undefined){
+            sendBackLeaderBoards(res, parsedUrl.query.count, parsedUrl.query.myScore);
+            return;
+        }
     }
     else {
-        if (resource === undefined){
+        if (resource !== undefined){
+            try {
+                data = fs.readFileSync(resource.path);
+                res.statusCode = 200;
+                res.setHeader('Content-Type', resource.type);
+                res.write(data);
+                res.end();
+                return;
+            }
+            catch (e) {
+                logToFile("File not read:" + req.url);
+            }
+        }
+        else{
             logToFile("Path not registered:" + req.url);
-            res.writeHead(404);
-            res.write('<h1>Not found</h1>');
-            res.end();
-            return;
-        }
-        try {
-            data = fs.readFileSync(resource.path);
-        }
-        catch (e) {
-            logToFile("File not read:" + req.url);
-            res.writeHead(404);
-            res.write('<h1>Not found</h1>');
-            res.end();
-            return;
         }
     }
-    res.statusCode = 200;
-    res.setHeader('Content-Type', resource.type);
-    res.write(data);
+    res.writeHead(404);
+    res.write('Not found');
     res.end();
 }
 
@@ -91,12 +100,9 @@ server.listen(port);
 var io = require('socket.io')(server);
 io.origins('*:*');
 io.on('connection', function (socket) {
-    console.log(socket.handshake.query);
     playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket, username: socket.handshake.query.username});
 
     socket.on('coordonate', function (obj) {
-        //console.log("MapLength ", playerMap.size);
-        //console.log(obj.currentPoints);
         playerMap.get(socket.id).coordinates = obj.coordinates;
         playerMap.get(socket.id).currentPoints = obj.currentPoints;
 
@@ -105,13 +111,12 @@ io.on('connection', function (socket) {
 
     socket.on('disconnect', function () {
         let playerObj = playerMap.get(socket.id);
-        console.log(playerObj);
         let playerScore = playerObj.currentPoints;
         if(playerScore !== 0){
-        client
-            .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({username:playerObj.username, score:playerScore}))
-            .then(playerMap.delete(socket.id))
-            .catch(e => console.log(e));
+            client
+                .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({username:playerObj.username, score:playerScore}))
+                .then(playerMap.delete(socket.id))
+                .catch(e => logToFile(e));
         }
     });
 });
@@ -136,24 +141,8 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
 
     return otherPlayers;
 }
-//Live scores api
-function sendBackLiveScores(res, count) {
-    var LiveScores=Array();
-    playerMap.forEach((otherPlayerObj, otherPlayerId) =>{
-        LiveScores.push({username:otherPlayerObj.username, currentPoints: otherPlayerObj.currentPoints});
-    });
-    LiveScores.sort(function(a, b) {
-        return b.currentPoints-a.currentPoints;
-    });
-    LiveScores=LiveScores.slice(0, count);
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/json');
-    res.write(JSON.stringify(LiveScores));
-    res.end();
-}
 
 //Time and Weather "Api"
-
 class ApiLoader{
     constructor(callbackObject, onCallbackEnd, context) {
         this.callbackObject = callbackObject;
@@ -183,7 +172,56 @@ class ApiLoader{
     }
 }
 
-function setGameStartTime(context) {
+//Live scores api
+function sendBackLiveScores(res, count) {
+    var LiveScores=Array();
+    playerMap.forEach((otherPlayerObj, otherPlayerId) =>{
+        LiveScores.push({username:otherPlayerObj.username, currentPoints: otherPlayerObj.currentPoints});
+    });
+    LiveScores.sort(function(a, b) {
+        return b.currentPoints-a.currentPoints;
+    });
+    LiveScores=LiveScores.slice(0, count);
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'text/json');
+    res.write(JSON.stringify(LiveScores));
+    res.end();
+}
+
+//Leader Board Api
+function sendBackLeaderBoards(res, count, myScore) {
+    if (myScore === undefined)
+        myScore = 0;
+    myScore = parseFloat(myScore);
+
+    client
+        .then(client => client.db("RealQuestDB")
+            .collection("leaderboard")
+            .find({score: {$gt: myScore}})
+            .sort({score: -1, username: -1})
+            .toArray(function (err, docs) {
+                if (err)
+                    throw err;
+
+                let length = docs.length;
+                if (count !== -1 && count > 0){
+                    docs.splice(count, docs.length);
+                }
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'text/json');
+                res.write(JSON.stringify({players: docs, myPlace: length}));
+                res.end();
+            })
+        )
+        .catch(e => {
+            logToFile(e);
+            res.writeHead(404);
+            res.write('<h1>Not found</h1>');
+            res.end();
+        });
+}
+
+function getGameStartTime(context) {
     let playerPos = context.playerPos;
     //https://dev.virtualearth.net/REST/v1/timezone/61.768335,-158.808765?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7
     let timeRequest = "https://dev.virtualearth.net/REST/v1/timezone/" + playerPos[1] + "," + playerPos[0]
@@ -227,7 +265,7 @@ function getWeather(context){
 function sendBackWeatherAndTime(res, playerPos) {
     let apiLoader = new ApiLoader(
         {
-            loadTime: setGameStartTime,
+            loadTime: getGameStartTime,
             loadWeather: getWeather
         },
         (context) => {
