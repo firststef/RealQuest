@@ -26,11 +26,16 @@ function formValidation(lat, longitude, username) {
     return !isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180 && username.length > 4 && username.length < 10;
 }
 
-
 function getLocation() {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(showPosition);
+        navigator.geolocation.getCurrentPosition(showPosition, handleLocationError);
     }
+}
+
+function handleLocationError(err) {
+    document.getElementById("latitude_button").style.display = 'inline-block';
+    document.getElementById("longitude_button").style.display = 'inline-block';
+    document.getElementById("formMessage").style.display = 'block';
 }
 
 function showPosition(position) {
