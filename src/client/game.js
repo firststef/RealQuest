@@ -1216,7 +1216,7 @@ function updateScoreBoard() {
         .then((playerList) => {
             let domString = "<table class=\"topazCells\">";
             playerList.forEach((player) => {
-                domString = domString + "<tr><td>" + player.id + "</td><td>"+ player.currentPoints.toString() +"</td></tr>";
+                domString = domString + "<tr><td>" + player.username + "</td><td>"+ player.currentPoints.toString() +"</td></tr>";
             });
             domString += "</table>";
             scoreBoards.innerHTML = domString;

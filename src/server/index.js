@@ -140,7 +140,7 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
 function sendBackLiveScores(res, count) {
     var LiveScores=Array();
     playerMap.forEach((otherPlayerObj, otherPlayerId) =>{
-        LiveScores.push({id:otherPlayerId, currentPoints: otherPlayerObj.currentPoints});
+        LiveScores.push({username:otherPlayerObj.username, currentPoints: otherPlayerObj.currentPoints});
     });
     LiveScores.sort(function(a, b) {
         return b.currentPoints-a.currentPoints;
