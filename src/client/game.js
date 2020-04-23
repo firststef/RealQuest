@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -177,7 +177,7 @@ function load() {
     );
     pageLoader.loadPage();
 
-    socket = io(socketServerAddress, {secure: true});
+    socket = io(socketServerAddress, {secure: true, query: {username: playerName}});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             obj = JSON.parse(obj);

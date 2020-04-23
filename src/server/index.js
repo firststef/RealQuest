@@ -5,11 +5,12 @@ const https = require("https");
 const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://twproj:realquest@realquest-5fa4g.gcp.mongodb.net/test?retryWrites=true&w=majority";
+
 /** VARIABLES */
 let config;
 
 //Logic
-let playerMap;
+let playerMap = new Map(); //player Map -> has socket and coordinates
 let radius = 0.5;
 
 //Server
@@ -90,21 +91,25 @@ server.listen(port);
 var io = require('socket.io')(server);
 io.origins('*:*');
 io.on('connection', function (socket) {
-    playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket});
+    console.log(socket.handshake.query);
+    playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket, username: socket.handshake.query.username});
 
     socket.on('coordonate', function (obj) {
         //console.log("MapLength ", playerMap.size);
         //console.log(obj.currentPoints);
-        playerMap.set(socket.id, {coordinates: obj.coordinates, currentPoints: obj.currentPoints, socket:socket});
+        playerMap.get(socket.id).coordinates = obj.coordinates;
+        playerMap.get(socket.id).currentPoints = obj.currentPoints;
 
         socket.emit("other_player", JSON.stringify(getNearbyPlayers(playerMap.get(socket.id), socket.id)));
     });
 
     socket.on('disconnect', function () {
-        let playerScore = playerMap.get(socket.id).currentPoints;
+        let playerObj = playerMap.get(socket.id);
+        console.log(playerObj);
+        let playerScore = playerObj.currentPoints;
         if(playerScore !== 0){
         client
-            .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({name:"test", score:playerScore}))
+            .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({username:playerObj.username, score:playerScore}))
             .then(playerMap.delete(socket.id))
             .catch(e => console.log(e));
         }
@@ -112,7 +117,6 @@ io.on('connection', function (socket) {
 });
 
 //Server logic
-playerMap = new Map(); //player Map -> has socket and coordinates
 
 function distance(point1, point2){
     return Math.sqrt(Math.pow((point1[0] - point2[0]), 2) + Math.pow((point1[1] - point2[1]), 2));
