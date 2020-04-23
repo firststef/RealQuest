@@ -67,6 +67,14 @@
     "/sprites/game_screen.png": {
       "path":"../sprites/game_screen.png",
       "type": "image/png"
+    },
+    "/createjs.js" :{
+      "path": "../client/createjs.js",
+      "type": "text/javascript"
+    },
+    "/favicon.ico": {
+      "path":"../sprites/realquest-logo.png",
+      "type": "image/png"
     }
   }
 }

@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -81,7 +81,6 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-
 var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
@@ -89,7 +88,6 @@ var nrOfMonsters=0;
 var ticks=0;
 var monsterSpawner=3600;
 var projectileSpawnTime=1000;
-//?/
 
 //UI vars
 var playerLifeBar;
@@ -148,7 +146,7 @@ class PageLoader{
 
 /** runs when the page is opened, calls PageLoader */
 function load() {
-    parseParameters();
+    getGameParameters();
     document.getElementById("endScreenContainer").style.display = "none";
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
@@ -423,22 +421,35 @@ function loadComplete(){
 }
 
 /** sets the initial player position */
-function parseParameters(){
-    const queryString = window.location.search;
-    const urlParams = new URLSearchParams(queryString);
-    let lat = urlParams.get("latitude");
-    let lng = urlParams.get("longitude");
-    let username = urlParams.get("username");
+function getGameParameters(){
+    if (isLocalStorageSupported()){
+        let lat = localStorage.getItem("RealQuestLatitude");
+        let lng = localStorage.getItem("RealQuestLongitude");
+        let username = localStorage.getItem("RealQuestUsername");
 
-    //Temporarily
-    if (lat != null && lng != null){
-        playerPos = [lng, lat];
+        //TODO: temporary replace with if (lat != null || lng != null || username !== null) => redirect to index
+        if (lat != null && lng != null){
+            playerPos = [lng, lat];
+        }
+        if (username !== null){
+            playerName = username;
+        }
     }
-    if (username !== null){
-        playerName = username;
-    }
+    else {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        let lat = urlParams.get("latitude");
+        let lng = urlParams.get("longitude");
+        let username = urlParams.get("username");
 
-    window.history.pushState({}, document.title, "/game.html");
+        //Temporarily
+        if (lat != null && lng != null){
+            playerPos = [lng, lat];
+        }
+        if (username !== null){
+            playerName = username;
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
@@ -1100,6 +1111,14 @@ function drawFeature(feature) {
     }
 }
 
+function validateAndAddId(obj){
+    let id = hash(obj);
+    if (polygonShapesIdSet.has(id))
+        return false;
+    polygonShapesIdSet.add(id);
+    return true;
+}
+
 /* --------------------------------------------------------------------------------------------------------- GAME COLLISIONS FUNCTIONS */
 
 //TODO: remove this if not needed
@@ -1277,13 +1296,17 @@ function hash(obj){
     return hash;
 }
 
-function validateAndAddId(obj){
-    let id = hash(obj);
-    if (polygonShapesIdSet.has(id))
+function isLocalStorageSupported() {
+    try {
+        const key = "__some_random_key__";
+        localStorage.setItem(key, key);
+        localStorage.removeItem(key);
+        return true;
+    } catch (e) {
         return false;
-    polygonShapesIdSet.add(id);
-    return true;
+    }
 }
+
 
 /* --------------------------------------------------------------------------------------------------------- NOTES
 
