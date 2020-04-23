@@ -36,6 +36,6 @@ function getLocation() {
 function showPosition(position) {
     let long = document.getElementById("longitude_button");
     let lat = document.getElementById("latitude_button");
-    lat.value=position.coords.longitude;
-    long.value=position.coords.latitude;
+    lat.value=position.coords.latitude;
+    long.value=position.coords.longitude;
 }
