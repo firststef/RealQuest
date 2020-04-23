@@ -25,3 +25,17 @@ function formValidation(lat, longitude, username) {
     console.log(val1 + " " + val2);
     return !isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180 && username.length > 4 && username.length < 10;
 }
+
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    }
+}
+
+function showPosition(position) {
+    let long = document.getElementById("longitude_button");
+    let lat = document.getElementById("latitude_button");
+    lat.value=position.coords.longitude;
+    long.value=position.coords.latitude;
+}

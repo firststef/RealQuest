@@ -778,7 +778,7 @@ class Monster{
 
         this.sprite = sprite;
         this.isMonster = true;
-        sprite.projectileTimer=Math.floor( (60+Math.random()*120) );
+        sprite.projectileTimer=2*Math.floor( (60+Math.random()*120) );
         sprite.timeToShoot=sprite.projectileTimer;
 
         sprite.name = id;
