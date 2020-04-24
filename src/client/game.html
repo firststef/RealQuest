@@ -13,6 +13,7 @@
 </head>
 
 <body onload="load();">
+    <!-- Mapbox map is needed to unpack geometry features -->
     <div id="map"></div>
     <div id="gameContainer" style="display:block;">
         <div id="uiScreen" class="non-blocking" hidden>
@@ -26,7 +27,8 @@
                     </div>
                 </div>
                 <div class="ui-cont middle-ui">
-
+                    <p id="placeDescription"></p>
+                    <p id="placeName"></p>
                 </div>
                 <div id="scoreBoards" class="ui-cont right-ui">
                     <table class="topazCells"><tr><td>Loading live player score board...</td></tr></table>
@@ -38,7 +40,7 @@
         </canvas>
     </div>
     <div id ="endScreenContainer">
-        <h1>Wow, you died. What a loser</h1>
+        <h1>Wow, you died.</h1>
         <h3>You can still download you gpx file here tho.</h3>
         <div id='downloadGPXDiv' class='button' onclick="downloadGPX()">
             Download GPX

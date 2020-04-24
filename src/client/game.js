@@ -93,6 +93,8 @@ var projectileSpawnTime=1000;
 var playerLifeBar;
 var playerTotalPoints;
 var scoreBoards;
+var nearbyMessageDesc;
+var nearbyMessageName;
 
 //GPX vars
 var GPXString = "";
@@ -235,6 +237,8 @@ function loadComplete(){
     playerLifeBar = document.getElementById('lifebar');
     playerTotalPoints = document.getElementById('totalPoints');
     scoreBoards = document.getElementById('scoreBoards');
+    nearbyMessageDesc = document.getElementById("placeDescription");
+    nearbyMessageName = document.getElementById("placeName");
 
     //Layer initialization
     let background = new createjs.Shape();
@@ -411,8 +415,11 @@ function loadComplete(){
     setInterval(updateScoreBoard, 3000);
 
     //UpdatePlayerScore
-    if (!gameOver)
-        setInterval(updatePlayerTotalPoints, 300);
+    setInterval(updatePlayerTotalPoints, 300);
+
+    //UpdateStreet
+    updateNearbyMessage();
+    setInterval(updateNearbyMessage, 2000);
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
@@ -868,7 +875,6 @@ function getServerTimeAndWeather(){
     let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     fetch(timeRequest).
     then((response) => {
-        console.log("timeRequest", response);
         return response.json();
     }).then((data) => {
         gameStartTime=data.time;
@@ -1275,6 +1281,22 @@ function updateScoreBoard() {
         });
 }
 
+function updateNearbyMessage(){
+    fetch(ORIGIN + "/api/nearbymessage?lat="+map.transform._center.lat+"&long="+map.transform._center.lng)
+        .then((response) => {
+            return response.json();
+        })
+        .then((message) => {
+            if (message.name === undefined)
+                message.name = '';
+            if (message.description === undefined)
+                message.description = '';
+
+            nearbyMessageDesc.innerHTML = message.description;
+            nearbyMessageName.innerHTML = "&#128612; " + message.name + " &#128614;";
+        });
+}
+
 /* --------------------------------------------------------------------------------------------------------- UTILS */
 
 function getUniqueId(){
@@ -1306,7 +1328,6 @@ function isLocalStorageSupported() {
         return false;
     }
 }
-
 
 /* --------------------------------------------------------------------------------------------------------- NOTES
 

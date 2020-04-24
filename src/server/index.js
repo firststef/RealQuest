@@ -4,7 +4,7 @@ const http = require('http');
 const https = require("https");
 const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
-const uri = "mongodb+srv://twproj:realquest@realquest-5fa4g.gcp.mongodb.net/test?retryWrites=true&w=majority";
+const mongoUri = "mongodb+srv://twproj:realquest@realquest-5fa4g.gcp.mongodb.net/test?retryWrites=true&w=majority";
 
 /** VARIABLES */
 let config;
@@ -30,7 +30,7 @@ function logToFile(msg){
     });
 }
 process.on('uncaughtException', function (err) {
-    logToFile('Caught exception: ' + err.toString());
+    logToFile('Caught exception: ' + err.toString() + err.stack.toString());
 });
 
 //Config
@@ -44,34 +44,37 @@ catch (e) {
 config = JSON.parse(config);
 
 //MongoDB
-const client = MongoClient.connect(uri, {useNewUrlParser: true, useUnifiedTopology: true});
+const client = MongoClient.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true});
 
 //Server
 function serverHandler(req, res) {
-    let data;
     const parsedUrl = url.parse(req.url, true);
-    var resource= config.resources[parsedUrl.pathname];
-    if (parsedUrl.pathname==="/api/environment") {
+    if (parsedUrl.pathname === "/api/environment") {
         if (parsedUrl.query.long !== undefined && parsedUrl.query.lat !== undefined) {
-            let playerPos=[parsedUrl.query.long, parsedUrl.query.lat];
+            let playerPos = [parsedUrl.query.long, parsedUrl.query.lat];
             sendBackWeatherAndTime(res, playerPos);
             return;
         }
-    }
-    else if (parsedUrl.pathname==="/api/livescores") {
+    } else if (parsedUrl.pathname === "/api/livescores") {
         if (parsedUrl.query.count !== undefined && parsedUrl.query.count > 0) {
             sendBackLiveScores(res, parsedUrl.query.count);
             return;
         }
-    }
-    else if (parsedUrl.pathname==="/api/leaderboards"){
-        if (parsedUrl.query.count !== undefined){
+    } else if (parsedUrl.pathname === "/api/leaderboards") {
+        if (parsedUrl.query.count !== undefined) {
             sendBackLeaderBoards(res, parsedUrl.query.count, parsedUrl.query.myScore);
             return;
         }
-    }
-    else {
-        if (resource !== undefined){
+    } else if (parsedUrl.pathname === "/api/nearbymessage") {
+        if (parsedUrl.query.long !== undefined && parsedUrl.query.lat !== undefined) {
+            let playerPos = {longitude: parsedUrl.query.long, latitude: parsedUrl.query.lat};
+            sendBackNearbyMessage(res, playerPos);
+            return;
+        }
+    } else {
+        let data;
+        var resource = config.resources[parsedUrl.pathname];
+        if (resource !== undefined) {
             try {
                 data = fs.readFileSync(resource.path);
                 res.statusCode = 200;
@@ -79,12 +82,10 @@ function serverHandler(req, res) {
                 res.write(data);
                 res.end();
                 return;
-            }
-            catch (e) {
+            } catch (e) {
                 logToFile("File not read:" + req.url);
             }
-        }
-        else{
+        } else {
             logToFile("Path not registered:" + req.url);
         }
     }
@@ -227,9 +228,13 @@ function getGameStartTime(context) {
     let timeRequest = "https://dev.virtualearth.net/REST/v1/timezone/" + playerPos[1] + "," + playerPos[0]
         + "?key=AqSqRw1EoXuQEC2NZKEEU3151TB16-jcJK_TiVYSHNd1m51x-JIdI2zMI2b5kwi7";
     var gameStartTime;
+    let data = '';
     https.get(timeRequest, res=>{
         res.setEncoding("utf8");
-        res.on("data", data => {
+        res.on('data', function(chunk) {
+            data += chunk;
+        });
+        res.on("end", function () {
             data = JSON.parse(data);
             try {
                 let time = new Date(data.resourceSets[0].resources[0].timeZone["convertedTime"]["localTime"]);
@@ -252,9 +257,13 @@ function getWeather(context){
     const openWeatherAccessToken="8fbb3329e2b667344c3392d6aea9362e";
     let weatherRequest="https://api.openweathermap.org/data/2.5/weather?lat="+playerPos[1]+"&lon="+playerPos[0]
         +"&appid="+openWeatherAccessToken;
+    let data = '';
     https.get(weatherRequest, res=>{
         res.setEncoding("utf8");
-        res.on("data", data =>{
+        res.on('data', function(chunk) {
+            data += chunk;
+        });
+        res.on("end", function () {
             data=JSON.parse(data);
             context.weather=data;
             context.apiLoader.notifyCompleted('loadWeather');
@@ -292,4 +301,45 @@ function getCurrentTime(playerPos) {
     if (n<0) n=24-n;
     if (n>=24) n=n-24;
     return n*60+d.getUTCMinutes();
+}
+
+function getBestNearbyMessage(playerPos, features) {
+    let bestStreet = {dist: Infinity};
+    features.forEach(obj => {
+        if (obj["geometry"]["type"] === "Point"){
+            if (obj["properties"]["class"] === "street" || obj["properties"]["class"] === "primary"){
+                let dist = distance([playerPos.latitude, playerPos.longitude], obj["geometry"]["coordinates"]);
+                if (bestStreet.dist !== undefined && obj["properties"]["name"] !== undefined && bestStreet.dist > dist){
+                    bestStreet.dist = dist;
+                    bestStreet.name = obj["properties"]["name"];
+                }
+            }
+        }
+    });
+
+    let returnObj = {};
+    if (bestStreet.dist !== Infinity){
+        returnObj.name = bestStreet.name;
+        returnObj.description = "You are traveling on";
+    }
+
+    return returnObj;
+}
+
+function sendBackNearbyMessage(res, playerPos) {
+    let reqUri = `https://api.mapbox.com/v4/mapbox.mapbox-streets-v8/tilequery/${playerPos.longitude},${playerPos.latitude}.json?radius=60&limit=8&dedupe&access_token=pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA`;
+    let data = '';
+    https.get(reqUri, result => {
+        result.setEncoding("utf8");
+        result.on('data', function(chunk) {
+            data += chunk;
+        });
+        result.on("end", function () {
+            data = JSON.parse(data);
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/json');
+            res.write(JSON.stringify(getBestNearbyMessage(playerPos, data["features"])));
+            res.end();
+        });
+    })
 }

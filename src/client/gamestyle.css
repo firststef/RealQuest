@@ -81,7 +81,6 @@ body {
     flex-basis: auto;
     align-self: auto;
     overflow: hidden;
-    flex-direction: row-reverse;
 }
 
 .left-ui{
@@ -91,10 +90,25 @@ body {
 }
 
 .middle-ui {
+    flex-direction: column;
+    height: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.middle-ui p {
+    flex-grow: 1;
+    flex-shrink: 1;
+    display: flex;
+    align-self: center;
+    font-size: x-large;
+    margin: 5px;
+    color: gold;
 }
 
 .right-ui {
     height: 400px;
+    flex-direction: row-reverse;
 }
 
 .lifebar-container {
