@@ -166,3 +166,33 @@ table.topazCells tfoot .links a{
     padding: 2px 8px;
     border-radius: 5px;
 }
+
+#loadingScreen{
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.loading-screen > div, .loading-screen > p{
+    display: flex;
+    align-self: center;
+    margin: 5px;
+    color: gold;
+}
+
+.loader-wheel {
+    border: 4px solid #f3f3f3; /* Light grey */
+    border-top: 4px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

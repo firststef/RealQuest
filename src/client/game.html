@@ -16,7 +16,7 @@
     <!-- Mapbox map is needed to unpack geometry features -->
     <div id="map"></div>
     <div id="gameContainer" style="display:block;">
-        <div id="uiScreen" class="non-blocking" hidden>
+    <div id="uiScreen" class="non-blocking" hidden>
             <div class="upper-row">
                 <div class="ui-cont left-ui">
                     <div class="lifebar-container blocking">
@@ -45,6 +45,12 @@
         <div id='downloadGPXDiv' class='button' onclick="downloadGPX()">
             Download GPX
         </div>
+    </div>
+    <div id="loadingScreen" class="loading-screen">
+        <div><p>Downloading Resources</p><div id="loadResourcesWheel" class="loader-wheel"></div></div>
+        <div><p>Loading Map</p><div id="loadMapWheel" class="loader-wheel"></div></div>
+        <div><p>Rendering Environment</p><div id="loadTimeAndWeatherWheel" class="loader-wheel"></div></div>
+        <div><p>Initializing</p><div id="initializingWheel" class="loader-wheel"></div></div>
     </div>
 </body>
 </html>

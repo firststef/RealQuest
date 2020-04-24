@@ -121,9 +121,17 @@ io.on('connection', function (socket) {
         }
     });
 });
+function removeZombieConnections(){
+    playerMap.forEach((value, key, map)=> {
+        let socketList = io.sockets.server.eio.clients;
+        if (socketList[key] === undefined){
+            map.delete(key);
+        }
+    });
+}
+setInterval(removeZombieConnections,10000);
 
 //Server logic
-
 function distance(point1, point2){
     return Math.sqrt(Math.pow((point1[0] - point2[0]), 2) + Math.pow((point1[1] - point2[1]), 2));
 }

@@ -177,31 +177,6 @@ function load() {
         loadComplete
     );
     pageLoader.loadPage();
-
-    socket = io(socketServerAddress, {secure: true, query: {username: playerName}});
-    socket.on('connect', function () {
-        socket.on('other_player', function (obj) {
-            obj = JSON.parse(obj);
-            otherBaseLayer.removeAllChildren();
-
-            if (obj.length > 0){
-                currentUpdateDelta = fastUpdateDelta;
-            }
-            else {
-                currentUpdateDelta = slowUpdateDelta;
-            }
-            otherPlayerPoints=Array();
-            obj.forEach((player) => {
-                let otherPlayer = new createjs.Shape();
-                otherPlayer.graphics.beginStroke("green");
-                otherPlayer.name = "p";
-                otherPlayer.graphics.beginFill("green");
-                otherPlayer.graphics.drawCircle(getCoordinateX(player.coordinates[0]), getCoordinateY(player.coordinates[1]), playerRadius);
-                otherPlayerPoints.push({player: player.id, points: player.currentPoints});
-                otherBaseLayer.addChild(otherPlayer);
-            });
-        });
-    });
 }
 
 /** Loads needed resources before running the game */
@@ -212,6 +187,8 @@ function loadImages() {
     resourceLoader.loadFile({id:"monsters", src:"../sprites/monsters.png"});
     resourceLoader.loadFile({id:"weather", src:"../sprites/weather.png"});
     resourceLoader.addEventListener("complete", function () {
+        document.getElementById("loadResourcesWheel").className = "";
+        document.getElementById("loadResourcesWheel").innerHTML = "&#x2714;";
         pageLoader.notifyCompleted('loadResources');
     });
 }
@@ -398,6 +375,30 @@ function loadComplete(){
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
     //Server communication
+    socket = io(socketServerAddress, {secure: true, query: {username: playerName}});
+    socket.on('connect', function () {
+        socket.on('other_player', function (obj) {
+            obj = JSON.parse(obj);
+            otherBaseLayer.removeAllChildren();
+
+            if (obj.length > 0){
+                currentUpdateDelta = fastUpdateDelta;
+            }
+            else {
+                currentUpdateDelta = slowUpdateDelta;
+            }
+            otherPlayerPoints=Array();
+            obj.forEach((player) => {
+                let otherPlayer = new createjs.Shape();
+                otherPlayer.graphics.beginStroke("green");
+                otherPlayer.name = "p";
+                otherPlayer.graphics.beginFill("green");
+                otherPlayer.graphics.drawCircle(getCoordinateX(player.coordinates[0]), getCoordinateY(player.coordinates[1]), playerRadius);
+                otherPlayerPoints.push({player: player.id, points: player.currentPoints});
+                otherBaseLayer.addChild(otherPlayer);
+            });
+        });
+    });
     updateSocketCallback = function () {
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
@@ -420,6 +421,12 @@ function loadComplete(){
     //UpdateStreet
     updateNearbyMessage();
     setInterval(updateNearbyMessage, 2000);
+
+    //Remove LoadingScreen
+    document.getElementById("initializingWheel").className = "";
+    document.getElementById("initializingWheel").innerHTML = "&#x2714;";
+    document.getElementById("loadingScreen").style.display = 'none';
+    document.getElementById("gameCanvas").focus();
 
     //Tick settings
     createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED;
@@ -460,33 +467,6 @@ function getGameParameters(){
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME LOGIC FUNCTIONS & CLASSES */
-
-function downloadGPX(){
-    let text = GPXString;
-    let filename = "track.gpx";
-    let element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-    element.setAttribute('download', filename);
-
-    element.style.display = 'none';
-    document.body.appendChild(element);
-
-    element.click();
-
-    document.body.removeChild(element);
-}
-
-function toggleScreen() {
-    let gameScreen = document.getElementById("gameContainer");
-    let endScreen = document.getElementById("endScreenContainer");
-    if (gameScreen.style.display === "block") {
-        gameScreen.style.display = "none";
-        endScreen.style.display = "block";
-    } else {
-        gameScreen.style.display = "block";
-        endScreen.style.display = "none";
-    }
-}
 
 /** game update loop */
 function tick(event) {
@@ -871,7 +851,6 @@ class Monster{
 /* GEO TIME FUNCTIONS */
 
 function getServerTimeAndWeather(){
-    //let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
     fetch(timeRequest).
     then((response) => {
@@ -881,6 +860,8 @@ function getServerTimeAndWeather(){
         gameWeather=data.weather;
         console.log("gameStartTime", gameStartTime);
         console.log("gameWeather", gameWeather);
+        document.getElementById("loadTimeAndWeatherWheel").innerHTML = "&#x2714;";
+        document.getElementById("loadTimeAndWeatherWheel").className = "";
         pageLoader.notifyCompleted('loadTimeAndWeather');
     });
 }
@@ -966,11 +947,28 @@ function setMap() {
                 }
             });
         };
+        document.getElementById("loadMapWheel").innerHTML = "&#x2714;";
+        document.getElementById("loadMapWheel").className = "";
         pageLoader.notifyCompleted('loadMap');
         searchCallback();
         setInterval(searchCallback, 1000); //TODO: request doar cand se paraseste view-portul curent
     });
     map["keyboard"].disable();
+}
+
+function downloadGPX(){
+    let text = GPXString;
+    let filename = "track.gpx";
+    let element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME MAP FUNCTIONS */
@@ -1288,13 +1286,30 @@ function updateNearbyMessage(){
         })
         .then((message) => {
             if (message.name === undefined)
+            {
                 message.name = '';
+            }
+            else{
+                message.name = "&#128612; " + message.name + " &#128614;";
+            }
             if (message.description === undefined)
                 message.description = '';
 
             nearbyMessageDesc.innerHTML = message.description;
-            nearbyMessageName.innerHTML = "&#128612; " + message.name + " &#128614;";
+            nearbyMessageName.innerHTML = message.name;
         });
+}
+
+function toggleScreen() {
+    let gameScreen = document.getElementById("gameContainer");
+    let endScreen = document.getElementById("endScreenContainer");
+    if (gameScreen.style.display === "block") {
+        gameScreen.style.display = "none";
+        endScreen.style.display = "block";
+    } else {
+        gameScreen.style.display = "block";
+        endScreen.style.display = "none";
+    }
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
