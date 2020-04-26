@@ -48,8 +48,8 @@
       "path":"../sprites/lofiProjs.png",
       "type": "image/png"
     },
-    "/sprites/monsters.png": {
-      "path":"../sprites/monsters.png",
+    "/sprites/eyeFly.png" : {
+      "path": "../sprites/eyeFly.png",
       "type": "image/png"
     },
     "/sprites/weather.png": {
@@ -74,6 +74,10 @@
     },
     "/favicon.ico": {
       "path":"../sprites/realquest-logo.png",
+      "type": "image/png"
+    },
+    "/sprites/cursorImg.png": {
+      "path": "../sprites/cursorImg.png",
       "type": "image/png"
     }
   }

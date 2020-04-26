@@ -24,9 +24,9 @@ const offsetx = windowWidth / (2*scale); //used for offsetting the "camera" cent
 const offsety = windowHeight / (2*scale);
 const playerWidth = 20;
 const playerRadius = 10; //radius of the player collision
-const collisionDelta=5;
+const collisionDelta=2;
 const projectileRadius = 4;
-const monsterRadius = 10;
+const monsterRadius = 8 ;
 
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
@@ -81,7 +81,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 1; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -149,7 +149,6 @@ class PageLoader{
 /** runs when the page is opened, calls PageLoader */
 function load() {
     getGameParameters();
-    document.getElementById("endScreenContainer").style.display = "none";
     let canvas = document.getElementById("gameCanvas");
     canvas.focus();
 
@@ -184,7 +183,7 @@ function loadImages() {
     resourceLoader = new createjs.LoadQueue(false);
     resourceLoader.loadFile({id:"players", src:"../sprites/players.png"});
     resourceLoader.loadFile({id:"projectiles", src:"../sprites/lofiProjs.png"});
-    resourceLoader.loadFile({id:"monsters", src:"../sprites/monsters.png"});
+    resourceLoader.loadFile({id:"monsters", src:"../sprites/eyeFly.png"});
     resourceLoader.loadFile({id:"weather", src:"../sprites/weather.png"});
     resourceLoader.addEventListener("complete", function () {
         document.getElementById("loadResourcesWheel").className = "";
@@ -304,10 +303,11 @@ function loadComplete(){
     monsterSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("monsters")],
-        "frames": {"height": 8, "width": 8, "regX": 0, "regY":0, "spacing":0, "margin":0},
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0,"count":3},
         "animations": {
             "move": {
-                frames: [0,1,2,3,4,5,6,7],
+                frames: [0,1,2],
+                next: "move",
                 speed: 1
             }
         }
@@ -600,8 +600,6 @@ function tick(event) {
             if (sprite.isMonster === true) {
                 sprite.timeToShoot--;
 
-
-
                 let dx = player.x - sprite.x;
                 let dy = player.y - sprite.y;
                 if (dx>800||dx<-800||dy>800||dy<-800){
@@ -609,6 +607,13 @@ function tick(event) {
                     Monster.removeMonsterWithId(sprite.name);
                 }
                 let angle = Math.atan2(dy, dx);
+                sprite.x = sprite.x - (sprite.scaleX < 0 ? -sprite.getBounds().width*sprite.scaleX : 0);
+                if (dx < 0)
+                    sprite.scaleX = -Math.abs(sprite.scaleX);
+                else
+                    sprite.scaleX = Math.abs(sprite.scaleX);
+                sprite.x = sprite.x + (sprite.scaleX < 0 ? -sprite.getBounds().width*sprite.scaleX : 0);
+                console.log("sprite",sprite.x );
 
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
@@ -668,8 +673,8 @@ function tick(event) {
 
             monsterSprite.x = playerGetPos()[0];
             monsterSprite.y = playerGetPos()[1];
-            monsterSprite.scaleX = 3;
-            monsterSprite.scaleY = 3;
+            monsterSprite.scaleX = 0.5;
+            monsterSprite.scaleY = 0.5;
 
             let randomX = Math.random() * 200-1;
             if (randomX>100) randomX+=50;

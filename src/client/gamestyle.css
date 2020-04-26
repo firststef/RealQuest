@@ -1,6 +1,7 @@
 body {
     margin: 0;
     padding: 0;
+    cursor: url('../sprites/cursorImg.png') 4 4, auto;
 }
 
 #map {
