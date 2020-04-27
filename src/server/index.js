@@ -72,6 +72,9 @@ function serverHandler(req, res) {
             return;
         }
     } else {
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+        res.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        res.setHeader("Expires", "0");
         let data;
         var resource = config.resources[parsedUrl.pathname];
         if (resource !== undefined) {

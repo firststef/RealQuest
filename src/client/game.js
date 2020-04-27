@@ -34,7 +34,7 @@ const playerMaxHealth = 100;
 //Palette
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
-const buildingsColor2 = "#f7df1e";
+const buildingsColor2 = "rgba(193, 66, 66, 0.82)";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -215,53 +215,6 @@ function loadComplete(){
     nearbyMessageDesc = document.getElementById("placeDescription");
     nearbyMessageName = document.getElementById("placeName");
 
-    //Layer initialization
-    let background = new createjs.Shape();
-    background.graphics.beginFill(groundColor);
-    background.graphics.drawRect(0, 0, windowWidth, windowHeight);
-    background.graphics.endFill();
-    background.name = "Background";
-
-    camera = new createjs.Container();
-    camera.x = stage.x;
-    camera.y = stage.y;
-
-    roadsLayer = new createjs.Container();
-    roadsLayer.x = stage.x;
-    roadsLayer.y = stage.y;
-
-    waterLayer = new createjs.Container();
-    waterLayer.x = stage.x;
-    waterLayer.y = stage.y;
-
-    buildingsLayer = new createjs.Container();
-    buildingsLayer.x = stage.x;
-    buildingsLayer.y = stage.y;
-
-    baseLayer = new createjs.Container();
-    baseLayer.x = stage.x;
-    baseLayer.y = stage.y;
-
-    otherBaseLayer = new createjs.Container();
-    otherBaseLayer.x = stage.x;
-    otherBaseLayer.y = stage.y;
-
-    projectileLayer = new createjs.Container();
-    projectileLayer.x = stage.x;
-    projectileLayer.y = stage.y;
-
-    monsterLayer = new createjs.Container();
-    monsterLayer.x = stage.x;
-    monsterLayer.y = stage.y;
-
-    if (gameStartTime < 420 || gameStartTime > 1320) {
-        setNightOverlay();
-    }
-
-    uiScreen = new createjs.DOMElement("uiScreen");
-    uiScreen.name = "uiScreen";
-    uiScreen.scale = 1/scale;
-
     //GPX
     GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
     GPXInterval = setInterval(function() {
@@ -312,6 +265,49 @@ function loadComplete(){
         }
     });
 
+    //Layer initialization
+    let background = new createjs.Shape();
+    background.graphics.beginFill(groundColor);
+    background.graphics.drawRect(0, 0, windowWidth, windowHeight);
+    background.graphics.endFill();
+    background.name = "Background";
+
+    camera = new createjs.Container();
+    camera.x = stage.x;
+    camera.y = stage.y;
+
+    roadsLayer = new createjs.Container();
+    roadsLayer.x = stage.x;
+    roadsLayer.y = stage.y;
+
+    waterLayer = new createjs.Container();
+    waterLayer.x = stage.x;
+    waterLayer.y = stage.y;
+
+    buildingsLayer = new createjs.Container();
+    buildingsLayer.x = stage.x;
+    buildingsLayer.y = stage.y;
+
+    baseLayer = new createjs.Container();
+    baseLayer.x = stage.x;
+    baseLayer.y = stage.y;
+
+    otherBaseLayer = new createjs.Container();
+    otherBaseLayer.x = stage.x;
+    otherBaseLayer.y = stage.y;
+
+    projectileLayer = new createjs.Container();
+    projectileLayer.x = stage.x;
+    projectileLayer.y = stage.y;
+
+    monsterLayer = new createjs.Container();
+    monsterLayer.x = stage.x;
+    monsterLayer.y = stage.y;
+
+    uiScreen = new createjs.DOMElement("uiScreen");
+    uiScreen.name = "uiScreen";
+    uiScreen.scale = 1/scale;
+
     //Sprites init
     let playerSprite = new createjs.Sprite(spriteSheet, "idle");
     playerSprite.scaleX = 0.5;
@@ -328,7 +324,8 @@ function loadComplete(){
         playerRect.graphics.drawCircle(playerSprite.centerX(), playerSprite.centerY(), playerRadius);
     }
 
-    setWeatherOverlay();
+    //Weather
+    updateWeatherOverlay();
 
     //Adding Layers to the tree
     stage.addChild(background);
@@ -898,57 +895,6 @@ function getServerTimeAndWeather(){
     });
 }
 
-function setNightOverlay(){
-    luminosityOverlay = new createjs.Shape();
-    luminosityOverlay.graphics
-        .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety, playerRadius, offsetx, offsety, playerRadius * 10)
-        .drawRect(0, 0, windowWidth, windowHeight);
-    luminosityOverlay.name = "luminosityOverlay";
-}
-
-function setWeatherOverlay() {
-    weatherSheet = new createjs.SpriteSheet({ //this will be replaced with weather
-        framerate: 8,
-        "images": [resourceLoader.getResult("weather")],
-        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0},
-        "animations": {
-            "rain": [0, 6, "rain", 1.5],
-        }
-    });
-    weatherOverlay = new createjs.Sprite(weatherSheet, "rain");
-    weatherOverlay.scaleX = 1;
-    weatherOverlay.scaleY = 1;
-    weatherOverlay.name = "weatherOverlay";
-
-    if (this.offscreenCanvas === undefined){
-        this.offscreenCanvas = document.createElement('canvas');
-    }
-    this.offscreenCanvas.width = 32;
-    this.offscreenCanvas.height = 32;
-
-    let thisRef = this;
-    weatherOverlay.draw = function(ctx, ignoreCache) {
-        if (this.DisplayObject_draw(ctx, ignoreCache)) { return true; }
-        this._normalizeFrame();
-        let o = this.spriteSheet.getFrame(this._currentFrame|0);
-        if (!o) { return false; }
-        let rect = o.rect;
-        if (rect.width && rect.height) {
-            let offscreenContext = thisRef.offscreenCanvas.getContext('2d');
-            offscreenContext.clearRect(0, 0, thisRef.offscreenCanvas.width, thisRef.offscreenCanvas.height);
-            offscreenContext.drawImage(o.image, rect.x, rect.y, rect.width, rect.height, -o.regX, -o.regY, rect.width, rect.height);
-            ctx.beginPath();
-            ctx.rect(0, 0,windowWidth, windowHeight);
-            ctx.fillStyle = ctx.createPattern(thisRef.offscreenCanvas, 'repeat');
-            ctx.save();
-            ctx.translate(-player.centerX(), -player.centerY());
-            ctx.fill();
-            ctx.restore();
-        }
-        return true;
-    };
-}
-
 /* GEO MAP FUNCTIONS */
 
 function setMap() {
@@ -1293,7 +1239,7 @@ function updatePlayerLifeBar() {
 
 function updatePlayerTotalPoints() {
     let points=(totalPoints/600).toFixed(2);
-    playerTotalPoints.innerText= 'Points: ' + points.toString();
+    playerTotalPoints.innerText= 'HeroPoints: ' + points.toString();
 }
 
 function updateScoreBoard() {
@@ -1342,6 +1288,77 @@ function toggleScreen() {
         gameScreen.style.display = "block";
         endScreen.style.display = "none";
     }
+}
+
+function setNightOverlay(){
+    luminosityOverlay = new createjs.Shape();
+    luminosityOverlay.graphics
+        .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety, playerRadius, offsetx, offsety, playerRadius * 10)
+        .drawRect(0, 0, windowWidth, windowHeight);
+    luminosityOverlay.name = "luminosityOverlay";
+}
+
+function setWeatherOverlay(weather) {
+    weatherSheet = new createjs.SpriteSheet({ //this will be replaced with weather
+        framerate: 8,
+        "images": [resourceLoader.getResult("weather")],
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY": 0, "spacing": 10, "margin": 0},
+        "animations": {
+            "rain": [0, 12, "rain", 1.5],
+            "snow": [13, 19, "snow", 1]
+        }
+    });
+
+    if (weather === "Rain") {
+        weatherOverlay = new createjs.Sprite(weatherSheet, "rain");
+    } else if (weather === "Snow") {
+        weatherOverlay = new createjs.Sprite(weatherSheet, "snow");
+    }
+    else {
+        return;
+    }
+    weatherOverlay.scaleX = 1;
+    weatherOverlay.scaleY = 1;
+    weatherOverlay.name = "weatherOverlay";
+
+    if (this.offscreenCanvas === undefined) {
+        this.offscreenCanvas = document.createElement('canvas');
+    }
+    this.offscreenCanvas.width = 32;
+    this.offscreenCanvas.height = 32;
+
+    let thisRef = this;
+    weatherOverlay.draw = function (ctx, ignoreCache) {
+        if (this.DisplayObject_draw(ctx, ignoreCache)) {
+            return true;
+        }
+        this._normalizeFrame();
+        let o = this.spriteSheet.getFrame(this._currentFrame | 0);
+        if (!o) {
+            return false;
+        }
+        let rect = o.rect;
+        if (rect.width && rect.height) {
+            let offscreenContext = thisRef.offscreenCanvas.getContext('2d');
+            offscreenContext.clearRect(0, 0, thisRef.offscreenCanvas.width, thisRef.offscreenCanvas.height);
+            offscreenContext.drawImage(o.image, rect.x, rect.y, rect.width, rect.height, -o.regX, -o.regY, rect.width, rect.height);
+            ctx.beginPath();
+            ctx.rect(0, 0, windowWidth, windowHeight);
+            ctx.fillStyle = ctx.createPattern(thisRef.offscreenCanvas, 'repeat');
+            ctx.save();
+            ctx.translate(-player.centerX(), -player.centerY());
+            ctx.fill();
+            ctx.restore();
+        }
+        return true;
+    };
+}
+
+function updateWeatherOverlay(){
+    if (gameStartTime < 420 || gameStartTime > 1320) {
+        setNightOverlay();
+    }
+    setWeatherOverlay(gameWeather.weather[0].main);
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
