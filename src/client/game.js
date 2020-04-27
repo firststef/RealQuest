@@ -106,7 +106,6 @@ var projectileSheet;
 //points vars
 var monstersKilled=0;
 var totalPoints=0;
-var otherPlayerPoints=Array();
 
 //Socket
 var socket;
@@ -387,15 +386,39 @@ function loadComplete(){
             else {
                 currentUpdateDelta = slowUpdateDelta;
             }
-            otherPlayerPoints=Array();
-            obj.forEach((player) => {
-                let otherPlayer = new createjs.Shape();
-                otherPlayer.graphics.beginStroke("green");
-                otherPlayer.name = "p";
-                otherPlayer.graphics.beginFill("green");
-                otherPlayer.graphics.drawCircle(getCoordinateX(player.coordinates[0]), getCoordinateY(player.coordinates[1]), playerRadius);
-                otherPlayerPoints.push({player: player.id, points: player.currentPoints});
-                otherBaseLayer.addChild(otherPlayer);
+
+            obj.forEach((otherP) => {
+                let otherPlayerContainer = new createjs.Container();
+
+                let otherPlayer = new createjs.Sprite(spriteSheet, "idle");
+                otherPlayer.scaleX = Math.sign(otherP.scaleX)* 0.5;
+                otherPlayer.scaleY = 0.5;
+                otherPlayer.x = 0;
+                otherPlayer.y = 0;
+                otherPlayer.name = otherP.username;
+                otherPlayer.currentFrame = otherP.currentFrame;
+                otherPlayer.currentAnimation  = otherP.currentAnimation;
+                otherPlayer.gotoAndPlay(otherP.currentAnimation);
+                otherPlayer.currentAnimationFrame = otherP.currentAnimationFrame;
+                if (DEBUG === true) {
+                    let otherPlayerCollider = new createjs.Shape();
+                    otherPlayerCollider.graphics.beginStroke("green");
+                    otherPlayerCollider.name = otherP.username + "_collider";
+                    otherPlayerCollider.graphics.beginFill("green");
+                    otherPlayerCollider.graphics.drawCircle(otherPlayer.centerX(), otherPlayer.centerY(), playerRadius);
+                    otherPlayerContainer.addChild(otherPlayerCollider);
+                }
+                otherPlayerContainer.addChild(otherPlayer);
+                let playerText = new createjs.Text(otherP.username, "7px Comic Sans MS", "#FF0000");
+                playerText.x = otherPlayer.centerX() - playerText.getBounds().width/2;
+                playerText.y = 0;
+                playerText.textBaseline = "alphabetic";
+                otherPlayerContainer.addChild(playerText);
+
+
+                otherBaseLayer.addChild(otherPlayerContainer);
+                otherPlayerContainer.x = otherPlayer.reverseCenterX(getCoordinateX(otherP.coordinates[0]));
+                otherPlayerContainer.y = otherPlayer.reverseCenterY(getCoordinateY(otherP.coordinates[1]));
             });
         });
     });
@@ -403,6 +426,10 @@ function loadComplete(){
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
             currentPoints: parseFloat((totalPoints/600).toFixed(2)),
+            currentFrame: player.currentFrame,
+            currentAnimation : player.currentAnimation,
+            currentAnimationFrame : player.currentAnimationFrame,
+            scaleX: player.scaleX
         };
 
         socket.emit('coordonate', sendObj);
@@ -613,7 +640,6 @@ function tick(event) {
                 else
                     sprite.scaleX = Math.abs(sprite.scaleX);
                 sprite.x = sprite.x + (sprite.scaleX < 0 ? -sprite.getBounds().width*sprite.scaleX : 0);
-                console.log("sprite",sprite.x );
 
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
@@ -725,7 +751,6 @@ function tick(event) {
 }
 
 /* INPUT */
-//TODO cross-browser compatible method to get keycode
 function loadKeyHandler(){
     return {
         _pressed: {},
@@ -744,10 +769,12 @@ function loadKeyHandler(){
         },
 
         onKeydown: function(event) {
+            this._pressed[event.key] = true;
             this._pressed[event.keyCode] = true;
         },
 
         onKeyup: function(event) {
+            delete this._pressed[event.key];
             delete this._pressed[event.keyCode];
         }
     };

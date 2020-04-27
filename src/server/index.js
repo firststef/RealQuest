@@ -106,6 +106,10 @@ io.on('connection', function (socket) {
     socket.on('coordonate', function (obj) {
         playerMap.get(socket.id).coordinates = obj.coordinates;
         playerMap.get(socket.id).currentPoints = obj.currentPoints;
+        playerMap.get(socket.id).currentAnimation = obj.currentAnimation;
+        playerMap.get(socket.id).currentAnimationFrame = obj.currentAnimationFrame;
+        playerMap.get(socket.id).currentFrame = obj.currentFrame;
+        playerMap.get(socket.id).scaleX = obj.scaleX;
 
         socket.emit("other_player", JSON.stringify(getNearbyPlayers(playerMap.get(socket.id), socket.id)));
     });
@@ -144,7 +148,16 @@ function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
             return;
         dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
         if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius){
-            otherPlayers.push({id: otherPlayerId, coordinates: otherPlayerObj.coordinates, currentPoints:otherPlayerObj.currentPoints});
+            otherPlayers.push({
+                id: otherPlayerId,
+                username: otherPlayerObj.username,
+                coordinates: otherPlayerObj.coordinates,
+                currentPoints:otherPlayerObj.currentPoints,
+                currentAnimation : otherPlayerObj.currentAnimation ,
+                currentAnimationFrame : otherPlayerObj.currentAnimationFrame,
+                currentFrame : otherPlayerObj.currentFrame,
+                scaleX : otherPlayerObj.scaleX
+            });
         }
     });
 
