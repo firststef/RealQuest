@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -27,6 +27,7 @@ const playerRadius = 10; //radius of the player collision
 const collisionDelta=2;
 const projectileRadius = 4;
 const monsterRadius = 8 ;
+const projectileScale = 0.5;
 
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
@@ -226,30 +227,31 @@ function loadComplete(){
     let spriteSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("players")],
-        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0, "count":315},
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":5, "margin":0},
         "animations": {
             "idle": 0,
-            "runSideways": [0, 1, "idle", 1.5],
+            "runSideways": [0, 1, "idle", 1],
             "runDown": {
-                frames: [7,8,7,9],
+                frames: [4,5,4,6],
                 next: "idleDown",
-                speed: 1.5
+                speed: 1
             },
-            "idleDown": 7,
+            "idleDown": 4,
             "runUp": {
-                frames: [14,15,14,16],
+                frames: [9,10,9,11],
                 next: "idleUp",
-                speed: 1.5
+                speed: 1
             },
-            "idleUp":14
+            "idleUp":9
         }
     });
     projectileSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("projectiles")],
-        "frames": {"height": 8, "width": 8, "regX": 0, "regY":0, "spacing":0, "margin":0},
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":5, "margin":0},
         "animations": {
-            "attack": 70
+            "purple_attack": 70,
+            "blue_attack": 4
         }
     });
     monsterSheet = new createjs.SpriteSheet({
@@ -350,11 +352,11 @@ function loadComplete(){
 
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
-        let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
-        arrowSprite.scaleX = 2;
-        arrowSprite.scaleY = 2;
+        let arrowSprite = new createjs.Sprite(projectileSheet, "blue_attack");
+        arrowSprite.scaleX = 0.3;
+        arrowSprite.scaleY = 0.3;
         let angle = Math.atan2(evt.stageX - offsetx*scale, -(evt.stageY - offsety*scale) );
-        arrowSprite.rotation = angle * (180/Math.PI) - 45;
+        arrowSprite.rotation = angle * (180/Math.PI) - 90;
         let p = new Projectile(
             arrowSprite,
             arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
@@ -645,10 +647,10 @@ function tick(event) {
                     sprite.timeToShoot=sprite.projectileTimer;
                     if (sprite.projectileTimer>35)
                         sprite.projectileTimer=sprite.projectileTimer-3;
-                    let arrowSprite = new createjs.Sprite(projectileSheet, "attack");
+                    let arrowSprite = new createjs.Sprite(projectileSheet, "purple_attack");
                     let arrowAngle=Math.atan2(dx, -dy);
-                    arrowSprite.scaleX = 2;
-                    arrowSprite.scaleY = 2;
+                    arrowSprite.scaleX = projectileScale;
+                    arrowSprite.scaleY = projectileScale;
                     arrowSprite.rotation = arrowAngle * (180/Math.PI) - 45;
                     let p = new Projectile(
                         arrowSprite,
@@ -730,6 +732,7 @@ function tick(event) {
         context.clearRect(0, 0, canvas.width, canvas.height);
         document.getElementById("map").style.display = 'none';
 
+        getLeaderBoards(parseFloat((totalPoints/600).toFixed(2)));
         toggleScreen();
         //let divMap = document.getElementById("map");
 
@@ -1278,12 +1281,28 @@ function updateNearbyMessage(){
         });
 }
 
+function getLeaderBoards(myScore) {
+    fetch(ORIGIN + "/api/leaderboards?count=5&myScore=" + myScore)
+        .then((response) => {
+            return response.json();
+        })
+        .then((boards) => {
+            let tableContent = '';
+            boards.players.forEach((playerObj) => {
+                tableContent += `<tr><td>${playerObj.username}</td><td>${playerObj.score}</td></tr>`;
+            });
+            document.getElementById("leaderBoards").innerHTML = tableContent;
+            document.getElementById("yourPlace").innerHTML = "Your place: " + boards.myPlace;
+            document.getElementById("yourScore").innerHTML = "Your score: "+ myScore;
+        });
+}
+
 function toggleScreen() {
     let gameScreen = document.getElementById("gameContainer");
     let endScreen = document.getElementById("endScreenContainer");
     if (gameScreen.style.display === "block") {
         gameScreen.style.display = "none";
-        endScreen.style.display = "block";
+        endScreen.style.display = "flex";
     } else {
         gameScreen.style.display = "block";
         endScreen.style.display = "none";

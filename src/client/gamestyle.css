@@ -81,7 +81,6 @@ body {
     flex-shrink: 1;
     flex-basis: auto;
     align-self: auto;
-    overflow: hidden;
 }
 
 .left-ui{
@@ -192,9 +191,30 @@ table.topazCells tfoot .links a{
     width: 14px;
     height: 14px;
     animation: spin 2s linear infinite;
+    margin-left: 10px;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#endScreenContainer{
+    width: 100vw;
+    height: 100vh;
+    background-color: black;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: gold;
+    align-items: center;
+}
+
+.leader-boards-table{
+    color: red;
+    font-size: large;
+}
+
+.leader-boards-table td:first-child {
+    color: white;
 }

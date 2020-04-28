@@ -40,11 +40,15 @@
         </canvas>
     </div>
     <div id ="endScreenContainer" style="display: none">
-        <h1>Wow, you died.</h1>
-        <h3>You can still download you gpx file here tho.</h3>
+        <h1>Sad, you died.</h1>
+        <h3>Download your journey (gpx format).</h3>
         <div id='downloadGPXDiv' class='button' onclick="downloadGPX()">
-            Download GPX
+            Journey GPX
         </div>
+        <h3>LeaderBoards</h3>
+        <table id="leaderBoards" class="leader-boards-table"><tr><td>Loading leaderboards <div class="loader-wheel"></div></td></tr></table>
+        <h4 id="yourScore"></h4>
+        <h4 id="yourPlace"></h4>
     </div>
     <div id="loadingScreen" class="loading-screen">
         <div><p>Downloading Resources</p><div id="loadResourcesWheel" class="loader-wheel"></div></div>
