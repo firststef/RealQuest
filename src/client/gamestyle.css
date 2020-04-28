@@ -74,7 +74,6 @@ body {
 .ui-cont {
     display: flex;
     flex-grow: 1;
-    height: 150px;
     width: 150px;
     margin: 10px;
     padding: 0;
@@ -86,7 +85,6 @@ body {
 .left-ui{
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
 }
 
 .middle-ui {
@@ -128,11 +126,18 @@ body {
 
 .points-container{
     display: flex;
+    max-height: 50px;
+    flex-direction: column;
 }
 
 #totalPoints {
     font-size: 20px;
     color: #72e7a8;
+}
+
+#yourCoordinates{
+    font-size: 20px;
+    color: red;
 }
 
 table.topazCells {

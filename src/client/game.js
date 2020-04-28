@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -96,6 +96,7 @@ var playerTotalPoints;
 var scoreBoards;
 var nearbyMessageDesc;
 var nearbyMessageName;
+var yourCoordinates;
 
 //GPX vars
 var GPXString = "";
@@ -215,6 +216,7 @@ function loadComplete(){
     scoreBoards = document.getElementById('scoreBoards');
     nearbyMessageDesc = document.getElementById("placeDescription");
     nearbyMessageName = document.getElementById("placeName");
+    yourCoordinates = document.getElementById("yourCoordinates");
 
     //GPX
     GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
@@ -591,6 +593,7 @@ function tick(event) {
             baseLayer.getChildByName("playerRect").setTransform(player.centerX() - offsetx, player.centerY() - offsety);
         }
         camera.setTransform(-player.centerX() + offsetx, -player.centerY() + offsety);
+        yourCoordinates.innerHTML = "Your coordinates: "+ map.transform.center.lng.toFixed(2) + "," + map.transform.center.lat.toFixed(2);
 
         //bullet move = hit
         projectileLayer.children.forEach((sprite) => {
