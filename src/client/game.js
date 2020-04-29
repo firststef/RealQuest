@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -29,6 +29,8 @@ const projectileRadius = 4;
 const monsterRadius = 8 ;
 const projectileScale = 0.5;
 
+const MAX_COORDINATE=180;
+
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
 
@@ -36,6 +38,7 @@ const playerMaxHealth = 100;
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
 const buildingsColor2 = "rgba(193, 66, 66, 0.82)";
+const buildingsColorMultiPolygon = "rgba(193, 66, 66, 0.42)";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -82,7 +85,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 1; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -926,7 +929,7 @@ function setMap() {
                     drawFeature(feature);
                     if (!(ticks<120))
                         if (feature.sourceLayer === "building") {
-                            buildings.push(feature);
+                            buildings.push(buildingAdder(feature.geometry));
                         }
                 }
             });
@@ -1087,7 +1090,10 @@ function drawFeature(feature) {
             if (ticks<120)
                 drawPolygon(feature.geometry, false, buildingsColor2);
             else
-                drawPolygon(feature.geometry, false, buildingsColor);
+                if (feature.geometry.type==="Polygon")
+                    drawPolygon(feature.geometry, false, buildingsColor);
+                else
+                    drawPolygon(feature.geometry, false, buildingsColorMultiPolygon);
             break;
         }
         case "water": {
@@ -1107,6 +1113,32 @@ function validateAndAddId(obj){
     return true;
 }
 
+
+function buildingAdder(building){
+    let mx=MAX_COORDINATE; let my=MAX_COORDINATE;
+    let Mx=-MAX_COORDINATE; let My=-MAX_COORDINATE;
+    if (building.type==="Polygon")
+        building.coordinates[0].forEach(point => {
+            if (point[0]>Mx) Mx=point[0];
+            if (point[0]<mx) mx=point[0];
+            if (point[1]>My) My=point[1];
+            if (point[1]<my) my=point[1];
+        });
+    else
+        building.coordinates.forEach(polygon =>{
+            polygon[0].forEach(point => {
+                if (point[0]>Mx) Mx=point[0];
+                if (point[0]<mx) mx=point[0];
+                if (point[1]>My) My=point[1];
+                if (point[1]<my) my=point[1];
+            });
+        });
+    building.Mx=Mx;
+    building.My=My;
+    building.mx=mx;
+    building.my=my;
+    return building;
+}
 /* --------------------------------------------------------------------------------------------------------- GAME COLLISIONS FUNCTIONS */
 
 //TODO: remove this if not needed
@@ -1185,10 +1217,21 @@ function collision(x, y, radius, coords, type){
 /** returns true if there is no collision */
 function checkCollisionWithBuildings(x, y, radius){
     for (let i=0; i<buildings.length; i++){
-        let coords=buildings[i].geometry.coordinates;
-        if (collision(x, y, radius, coords, buildings[i].geometry.type))
+        if (!buildingSquareCollision(x,y, buildings[i]))
+            continue;
+        let coords=buildings[i].coordinates;
+        if (collision(x, y, radius, coords, buildings[i].type))
             return false;
     }
+    return true;
+}
+
+/** returns true if the player is inside the building's square */
+function buildingSquareCollision(x,y, building){
+    // console.log("mx", getCoordinateX(building.mx), "x", x, "Mx", getCoordinateX(building.Mx));
+    // console.log("my", getCoordinateY(building.my), "y", y, "My", getCoordinateY(building.My));
+    if (x>getCoordinateX(building.Mx)||x<getCoordinateX(building.mx)||y<getCoordinateY(building.My)||y>getCoordinateY(building.my))
+        return false;
     return true;
 }
 
