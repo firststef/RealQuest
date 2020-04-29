@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -85,7 +85,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 1; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -1017,7 +1017,7 @@ function drawPointArray(object, array, fill = false, color = "red") {
     array.forEach(function(point) {
         let x = getCoordinateX(point[0]);
         let y = getCoordinateY(point[1]);
-        if (x != undefined){
+        if (x !== undefined){
             if (x < mx)
                 mx = x;
             if (x > Mx)
@@ -1026,7 +1026,7 @@ function drawPointArray(object, array, fill = false, color = "red") {
         else{
             console.log("err on getcordx", point[0]);
         }
-        if (y != undefined){
+        if (y !== undefined){
             if (y < my)
                 my = y;
             if (y > My)
@@ -1175,7 +1175,7 @@ function pointLineDistance(x0, y0, a, b, c){
 function distance(x1, y1, x2, y2, x3, y3){
     let x=0, y=0;
     let val1=0, val2=0, val3=0;
-    if (x2==x3){
+    if (x2===x3){
         if (y1<=Math.max(y2, y3)&&y1>=Math.min(y2, y3))
             return Math.abs(x1-x3);
         return Math.min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
@@ -1217,7 +1217,7 @@ function collision(x, y, radius, coords, type){
 /** returns true if there is no collision */
 function checkCollisionWithBuildings(x, y, radius){
     for (let i=0; i<buildings.length; i++){
-        if (!buildingSquareCollision(x,y, buildings[i]))
+        if (!buildingSquareCollision(x,y,radius,  buildings[i]))
             continue;
         let coords=buildings[i].coordinates;
         if (collision(x, y, radius, coords, buildings[i].type))
@@ -1227,12 +1227,10 @@ function checkCollisionWithBuildings(x, y, radius){
 }
 
 /** returns true if the player is inside the building's square */
-function buildingSquareCollision(x,y, building){
+function buildingSquareCollision(x,y, radius,  building){
     // console.log("mx", getCoordinateX(building.mx), "x", x, "Mx", getCoordinateX(building.Mx));
     // console.log("my", getCoordinateY(building.my), "y", y, "My", getCoordinateY(building.My));
-    if (x>getCoordinateX(building.Mx)||x<getCoordinateX(building.mx)||y<getCoordinateY(building.My)||y>getCoordinateY(building.my))
-        return false;
-    return true;
+    return !(x > getCoordinateX(building.Mx) + radius || x < getCoordinateX(building.mx) - radius || y < getCoordinateY(building.My) - radius || y > getCoordinateY(building.my) + radius);
 }
 
 //TODO: the function should be named checkProjectileCollisionWithMonsters
