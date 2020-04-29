@@ -12,6 +12,10 @@ function load() {
             document.getElementById("username_input").value = localUser;
         }
     }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(successGetLocation, () => {console.log("Location could not be found")});
+    }
 }
 
 function formValidation(lat, longitude, username) {
@@ -25,44 +29,20 @@ function startGame() {
     longitude = document.getElementById("longitude_button").value;
     lat = document.getElementById("latitude_button").value;
     username = document.getElementById("username_input").value;
-    let button = document.getElementById("submit_button");
 
     if (formValidation(lat, longitude, username)) {
-        if (attemptedPreviouslyToGetLocation === false) {
-            if (navigator.geolocation) {
-                button.value = "Getting location...";
-                button._onclickev = button.onclick;
-                button.onclick = null;
-                navigator.geolocation.getCurrentPosition(successGetLocation, failGetLocation);
-            }
-            attemptedPreviouslyToGetLocation = true;
-        } else {
-            jumpToGame();
-        }
+        jumpToGame();
     }
     else{
-        document.getElementById("formMessage").style.display = 'block';
-        let str = "Invalid coordinates or username too short";
+        let str = "Invalid coordinates or username";
         document.getElementById("formMessage").innerHTML = str.fontcolor("red");
     }
 }
 
 function successGetLocation(position) {
-    longitude = position.coords.longitude;
-    lat = position.coords.latitude;
-    jumpToGame();
-}
-
-function failGetLocation(){
-    document.getElementById("latitude_button").style.display = 'inline-block';
-    document.getElementById("longitude_button").style.display = 'inline-block';
-    document.getElementById("formMessage").style.display = 'block';
-    document.getElementById("formMessage").innerHTML = "Your location could not be found. Where do you want to start?";
-
-    let button = document.getElementById("submit_button");
-    button.value = "Start playing!";
-    button.onclick = button._onclickev;
-    button._onclickev = null;
+    document.getElementById("longitude_button").value = position.coords.longitude;
+    document.getElementById("latitude_button").value = position.coords.latitude;
+    document.getElementById("formMessage").innerHTML = 'Your location has been copied below';
 }
 
 function jumpToGame(){

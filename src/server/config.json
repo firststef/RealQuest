@@ -68,6 +68,10 @@
       "path":"../sprites/game_screen.png",
       "type": "image/png"
     },
+    "/sprites/hero.png": {
+      "path":"../sprites/hero.png",
+      "type": "image/png"
+    },
     "/createjs.js" :{
       "path": "../client/createjs.js",
       "type": "text/javascript"
@@ -79,6 +83,14 @@
     "/sprites/cursorImg.png": {
       "path": "../sprites/cursorImg.png",
       "type": "image/png"
+    },
+    "/lady_radical.ttf":{
+      "path": "../client/lady_radical.ttf",
+      "type": "plain"
+    },
+    "/alphbeta.ttf":{
+      "path": "../client/alphbeta.ttf",
+      "type": "plain"
     }
   }
 }

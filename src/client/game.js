@@ -1326,7 +1326,7 @@ function setWeatherOverlay(weather) {
         "images": [resourceLoader.getResult("weather")],
         "frames": {"height": 32, "width": 32, "regX": 0, "regY": 0, "spacing": 10, "margin": 0},
         "animations": {
-            "rain": [0, 12, "rain", 1.5],
+            "rain": [0, 12, "rain", 2],
             "snow": [13, 19, "snow", 1]
         }
     });
