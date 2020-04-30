@@ -33,7 +33,12 @@ const projectileRadius = 4;
 const monsterRadius = 8 ;
 const projectileScale = 0.5;
 const MAX_COORDINATE=180;
-const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
+const initialDisplacement=0.000002;
+
+
+var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact
+
+
 const playerMaxHealth = 100;
 const moneyPowerUpValue = 50;
 
@@ -89,7 +94,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -99,6 +104,10 @@ var projectileSpawnTime=1000;
 
 //Power-ups
 var currentBox;
+var speedTimeout;
+var speedDisplacement=1.6*displacement;
+var smashesLeft=0;
+const mayRemove=1;
 
 //UI vars
 var playerLifeBar;
@@ -270,17 +279,23 @@ function loadComplete(){
             "purple_attack": 70,
             "blue_attack": 4,
             "money": 125,
-            "speedBoost": 126
+            "speedBoost": 126,
+            "smashBuilding": 127
         }
     });
     monsterSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("monsters")],
-        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0,"count":3},
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0},
         "animations": {
-            "move": {
+            "moveRed": {
                 frames: [0,1,2],
-                next: "move",
+                next: "moveRed",
+                speed: 1
+            },
+            "moveGreen": {
+                frames: [3,4,5],
+                next: "moveGreen",
                 speed: 1
             }
         }
@@ -490,7 +505,7 @@ function loadComplete(){
     setInterval(updateNearbyMessage, 2000);
 
     //Create powerUps
-    setInterval(createMoneyPowerUp, 3000);
+    setInterval(createPowerUps, 3000);
 
     //Remove LoadingScreen
     document.getElementById("initializingWheel").className = "";
@@ -549,7 +564,7 @@ function tick(event) {
             let axisY = 0;
             if (Key.isDown(Key.W)) {
                 // up
-                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
                         axisY = 1;
 
@@ -558,7 +573,7 @@ function tick(event) {
 
             } else if (Key.isDown(Key.S)) {
                 // down
-                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
                         axisY = -1;
 
@@ -567,7 +582,7 @@ function tick(event) {
             }
             if (Key.isDown(Key.A)) {
                 // left
-                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
                         axisX = -1;
 
@@ -588,7 +603,7 @@ function tick(event) {
 
             } else if (Key.isDown(Key.D)) {
                 // right
-                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
                         axisX = 1;
 
@@ -691,7 +706,7 @@ function tick(event) {
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
 
-                if (sprite.timeToShoot===0){
+                if (sprite.mType === "Red" && sprite.timeToShoot===0){
                     sprite.timeToShoot=sprite.projectileTimer;
                     if (sprite.projectileTimer>35)
                         sprite.projectileTimer=sprite.projectileTimer-3;
@@ -739,7 +754,17 @@ function tick(event) {
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
             nrOfMonsters++;
-            let monsterSprite = new createjs.Sprite(monsterSheet, "move");
+
+            let monsterSprite;
+            let mType;
+            if (Math.random() > 0.5) {
+                monsterSprite = new createjs.Sprite(monsterSheet, "moveRed");
+                mType = "Red";
+            }
+            else {
+                monsterSprite = new createjs.Sprite(monsterSheet, "moveGreen");
+                mType = "Green";
+            }
 
             monsterSprite.x = playerGetPos()[0];
             monsterSprite.y = playerGetPos()[1];
@@ -753,8 +778,9 @@ function tick(event) {
                 monsterSprite,
                 playerGetPos()[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx,
                 playerGetPos()[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety,
-                1,
-                100
+                mType === "Red" ? 1 : 1.8,
+                100,
+                mType
             );
         }
 
@@ -762,9 +788,23 @@ function tick(event) {
         for (let i = 1 + DEBUG; i < baseLayer.children.length; i++){
             let child = baseLayer.getChildAt(i);
             if (child.isPowerUp){
-                if (checkCircleCollisionWithPlayer(child.centerX(), child.centerY(), (child.getBounds().width*child.scaleX)/2) === false){
+                if (checkCircleCollisionWithPlayer(child.centerX(), child.centerY(),
+                    (child.getBounds().width*child.scaleX)/2) === false){
+                    if (child.type==="money")
+                        totalPoints += 600*moneyPowerUpValue;
+                    else if (child.type === "speedBoost") {
+                        clearTimeout(speedTimeout);
+                        displacement=speedDisplacement;
+                        speedTimeout=setTimeout(function (){
+                            displacement=initialDisplacement;
+                        }, 5000);
+                    }
+                    else if (child.type === "smashBuilding"){
+                        smashesLeft++;
+                    }
+
                     baseLayer.removeChildAt(i);
-                    totalPoints += 600*moneyPowerUpValue;
+
                     i--;
                 }
             }
@@ -889,13 +929,17 @@ class Projectile {
 }
 
 class Monster{
-    constructor(sprite, x, y, velocity,hp) {
+    constructor(sprite, x, y, velocity,hp, type) {
         let id = getUniqueId();
 
         this.sprite = sprite;
         this.isMonster = true;
-        sprite.projectileTimer=2*Math.floor( (60+Math.random()*120) );
-        sprite.timeToShoot=sprite.projectileTimer;
+
+        sprite.mType = type;
+        if (type === "Red") {
+            sprite.projectileTimer = 2 * Math.floor((60 + Math.random() * 120));
+            sprite.timeToShoot = sprite.projectileTimer;
+        }
 
         sprite.name = id;
         sprite.isMonster = true;
@@ -931,9 +975,16 @@ class Monster{
     }
 }
 
-function createMoneyPowerUp() {
+
+function createPowerUps() {
     if (this.moneyId === undefined){
         this.moneyId = 0;
+    }
+    if (this.speedId === undefined){
+        this.speedId = 0;
+    }
+    if (this.smashBuilding === undefined){
+        this.smashBuilding = 0;
     }
 
     if (Math.random() > 0.5){
@@ -957,19 +1008,51 @@ function createMoneyPowerUp() {
     }
 
     if (outSideLastBox) {
-        let money = new createjs.Sprite(projectileSheet, "money");
-        money.name = (this.moneyId++).toString();
-        money.isPowerUp = true;
-        money.scaleX = 0.3;
-        money.scaleY = 0.3;
+        let xRand;
+        let yRand;
+        if (Math.random() > 0.5) {
+            xRand = Math.random();
+            yRand = Math.random();
+            let money = new createjs.Sprite(projectileSheet, "money");
+            money.type="money";
+            money.name = (this.moneyId++).toString();
+            money.isPowerUp = true;
+            money.scaleX = 0.3;
+            money.scaleY = 0.3;
+            money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
-        let xRand = Math.random();
-        let yRand = Math.random();
+            baseLayer.addChild(money);
+        }
+        if (Math.random()>0.5) {
+            xRand = Math.random();
+            yRand = Math.random();
+            let speedBoost = new createjs.Sprite(projectileSheet, "speedBoost");
+            speedBoost.type="speedBoost";
+            speedBoost.name = (this.speedBoost++).toString();
+            speedBoost.isPowerUp = true;
+            speedBoost.scaleX = 0.3;
+            speedBoost.scaleY = 0.3;
+            speedBoost.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            speedBoost.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
-        money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
-        money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
+            baseLayer.addChild(speedBoost);
+        }
+        if (Math.random() > 0.5){
+            xRand = Math.random();
+            yRand = Math.random();
+            let smashBuilding = new createjs.Sprite(projectileSheet, "smashBuilding");
+            smashBuilding.type="smashBuilding";
+            smashBuilding.name = (this.smashBuilding++).toString();
+            smashBuilding.isPowerUp = true;
+            smashBuilding.scaleX = 0.3;
+            smashBuilding.scaleY = 0.3;
+            smashBuilding.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            smashBuilding.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
-        baseLayer.addChild(money);
+            baseLayer.addChild(smashBuilding);
+        }
+
     }
 }
 
@@ -998,7 +1081,7 @@ function setMap() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
         center: [playerPos[0], playerPos[1]],
         zoom: 20
     });
@@ -1011,7 +1094,9 @@ function setMap() {
             true
         );
         let searchCallback = function() {
+            document.getElementById("map").hidden = false;
             let features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
+            document.getElementById("map").hidden = true;
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
@@ -1235,7 +1320,6 @@ function cleanFarAwayBuildings(){
     for (let i=0; i<buildings.length; i++){
         if (!buildingSquareCollision(playerGetPos()[0], playerGetPos()[1], buildingsBoxX, buildingsBoxY, buildings[i])) {
             buildingsLayer.removeChild(buildingsLayer.getChildByName(buildings[i].hash))
-
             polygonShapesIdSet.delete(buildings[i].hash);
             buildings.splice(i, 1);
         }
@@ -1276,8 +1360,8 @@ function pointLineDistance(x0, y0, a, b, c){
     return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
 }
 function distance(x1, y1, x2, y2, x3, y3){
-    let x=0, y=0;
-    let val1=0, val2=0, val3=0;
+/*    let x=0, y=0;
+    let val1=0, val2=0, val3=0;*/
     if (x2===x3){
         if (y1<=Math.max(y2, y3)&&y1>=Math.min(y2, y3))
             return Math.abs(x1-x3);
@@ -1318,13 +1402,20 @@ function collision(x, y, radius, coords, type){
 }
 
 /** returns true if there is no collision */
-function checkCollisionWithBuildings(x, y, radius){
+function checkCollisionWithBuildings(x, y, radius, remove=0){
     for (let i=0; i<buildings.length; i++){
         if (!buildingSquareCollision(x,y,radius,radius,buildings[i])||buildings[i].collidable===false)
             continue;
         let coords=buildings[i].coordinates;
-        if (collision(x, y, radius, coords, buildings[i].type))
+        if (collision(x, y, radius, coords, buildings[i].type)) {
+            if (remove === 1 && smashesLeft>0) {
+                smashesLeft--;
+                buildings[i].collidable = false;
+                buildingsLayer.getChildByName(buildings[i].hash).graphics._fill.style=buildingsColor2;
+                return true;
+            }
             return false;
+        }
     }
     return true;
 }
