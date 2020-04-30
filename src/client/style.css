@@ -140,6 +140,7 @@ footer > div{
     height: 250px;
     width: 300px;
     margin: auto 30px;
+    font-size: 20px;
 }
 
 #form {
@@ -153,6 +154,19 @@ footer > div{
 #form div {
     margin-top: 5px;
     margin-bottom: 5px;
+}
+
+.game-fun {
+    background-color: red;
+    color: white;
+    margin: 0;
+    text-align: center;
+    font-size: 30px;
+}
+
+.game-fun p {
+    width: 100%;
+    margin: 3px 10px;
 }
 
 #div_lore, #div_text{
