@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -33,7 +33,12 @@ const projectileRadius = 4;
 const monsterRadius = 8 ;
 const projectileScale = 0.5;
 const MAX_COORDINATE=180;
-const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
+const initialDisplacement=0.000002;
+
+
+var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact
+
+
 const playerMaxHealth = 100;
 const moneyPowerUpValue = 50;
 
@@ -99,6 +104,8 @@ var projectileSpawnTime=1000;
 
 //Power-ups
 var currentBox;
+var speedTimeout;
+var speedDisplacement=1.6*displacement;
 
 //UI vars
 var playerLifeBar;
@@ -473,7 +480,7 @@ function loadComplete(){
     setInterval(updateNearbyMessage, 2000);
 
     //Create powerUps
-    setInterval(createMoneyPowerUp, 3000);
+    setInterval(createPowerUps, 3000);
 
     //Remove LoadingScreen
     document.getElementById("initializingWheel").className = "";
@@ -745,9 +752,20 @@ function tick(event) {
         for (let i = 1 + DEBUG; i < baseLayer.children.length; i++){
             let child = baseLayer.getChildAt(i);
             if (child.isPowerUp){
-                if (checkCircleCollisionWithPlayer(child.centerX(), child.centerY(), (child.getBounds().width*child.scaleX)/2) === false){
+                if (checkCircleCollisionWithPlayer(child.centerX(), child.centerY(),
+                    (child.getBounds().width*child.scaleX)/2) === false){
+                    if (child.type==="money")
+                        totalPoints += 600*moneyPowerUpValue;
+                    else if (child.type==="speedBoost") {
+                        clearTimeout(speedTimeout);
+                        displacement=speedDisplacement;
+                        speedTimeout=setTimeout(function (){
+                            displacement=initialDisplacement;
+                        }, 5000);
+                    }
+
                     baseLayer.removeChildAt(i);
-                    totalPoints += 600*moneyPowerUpValue;
+
                     i--;
                 }
             }
@@ -914,9 +932,13 @@ class Monster{
     }
 }
 
-function createMoneyPowerUp() {
+
+function createPowerUps() {
     if (this.moneyId === undefined){
         this.moneyId = 0;
+    }
+    if (this.speedId === undefined){
+        this.speedId = 0;
     }
 
     if (Math.random() > 0.5){
@@ -940,19 +962,37 @@ function createMoneyPowerUp() {
     }
 
     if (outSideLastBox) {
-        let money = new createjs.Sprite(projectileSheet, "money");
-        money.name = (this.moneyId++).toString();
-        money.isPowerUp = true;
-        money.scaleX = 0.3;
-        money.scaleY = 0.3;
+        let xRand;
+        let yRand;
+        if (Math.random() > 0.5) {
+            xRand = Math.random();
+            yRand = Math.random();
+            let money = new createjs.Sprite(projectileSheet, "money");
+            money.type="money";
+            money.name = (this.moneyId++).toString();
+            money.isPowerUp = true;
+            money.scaleX = 0.3;
+            money.scaleY = 0.3;
+            money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
-        let xRand = Math.random();
-        let yRand = Math.random();
+            baseLayer.addChild(money);
+        }
+        if (Math.random()>0.5) {
+            xRand = Math.random();
+            yRand = Math.random();
+            let speedBoost = new createjs.Sprite(projectileSheet, "speedBoost");
+            speedBoost.type="speedBoost";
+            speedBoost.name = (this.speedBoost++).toString();
+            speedBoost.isPowerUp = true;
+            speedBoost.scaleX = 0.3;
+            speedBoost.scaleY = 0.3;
+            speedBoost.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            speedBoost.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
-        money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
-        money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
+            baseLayer.addChild(speedBoost);
+        }
 
-        baseLayer.addChild(money);
     }
 }
 
@@ -1218,7 +1258,6 @@ function cleanFarAwayBuildings(){
     for (let i=0; i<buildings.length; i++){
         if (!buildingSquareCollision(playerGetPos()[0], playerGetPos()[1], buildingsBoxX, buildingsBoxY, buildings[i])) {
             buildingsLayer.removeChild(buildingsLayer.getChildByName(buildings[i].hash))
-
             polygonShapesIdSet.delete(buildings[i].hash);
             buildings.splice(i, 1);
         }
@@ -1259,8 +1298,8 @@ function pointLineDistance(x0, y0, a, b, c){
     return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
 }
 function distance(x1, y1, x2, y2, x3, y3){
-    let x=0, y=0;
-    let val1=0, val2=0, val3=0;
+/*    let x=0, y=0;
+    let val1=0, val2=0, val3=0;*/
     if (x2===x3){
         if (y1<=Math.max(y2, y3)&&y1>=Math.min(y2, y3))
             return Math.abs(x1-x3);
