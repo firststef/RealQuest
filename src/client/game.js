@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -1066,8 +1066,8 @@ function getServerTimeAndWeather(){
     }).then((data) => {
         gameStartTime=data.time;
         gameWeather=data.weather;
-        console.log("gameStartTime", gameStartTime);
-        console.log("gameWeather", gameWeather);
+        //console.log("gameStartTime", gameStartTime);
+        //console.log("gameWeather", gameWeather);
         document.getElementById("loadTimeAndWeatherWheel").innerHTML = "&#x2714;";
         document.getElementById("loadTimeAndWeatherWheel").className = "";
         pageLoader.notifyCompleted('loadTimeAndWeather');
