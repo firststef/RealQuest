@@ -128,8 +128,9 @@ io.on('connection', function (socket) {
         }
     });
 
-    socket.on('new_message',function(msg){
-        io.emit('chat-message',msg);
+    socket.on('new_message',function(obj){
+        obj.message = obj.message.substring(0, 50);
+        io.emit('chat-message',obj);
     });
 });
 function removeZombieConnections(){

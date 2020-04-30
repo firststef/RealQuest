@@ -157,13 +157,25 @@ body {
     flex-direction: column;
     justify-content: flex-end;
     margin: 10px;
+    width: 33vw;
 }
 
 .console-text {
-    min-height: 20vh;
+    height: 20vh;
     background-color: white;
     opacity: 0.3;
-    overflow: scroll;
+    overflow: auto;
+    pointer-events: all;
+    font-family: Consolas, "Lucida Console", sans-serif;
+    overflow-wrap: break-word;
+}
+
+.console-name {
+    color: purple;
+}
+
+.console-text p {
+    opacity: 1;
 }
 
 #consoleInput {

@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -116,6 +116,7 @@ var scoreBoards;
 var nearbyMessageDesc;
 var nearbyMessageName;
 var yourCoordinates;
+var consoleText;
 var textBox;
 
 //GPX vars
@@ -238,6 +239,7 @@ function loadComplete(){
     nearbyMessageDesc = document.getElementById("placeDescription");
     nearbyMessageName = document.getElementById("placeName");
     yourCoordinates = document.getElementById("yourCoordinates");
+    consoleText = document.getElementById("consoleText");
     textBox = document.getElementById("consoleInput");
     textBox.onfocus = () => {writing = true};
     textBox.onblur = () => {writing = false};
@@ -456,9 +458,8 @@ function loadComplete(){
             });
         });
         socket.on('chat-message', function (obj) {
-            let str = '<p>' + obj.user + ':' + obj.message + '</p>';
-            document.getElementById("consoleText").innerHTML += str;
-            console.log("wow", obj);
+            let str = '<p><span class=\"console-name\">' + obj.user + '</span>:' + obj.message + '</p>';
+            consoleText.innerHTML += str;
         });
     });
     updateSocketCallback = function () {
@@ -478,15 +479,13 @@ function loadComplete(){
     };
     socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
 
-    var sendMessage = function(message) {
-        socket.emit('new_message',{message:message,user:playerName});
-    };
-
-    var input = document.getElementById("consoleInput");
+    let input = document.getElementById("consoleInput");
     input.addEventListener("keyup", function(event) {
         if (event.code === 'Enter') {
             event.preventDefault();
-            sendMessage(input.value);
+            if (input.value !== ''){
+                socket.emit('new_message',{message:input.value,user:playerName});
+            }
             input.value = '';
         }
     });
