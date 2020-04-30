@@ -107,10 +107,12 @@ var scoreBoards;
 var nearbyMessageDesc;
 var nearbyMessageName;
 var yourCoordinates;
+var textBox;
 
 //GPX vars
 var GPXString = "";
 var GPXInterval;
+var writing = false;
 
 //projectile vars
 var projectileSheet;
@@ -227,6 +229,9 @@ function loadComplete(){
     nearbyMessageDesc = document.getElementById("placeDescription");
     nearbyMessageName = document.getElementById("placeName");
     yourCoordinates = document.getElementById("yourCoordinates");
+    textBox = document.getElementById("console-input");
+    textBox.onfocus = () => {writing = true};
+    textBox.onblur = () => {writing = false};
 
     //GPX
     GPXString = GPXString.concat("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<gpx xmlns=\"http://www.topografix.com/GPX/1/1\" xmlns:gpxx=\"http://www.garmin.com/xmlschemas/GpxExtensions/v3\" xmlns:gpxtpx=\"http://www.garmin.com/xmlschemas/TrackPointExtension/v1\" creator=\"mapstogpx.com\" version=\"1.1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd\">\n\n<trk>\n\t<trkseg>\n");
@@ -366,6 +371,7 @@ function loadComplete(){
 
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
+        document.getElementById("console-input").blur();
         let arrowSprite = new createjs.Sprite(projectileSheet, "blue_attack");
         arrowSprite.scaleX = 0.3;
         arrowSprite.scaleY = 0.3;
@@ -520,98 +526,100 @@ function tick(event) {
         if (player === undefined)
             return;
 
-        let axisX = 0;
-        let axisY = 0;
-        if (Key.isDown(Key.W)) {
-            // up
-            if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
-                if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
-                    axisY = 1;
+        if (!writing) {
+            let axisX = 0;
+            let axisY = 0;
+            if (Key.isDown(Key.W)) {
+                // up
+                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                        axisY = 1;
 
-            if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
-                player.gotoAndPlay("runUp");
+                if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
+                    player.gotoAndPlay("runUp");
 
-        } else if (Key.isDown(Key.S)) {
-            // down
-            if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
-                if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
-                    axisY = -1;
+            } else if (Key.isDown(Key.S)) {
+                // down
+                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                        axisY = -1;
 
-            if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
-                player.gotoAndPlay("runDown");
-        }
-        if (Key.isDown(Key.A)) {
-            // left
-            if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
-                if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
-                    axisX = -1;
+                if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
+                    player.gotoAndPlay("runDown");
+            }
+            if (Key.isDown(Key.A)) {
+                // left
+                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                        axisX = -1;
 
-            if (player.currentAnimation !== "runSideways")
-                player.gotoAndPlay("runSideways");
+                if (player.currentAnimation !== "runSideways")
+                    player.gotoAndPlay("runSideways");
 
-            player.setTransform(
-                player.x,
-                player.y,
-                (-1) * Math.abs(player.scaleX),
-                player.scaleY,
-                0,
-                0,
-                0,
-                0,
-                0
-            );
+                player.setTransform(
+                    player.x,
+                    player.y,
+                    (-1) * Math.abs(player.scaleX),
+                    player.scaleY,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0
+                );
 
-        } else if (Key.isDown(Key.D)) {
-            // right
-            if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
-                if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
-                    axisX = 1;
+            } else if (Key.isDown(Key.D)) {
+                // right
+                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                        axisX = 1;
 
-            if (player.currentAnimation !== "runSideways")
-                player.gotoAndPlay("runSideways");
+                if (player.currentAnimation !== "runSideways")
+                    player.gotoAndPlay("runSideways");
 
-            player.setTransform(
-                player.x,
-                player.y,
-                Math.abs(player.scaleX),
-                player.scaleY,
-                0,
-                0,
-                0,
-                0
-            );
-        }
-
-        if (axisX !== 0 || axisY !== 0) {
-            let directionalDisplacement;
-            if (axisX !== 0 && axisY !== 0) {
-                directionalDisplacement = displacement / Math.sqrt(2);
-            } else {
-                directionalDisplacement = displacement;
+                player.setTransform(
+                    player.x,
+                    player.y,
+                    Math.abs(player.scaleX),
+                    player.scaleY,
+                    0,
+                    0,
+                    0,
+                    0
+                );
             }
 
-            map.jumpTo({
-                center: [map.transform.center.lng + axisX * directionalDisplacement, map.transform.center.lat + axisY * directionalDisplacement],
-                zoom: map.transform.zoom
-            });
-        }
+            if (axisX !== 0 || axisY !== 0) {
+                let directionalDisplacement;
+                if (axisX !== 0 && axisY !== 0) {
+                    directionalDisplacement = displacement / Math.sqrt(2);
+                } else {
+                    directionalDisplacement = displacement;
+                }
 
-        player.setTransform(
-            player.reverseCenterX(getCoordinateX(map.transform._center.lng)),
-            player.reverseCenterY(getCoordinateY(map.transform._center.lat)),
-            player.scaleX,
-            player.scaleY,
-            0,
-            0,
-            0,
-            player.regX,
-            0
-        );
-        if (DEBUG === true) {
-            baseLayer.getChildByName("playerRect").setTransform(player.centerX() - offsetx, player.centerY() - offsety);
+                map.jumpTo({
+                    center: [map.transform.center.lng + axisX * directionalDisplacement, map.transform.center.lat + axisY * directionalDisplacement],
+                    zoom: map.transform.zoom
+                });
+            }
+
+            player.setTransform(
+                player.reverseCenterX(getCoordinateX(map.transform._center.lng)),
+                player.reverseCenterY(getCoordinateY(map.transform._center.lat)),
+                player.scaleX,
+                player.scaleY,
+                0,
+                0,
+                0,
+                player.regX,
+                0
+            );
+            if (DEBUG === true) {
+                baseLayer.getChildByName("playerRect").setTransform(player.centerX() - offsetx, player.centerY() - offsety);
+            }
+            camera.setTransform(-player.centerX() + offsetx, -player.centerY() + offsety);
+            yourCoordinates.innerHTML = "Your coordinates: " + map.transform.center.lng.toFixed(2) + "," + map.transform.center.lat.toFixed(2);
         }
-        camera.setTransform(-player.centerX() + offsetx, -player.centerY() + offsety);
-        yourCoordinates.innerHTML = "Your coordinates: "+ map.transform.center.lng.toFixed(2) + "," + map.transform.center.lat.toFixed(2);
 
         //Bullet collision
         projectileLayer.children.forEach((sprite) => {
