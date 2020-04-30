@@ -264,7 +264,8 @@ function loadComplete(){
         "animations": {
             "purple_attack": 70,
             "blue_attack": 4,
-            "money": 125
+            "money": 125,
+            "speedBoost": 126
         }
     });
     monsterSheet = new createjs.SpriteSheet({
@@ -465,7 +466,6 @@ function loadComplete(){
     setInterval(updateNearbyMessage, 2000);
 
     //Create powerUps
-    createMoneyPowerUp();
     setInterval(createMoneyPowerUp, 3000);
 
     //Remove LoadingScreen
@@ -910,7 +910,7 @@ function createMoneyPowerUp() {
         this.moneyId = 0;
     }
 
-    if (Math.random() > 0.2){
+    if (Math.random() > 0.5){
         return;
     }
 
@@ -940,8 +940,8 @@ function createMoneyPowerUp() {
         let xRand = Math.random();
         let yRand = Math.random();
 
-        money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx;
-        money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety;
+        money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+        money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
         baseLayer.addChild(money);
     }
