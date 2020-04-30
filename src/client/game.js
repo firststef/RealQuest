@@ -229,7 +229,7 @@ function loadComplete(){
     nearbyMessageDesc = document.getElementById("placeDescription");
     nearbyMessageName = document.getElementById("placeName");
     yourCoordinates = document.getElementById("yourCoordinates");
-    textBox = document.getElementById("console-input");
+    textBox = document.getElementById("consoleInput");
     textBox.onfocus = () => {writing = true};
     textBox.onblur = () => {writing = false};
 
@@ -371,7 +371,7 @@ function loadComplete(){
 
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
-        document.getElementById("console-input").blur();
+        document.getElementById("consoleInput").blur();
         let arrowSprite = new createjs.Sprite(projectileSheet, "blue_attack");
         arrowSprite.scaleX = 0.3;
         arrowSprite.scaleY = 0.3;
@@ -440,6 +440,11 @@ function loadComplete(){
                 otherPlayerContainer.y = otherPlayer.reverseCenterY(getCoordinateY(otherP.coordinates[1]));
             });
         });
+        socket.on('chat-message', function (obj) {
+            let str = '<p>' + obj.user + ':' + obj.message + '</p>';
+            document.getElementById("consoleText").innerHTML += str;
+            console.log("wow", obj);
+        });
     });
     updateSocketCallback = function () {
         let sendObj = {
@@ -457,6 +462,19 @@ function loadComplete(){
         }
     };
     socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
+
+    var sendMessage = function(message) {
+        socket.emit('new_message',{message:message,user:playerName});
+    };
+
+    var input = document.getElementById("consoleInput");
+    input.addEventListener("keyup", function(event) {
+        if (event.code === 'Enter') {
+            event.preventDefault();
+            sendMessage(input.value);
+            input.value = '';
+        }
+    });
 
     //CleanFarAwayBuildings
     setInterval(cleanFarAwayBuildings, 3000);

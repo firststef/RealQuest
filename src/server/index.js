@@ -127,6 +127,10 @@ io.on('connection', function (socket) {
                 .catch(e => logToFile(e));
         }
     });
+
+    socket.on('new_message',function(msg){
+        io.emit('chat-message',msg);
+    });
 });
 function removeZombieConnections(){
     playerMap.forEach((value, key, map)=> {

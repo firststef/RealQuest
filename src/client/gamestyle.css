@@ -163,9 +163,10 @@ body {
     min-height: 20vh;
     background-color: white;
     opacity: 0.3;
+    overflow: scroll;
 }
 
-#console-input {
+#consoleInput {
     pointer-events: all;
 }
 
