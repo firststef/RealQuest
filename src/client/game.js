@@ -12,14 +12,18 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
 const scale = 4; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
 const windowWidth =  window.innerWidth;
 const windowHeight =  window.innerHeight;
+
+const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
+const buildingsBoxY=windowHeight*1.5;
+
 const offsetx = windowWidth / (2*scale); //used for offsetting the "camera" center
 const offsety = windowHeight / (2*scale);
 const playerWidth = 20;
@@ -28,14 +32,16 @@ const collisionDelta=2;
 const projectileRadius = 4;
 const monsterRadius = 8 ;
 const projectileScale = 0.5;
+const MAX_COORDINATE=180;
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
 const moneyPowerUpValue = 50;
 
 //Palette
 const groundColor = "#379481";
-const buildingsColor = "rgba(193, 66, 66, 0.5)";
-const buildingsColor2 = "rgba(193, 66, 66, 0.5)";
+const buildingsColor = "#956c6c";
+const buildingsColor2 = "rgba(193,71,190,0.82)";
+const buildingsColorMultiPolygon = "rgba(193,74,3,0.82)";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -444,6 +450,9 @@ function loadComplete(){
         }
     };
     socketUpdateTimeout = setTimeout(updateSocketCallback, slowUpdateDelta);
+
+    //CleanFarAwayBuildings
+    setInterval(cleanFarAwayBuildings, 3000);
 
     //UpdateLeaderBoards
     setInterval(updateScoreBoard, 3000);
@@ -976,10 +985,12 @@ function setMap() {
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
-                    if (!(ticks<120))
-                        if (feature.sourceLayer === "building") {
-                            buildings.push(feature);
-                        }
+                    feature.geometry.collidable=true;
+                    if (ticks<120)
+                        feature.geometry.collidable=false;
+                    if (feature.sourceLayer === "building") {
+                        buildings.push(buildingAdder(feature.geometry));
+                    }
                 }
             });
         };
@@ -1066,7 +1077,7 @@ function drawPointArray(object, array, fill = false, color = "red") {
     array.forEach(function(point) {
         let x = getCoordinateX(point[0]);
         let y = getCoordinateY(point[1]);
-        if (x != undefined){
+        if (x !== undefined){
             if (x < mx)
                 mx = x;
             if (x > Mx)
@@ -1075,7 +1086,7 @@ function drawPointArray(object, array, fill = false, color = "red") {
         else{
             console.log("err on getcordx", point[0]);
         }
-        if (y != undefined){
+        if (y !== undefined){
             if (y < my)
                 my = y;
             if (y > My)
@@ -1091,10 +1102,11 @@ function drawPointArray(object, array, fill = false, color = "red") {
     return [mx, my, Mx, My];
 }
 
-function drawRoad(geometry, color) {
+function drawRoad(geometry, color, name) {
     let road = new createjs.Shape();
     road.tickEnabled = false;
     road.graphics.setStrokeStyle(30,"round").beginStroke(color);
+    road.name=name;
 
     if (geometry.type === "MultiLineString") {
         geometry.coordinates.forEach(function(array) {
@@ -1132,18 +1144,19 @@ function drawPolygon(geometry, fill = false, color, name) {
 function drawFeature(feature) {
     switch (feature.sourceLayer) {
         case "road": {
-            drawRoad(feature.geometry, roadsColor);
+            drawRoad(feature.geometry, roadsColor, feature.geometry.hash);
             break;
         }
         case "building": {
             if (ticks<120)
-                drawPolygon(feature.geometry, false, buildingsColor2);
+                drawPolygon(feature.geometry, false, buildingsColor2, feature.geometry.hash);
             else
-                drawPolygon(feature.geometry, false, buildingsColor);
+                drawPolygon(feature.geometry, false, buildingsColor, feature.geometry.hash);
+
             break;
         }
         case "water": {
-            drawPolygon(feature.geometry, true, waterColor);
+            drawPolygon(feature.geometry, true, waterColor, feature.geometry.hash);
             break;
         }
         default:
@@ -1156,7 +1169,47 @@ function validateAndAddId(obj){
     if (polygonShapesIdSet.has(id))
         return false;
     polygonShapesIdSet.add(id);
+    obj.hash=id;
     return true;
+}
+
+
+function buildingAdder(building){
+    let mx=MAX_COORDINATE; let my=MAX_COORDINATE;
+    let Mx=-MAX_COORDINATE; let My=-MAX_COORDINATE;
+    if (building.type==="Polygon")
+        building.coordinates[0].forEach(point => {
+            if (point[0]>Mx) Mx=point[0];
+            if (point[0]<mx) mx=point[0];
+            if (point[1]>My) My=point[1];
+            if (point[1]<my) my=point[1];
+        });
+    else
+        building.coordinates.forEach(polygon =>{
+            polygon[0].forEach(point => {
+                if (point[0]>Mx) Mx=point[0];
+                if (point[0]<mx) mx=point[0];
+                if (point[1]>My) My=point[1];
+                if (point[1]<my) my=point[1];
+            });
+        });
+    building.Mx=Mx;
+    building.My=My;
+    building.mx=mx;
+    building.my=my;
+    return building;
+}
+
+function cleanFarAwayBuildings(){
+
+    for (let i=0; i<buildings.length; i++){
+        if (!buildingSquareCollision(playerGetPos()[0], playerGetPos()[1], buildingsBoxX, buildingsBoxY, buildings[i])) {
+            buildingsLayer.removeChild(buildingsLayer.getChildByName(buildings[i].hash))
+
+            polygonShapesIdSet.delete(buildings[i].hash);
+            buildings.splice(i, 1);
+        }
+    }
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME COLLISIONS FUNCTIONS */
@@ -1195,7 +1248,7 @@ function pointLineDistance(x0, y0, a, b, c){
 function distance(x1, y1, x2, y2, x3, y3){
     let x=0, y=0;
     let val1=0, val2=0, val3=0;
-    if (x2==x3){
+    if (x2===x3){
         if (y1<=Math.max(y2, y3)&&y1>=Math.min(y2, y3))
             return Math.abs(x1-x3);
         return Math.min(distanceBetweenPoints(x1, y1, x2, y2), distanceBetweenPoints(x1, y1, x3, y3));
@@ -1237,11 +1290,20 @@ function collision(x, y, radius, coords, type){
 /** returns true if there is no collision */
 function checkCollisionWithBuildings(x, y, radius){
     for (let i=0; i<buildings.length; i++){
-        let coords=buildings[i].geometry.coordinates;
-        if (collision(x, y, radius, coords, buildings[i].geometry.type))
+        if (!buildingSquareCollision(x,y,radius,radius,buildings[i])||buildings[i].collidable===false)
+            continue;
+        let coords=buildings[i].coordinates;
+        if (collision(x, y, radius, coords, buildings[i].type))
             return false;
     }
     return true;
+}
+
+/** returns true if the player is inside the building's square */
+function buildingSquareCollision(x,y, radiusX, radiusY,  building){
+    // console.log("mx", getCoordinateX(building.mx), "x", x, "Mx", getCoordinateX(building.Mx));
+    // console.log("my", getCoordinateY(building.my), "y", y, "My", getCoordinateY(building.My));
+    return !(x > getCoordinateX(building.Mx) + radiusX || x < getCoordinateX(building.mx) - radiusX || y < getCoordinateY(building.My) - radiusY || y > getCoordinateY(building.my) + radiusY);
 }
 
 function checkProjectileCollisionWithMonsters(x,y,radius){
@@ -1359,10 +1421,11 @@ function toggleScreen() {
     }
 }
 
-function setNightOverlay(){
+function setNightOverlay() {
     luminosityOverlay = new createjs.Shape();
     luminosityOverlay.graphics
-        .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety, playerRadius, offsetx, offsety, playerRadius * 10)
+        .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety,
+            playerRadius, offsetx, offsety, playerRadius * 10)
         .drawRect(0, 0, windowWidth, windowHeight);
     luminosityOverlay.name = "luminosityOverlay";
 }
