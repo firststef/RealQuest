@@ -270,7 +270,8 @@ function loadComplete(){
             "purple_attack": 70,
             "blue_attack": 4,
             "money": 125,
-            "speedBoost": 126
+            "speedBoost": 126,
+            "smashBuilding": 127
         }
     });
     monsterSheet = new createjs.SpriteSheet({
