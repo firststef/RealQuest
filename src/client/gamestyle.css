@@ -136,6 +136,10 @@ body {
     flex-direction: column;
 }
 
+.points-container p {
+    margin: 0;
+}
+
 #totalPoints {
     font-size: 20px;
     color: #72e7a8;

@@ -12,18 +12,16 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
 const scale = 4; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
 const windowWidth =  window.innerWidth;
 const windowHeight =  window.innerHeight;
-
 const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
 const buildingsBoxY=windowHeight*1.5;
-
 const offsetx = windowWidth / (2*scale); //used for offsetting the "camera" center
 const offsety = windowHeight / (2*scale);
 const playerWidth = 20;
@@ -34,7 +32,8 @@ const monsterRadius = 8 ;
 const projectileScale = 0.5;
 const MAX_COORDINATE=180;
 const initialDisplacement=0.000002;
-
+const deleteLimitW = windowWidth/scale*1.4;
+const deleteLimitH = windowHeight/scale*1.4;
 
 var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact
 
@@ -690,7 +689,7 @@ function tick(event) {
 
                 let dx = player.x - sprite.x;
                 let dy = player.y - sprite.y;
-                if (dx>800||dx<-800||dy>800||dy<-800){
+                if (dx>deleteLimitW||dx<-deleteLimitW||dy>deleteLimitH||dy<-deleteLimitH){
                     nrOfMonsters--;
                     Monster.removeMonsterWithId(sprite.name);
                 }
@@ -777,7 +776,7 @@ function tick(event) {
                 monsterSprite,
                 playerGetPos()[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx,
                 playerGetPos()[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety,
-                mType === "Red" ? 1 : 1.8,
+                mType === "Red" ? 1 : 2,
                 100,
                 mType
             );
@@ -1657,7 +1656,6 @@ function isLocalStorageSupported() {
 //TODO: monster mini health-bar
 //TODO: we might wanna add a function to subtract from player the damage, but in this function we select only the highest damage in the recent seconds
 //TODO: add grass
-//TODO: add loading screen
 //TODO: fewer calls to playerGetPos
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
