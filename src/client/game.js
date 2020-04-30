@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = true;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -28,14 +28,14 @@ const collisionDelta=2;
 const projectileRadius = 4;
 const monsterRadius = 8 ;
 const projectileScale = 0.5;
-
 const displacement = 0.000002; // collision is checked by offsetting the position with this amount and checking for contact
 const playerMaxHealth = 100;
+const moneyPowerUpValue = 50;
 
 //Palette
 const groundColor = "#379481";
-const buildingsColor = "#956c6c";
-const buildingsColor2 = "rgba(193, 66, 66, 0.82)";
+const buildingsColor = "rgba(193, 66, 66, 0.5)";
+const buildingsColor2 = "rgba(193, 66, 66, 0.5)";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -51,6 +51,7 @@ var pageLoader;
 var resourceLoader; // resource loader
 var stage; // the master object, contains all the objects in the game
 var Key;
+var spriteSheet;
 
 //Layers - from bottom to top:
 //var background - object
@@ -82,13 +83,16 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 1; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
 var ticks=0;
 var monsterSpawner=3600;
 var projectileSpawnTime=1000;
+
+//Power-ups
+var currentBox;
 
 //UI vars
 var playerLifeBar;
@@ -226,7 +230,7 @@ function loadComplete(){
     },1000);
 
     //Spritesheets
-    let spriteSheet = new createjs.SpriteSheet({
+    spriteSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("players")],
         "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":5, "margin":0},
@@ -253,7 +257,8 @@ function loadComplete(){
         "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":5, "margin":0},
         "animations": {
             "purple_attack": 70,
-            "blue_attack": 4
+            "blue_attack": 4,
+            "money": 125
         }
     });
     monsterSheet = new createjs.SpriteSheet({
@@ -450,6 +455,10 @@ function loadComplete(){
     updateNearbyMessage();
     setInterval(updateNearbyMessage, 2000);
 
+    //Create powerUps
+    createMoneyPowerUp();
+    setInterval(createMoneyPowerUp, 3000);
+
     //Remove LoadingScreen
     document.getElementById("initializingWheel").className = "";
     document.getElementById("initializingWheel").innerHTML = "&#x2714;";
@@ -595,7 +604,7 @@ function tick(event) {
         camera.setTransform(-player.centerX() + offsetx, -player.centerY() + offsety);
         yourCoordinates.innerHTML = "Your coordinates: "+ map.transform.center.lng.toFixed(2) + "," + map.transform.center.lat.toFixed(2);
 
-        //bullet move = hit
+        //Bullet collision
         projectileLayer.children.forEach((sprite) => {
             if (sprite.isProjectile === true) {
                 sprite.x += sprite.velocityX;
@@ -607,12 +616,12 @@ function tick(event) {
                 if (sprite.faction==="player"){
                     if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else if (checkCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                    else if (checkProjectileCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
                 } else if (sprite.faction==="monster"){
 /*                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else*/ if (checkProjectileCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
+                    else*/ if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
                         Projectile.removeProjectileWithId(sprite.name);
                         playerHealth -= 10;
                         if (playerHealth < 0) {
@@ -625,6 +634,7 @@ function tick(event) {
             }
         });
 
+        //Monster collisions
         monsterLayer.children.forEach((sprite) => {
             if (sprite.isMonster === true) {
                 sprite.timeToShoot--;
@@ -666,7 +676,7 @@ function tick(event) {
                     );
                 }
 
-                if (checkMonsterCollisionWithPlayer(sprite.centerX(), sprite.centerY(), monsterRadius, collisionDelta)) {
+                if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(), monsterRadius, collisionDelta)) {
                     sprite.x += velocityX;
                     sprite.y += velocityY;
                     if (DEBUG === true) {
@@ -683,15 +693,12 @@ function tick(event) {
                 }
             }
         });
+        //Monster spawn
         if ((ticks+1)%monsterSpawner===0){
             if (monsterSpawner>600)
                 monsterSpawner=monsterSpawner-60;
             maxNrOfMonsters++;
         }
-        // if (ticks%60==0){
-        //
-        //     console.log(nrOfMonsters);
-        // }
         monsterSpawnTime--;
         totalPoints=totalPoints+1*(ticks/monsterSpawner+1);
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
@@ -704,23 +711,30 @@ function tick(event) {
             monsterSprite.scaleX = 0.5;
             monsterSprite.scaleY = 0.5;
 
-            let randomX = Math.random() * 200-1;
-            if (randomX>100) randomX+=50;
-            else randomX-=110;
-            let randomY = Math.random() * 200-1;
-            if (randomY>100) randomY+=50;
-            else randomY-=110;
-            randomX += Math.sign(randomX) * 50;
-            randomY += Math.sign(randomY) * 50;
+            let xRand = Math.random();
+            let yRand = Math.random();
 
             new Monster(
                 monsterSprite,
-                playerGetPos()[0] + randomX,
-                playerGetPos()[1] + randomY,
+                playerGetPos()[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx,
+                playerGetPos()[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety,
                 1,
                 100
             );
         }
+
+        //PowerUp Activate
+        for (let i = 1 + DEBUG; i < baseLayer.children.length; i++){
+            let child = baseLayer.getChildAt(i);
+            if (child.isPowerUp){
+                if (checkCircleCollisionWithPlayer(child.centerX(), child.centerY(), (child.getBounds().width*child.scaleX)/2) === false){
+                    baseLayer.removeChildAt(i);
+                    totalPoints += 600*moneyPowerUpValue;
+                    i--;
+                }
+            }
+        }
+
         ticks++;
         stage.update(event);
     } else {
@@ -879,6 +893,44 @@ class Monster{
                 break;
             }
         }
+    }
+}
+
+function createMoneyPowerUp() {
+    if (this.moneyId === undefined){
+        this.moneyId = 0;
+    }
+
+    let playerPos = playerGetPos();
+
+    let outSideLastBox = false;
+    if (currentBox === undefined ||
+     playerPos[0] < currentBox.x - currentBox.radius ||
+      playerPos[0] > currentBox.x + currentBox.radius ||
+        playerPos[1] < currentBox.y - currentBox.radius ||
+        playerPos[1] > currentBox.y + currentBox.radius){
+        currentBox = {
+            x: playerPos[0],
+            y: playerPos[1],
+            radius: offsetx > offsety ? offsetx : offsety
+        };
+        outSideLastBox = true;
+    }
+
+    if (outSideLastBox) {
+        let money = new createjs.Sprite(projectileSheet, "money");
+        money.name = (this.moneyId++).toString();
+        money.isPowerUp = true;
+        money.scaleX = 0.3;
+        money.scaleY = 0.3;
+
+        let xRand = Math.random();
+        let yRand = Math.random();
+
+        money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx;
+        money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety;
+
+        baseLayer.addChild(money);
     }
 }
 
@@ -1192,8 +1244,7 @@ function checkCollisionWithBuildings(x, y, radius){
     return true;
 }
 
-//TODO: the function should be named checkProjectileCollisionWithMonsters
-function checkCollisionWithMonsters(x,y,radius){
+function checkProjectileCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
         if (sprite.isMonster === true) {
@@ -1225,13 +1276,9 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
     return true;
 }
 
-function checkMonsterCollisionWithPlayer(x,y, monsterRadius, collisionDelta=0){
-    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
-}
-
-
-function checkProjectileCollisionWithPlayer(x,y, monsterRadius, collisionDelta=0){
-    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(monsterRadius + playerRadius + collisionDelta, 2);
+/** Returns false if (x,y) is closer than radius to player */
+function checkCircleCollisionWithPlayer(x,y, radius, collisionDelta=0){
+    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(radius + playerRadius + collisionDelta, 2);
 }
 
 /* --------------------------------------------------------------------------------------------------------- UI FUNCTIONS */
@@ -1285,7 +1332,7 @@ function updateNearbyMessage(){
 }
 
 function getLeaderBoards(myScore) {
-    fetch(ORIGIN + "/api/leaderboards?count=5&myScore=" + myScore)
+    fetch(ORIGIN + "/api/leaderboards?count=8&myScore=" + myScore)
         .then((response) => {
             return response.json();
         })
@@ -1428,7 +1475,7 @@ function isLocalStorageSupported() {
 //TODO: we might wanna add a function to subtract from player the damage, but in this function we select only the highest damage in the recent seconds
 //TODO: add grass
 //TODO: add loading screen
-//TODO: remove monster on a certain distance
+//TODO: fewer calls to playerGetPos
 
 Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
 MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
