@@ -11,9 +11,9 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = false;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const DEBUG = true;
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -106,6 +106,8 @@ var projectileSpawnTime=1000;
 var currentBox;
 var speedTimeout;
 var speedDisplacement=1.6*displacement;
+var smashesLeft=0;
+const mayRemove=1;
 
 //UI vars
 var playerLifeBar;
@@ -544,7 +546,7 @@ function tick(event) {
             let axisY = 0;
             if (Key.isDown(Key.W)) {
                 // up
-                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
                         axisY = 1;
 
@@ -553,7 +555,7 @@ function tick(event) {
 
             } else if (Key.isDown(Key.S)) {
                 // down
-                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
                         axisY = -1;
 
@@ -562,7 +564,7 @@ function tick(event) {
             }
             if (Key.isDown(Key.A)) {
                 // left
-                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
                         axisX = -1;
 
@@ -583,7 +585,7 @@ function tick(event) {
 
             } else if (Key.isDown(Key.D)) {
                 // right
-                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
                         axisX = 1;
 
@@ -772,12 +774,15 @@ function tick(event) {
                     (child.getBounds().width*child.scaleX)/2) === false){
                     if (child.type==="money")
                         totalPoints += 600*moneyPowerUpValue;
-                    else if (child.type==="speedBoost") {
+                    else if (child.type === "speedBoost") {
                         clearTimeout(speedTimeout);
                         displacement=speedDisplacement;
                         speedTimeout=setTimeout(function (){
                             displacement=initialDisplacement;
                         }, 5000);
+                    }
+                    else if (child.type === "smashBuilding"){
+                        smashesLeft++;
                     }
 
                     baseLayer.removeChildAt(i);
@@ -960,6 +965,9 @@ function createPowerUps() {
     if (this.speedId === undefined){
         this.speedId = 0;
     }
+    if (this.smashBuilding === undefined){
+        this.smashBuilding = 0;
+    }
 
     if (Math.random() > 0.5){
         return;
@@ -1011,6 +1019,20 @@ function createPowerUps() {
             speedBoost.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
 
             baseLayer.addChild(speedBoost);
+        }
+        if (Math.random() > 0.5){
+            xRand = Math.random();
+            yRand = Math.random();
+            let smashBuilding = new createjs.Sprite(projectileSheet, "smashBuilding");
+            smashBuilding.type="smashBuilding";
+            smashBuilding.name = (this.smashBuilding++).toString();
+            smashBuilding.isPowerUp = true;
+            smashBuilding.scaleX = 0.3;
+            smashBuilding.scaleY = 0.3;
+            smashBuilding.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+            smashBuilding.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
+
+            baseLayer.addChild(smashBuilding);
         }
 
     }
@@ -1362,13 +1384,20 @@ function collision(x, y, radius, coords, type){
 }
 
 /** returns true if there is no collision */
-function checkCollisionWithBuildings(x, y, radius){
+function checkCollisionWithBuildings(x, y, radius, remove=0){
     for (let i=0; i<buildings.length; i++){
         if (!buildingSquareCollision(x,y,radius,radius,buildings[i])||buildings[i].collidable===false)
             continue;
         let coords=buildings[i].coordinates;
-        if (collision(x, y, radius, coords, buildings[i].type))
+        if (collision(x, y, radius, coords, buildings[i].type)) {
+            if (remove === 1 && smashesLeft>0) {
+                smashesLeft--;
+                buildings[i].collidable = false;
+                buildingsLayer.getChildByName(buildings[i].hash).graphics._fill.style=buildingsColor2;
+                return true;
+            }
             return false;
+        }
     }
     return true;
 }
