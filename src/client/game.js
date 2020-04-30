@@ -11,7 +11,7 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = true;
+const DEBUG = false;
 //const ORIGIN = 'https://firststef.tools';
 const ORIGIN = 'http://localhost';
 
@@ -94,7 +94,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -284,11 +284,16 @@ function loadComplete(){
     monsterSheet = new createjs.SpriteSheet({
         framerate: 8,
         "images": [resourceLoader.getResult("monsters")],
-        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0,"count":3},
+        "frames": {"height": 32, "width": 32, "regX": 0, "regY":0, "spacing":10, "margin":0},
         "animations": {
-            "move": {
+            "moveRed": {
                 frames: [0,1,2],
-                next: "move",
+                next: "moveRed",
+                speed: 1
+            },
+            "moveGreen": {
+                frames: [3,4,5],
+                next: "moveGreen",
                 speed: 1
             }
         }
@@ -681,7 +686,7 @@ function tick(event) {
                 let velocityX = sprite.velocity * Math.cos(angle);
                 let velocityY = sprite.velocity * Math.sin(angle);
 
-                if (sprite.timeToShoot===0){
+                if (sprite.mType === "Red" && sprite.timeToShoot===0){
                     sprite.timeToShoot=sprite.projectileTimer;
                     if (sprite.projectileTimer>35)
                         sprite.projectileTimer=sprite.projectileTimer-3;
@@ -729,7 +734,17 @@ function tick(event) {
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
             nrOfMonsters++;
-            let monsterSprite = new createjs.Sprite(monsterSheet, "move");
+
+            let monsterSprite;
+            let mType;
+            if (Math.random() > 0.5) {
+                monsterSprite = new createjs.Sprite(monsterSheet, "moveRed");
+                mType = "Red";
+            }
+            else {
+                monsterSprite = new createjs.Sprite(monsterSheet, "moveGreen");
+                mType = "Green";
+            }
 
             monsterSprite.x = playerGetPos()[0];
             monsterSprite.y = playerGetPos()[1];
@@ -743,8 +758,9 @@ function tick(event) {
                 monsterSprite,
                 playerGetPos()[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (1 + xRand) * offsetx,
                 playerGetPos()[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (1 + yRand) * offsety,
-                1,
-                100
+                mType === "Red" ? 1 : 1.8,
+                100,
+                mType
             );
         }
 
@@ -890,13 +906,17 @@ class Projectile {
 }
 
 class Monster{
-    constructor(sprite, x, y, velocity,hp) {
+    constructor(sprite, x, y, velocity,hp, type) {
         let id = getUniqueId();
 
         this.sprite = sprite;
         this.isMonster = true;
-        sprite.projectileTimer=2*Math.floor( (60+Math.random()*120) );
-        sprite.timeToShoot=sprite.projectileTimer;
+
+        sprite.mType = type;
+        if (type === "Red") {
+            sprite.projectileTimer = 2 * Math.floor((60 + Math.random() * 120));
+            sprite.timeToShoot = sprite.projectileTimer;
+        }
 
         sprite.name = id;
         sprite.isMonster = true;
@@ -1021,7 +1041,7 @@ function setMap() {
     mapboxgl.accessToken = 'pk.eyJ1IjoiZmlyc3RzdGVmIiwiYSI6ImNrNzRneHkzbTBpaDQzZnBkZDY3dXRjaDQifQ.g6l-GFeBB2cUisg6MqweaA';
     map = new mapboxgl.Map({
         container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
+        style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
         center: [playerPos[0], playerPos[1]],
         zoom: 20
     });
@@ -1034,7 +1054,9 @@ function setMap() {
             true
         );
         let searchCallback = function() {
+            document.getElementById("map").hidden = false;
             let features = map.queryRenderedFeatures({/*sourceLayer: ["road", "building"]*/ });
+            document.getElementById("map").hidden = true;
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
