@@ -910,6 +910,10 @@ function createMoneyPowerUp() {
         this.moneyId = 0;
     }
 
+    if (Math.random() > 0.2){
+        return;
+    }
+
     let playerPos = playerGetPos();
 
     let outSideLastBox = false;
