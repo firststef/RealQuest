@@ -41,8 +41,8 @@ const playerMaxHealth = 100;
 //Palette
 const groundColor = "#379481";
 const buildingsColor = "#956c6c";
-const buildingsColor2 = "rgba(193, 66, 66, 0.82)";
-const buildingsColorMultiPolygon = "rgba(193, 66, 66, 0.42)";
+const buildingsColor2 = "rgba(193,71,190,0.82)";
+const buildingsColorMultiPolygon = "rgba(193,74,3,0.82)";
 const roadsColor = "#d3d3d3";
 const waterColor = "#0892A5";
 
@@ -935,10 +935,12 @@ function setMap() {
             features.forEach(function (feature) {
                 if (buildingsLayer !== undefined && roadsLayer !== undefined && validateAndAddId(feature.geometry)) {
                     drawFeature(feature);
-                    if (!(ticks<120))
-                        if (feature.sourceLayer === "building") {
-                            buildings.push(buildingAdder(feature.geometry));
-                        }
+                    feature.geometry.collidable=true;
+                    if (ticks<120)
+                        feature.geometry.collidable=false;
+                    if (feature.sourceLayer === "building") {
+                        buildings.push(buildingAdder(feature.geometry));
+                    }
                 }
             });
         };
@@ -1238,7 +1240,7 @@ function collision(x, y, radius, coords, type){
 /** returns true if there is no collision */
 function checkCollisionWithBuildings(x, y, radius){
     for (let i=0; i<buildings.length; i++){
-        if (!buildingSquareCollision(x,y,radius,radius,buildings[i]))
+        if (!buildingSquareCollision(x,y,radius,radius,buildings[i])||buildings[i].collidable===false)
             continue;
         let coords=buildings[i].coordinates;
         if (collision(x, y, radius, coords, buildings[i].type))
