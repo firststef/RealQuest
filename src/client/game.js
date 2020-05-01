@@ -11,7 +11,7 @@ SECTIONS:
 9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
-const DEBUG = true;
+const DEBUG = false;
 const ORIGIN = 'https://firststef.tools';
 //const ORIGIN = 'http://localhost';
 
@@ -93,7 +93,7 @@ var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 
-var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
