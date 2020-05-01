@@ -173,6 +173,14 @@ footer > div{
     justify-content:stretch;
 }
 
+#lore_image {
+    height: 200px;
+}
+
+#specs_image {
+    height: 200px;
+}
+
 #div_lore_text, #div_specs_text{
     text-align: center;
     font-size: 22px;
