@@ -17,7 +17,7 @@ const ORIGIN = 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
-const scale = 4; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
+const scale = 2.5; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
 const windowWidth =  window.innerWidth;
 const windowHeight =  window.innerHeight;
 const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
@@ -112,7 +112,9 @@ const mayRemove=1;
 var playerLifeBar;
 var playerTotalPoints;
 var scoreBoards;
-var nearbyMessageDesc;
+
+var nearbyMessageDescTop;
+var nearbyMessageDescBottom;
 var nearbyMessageName;
 var yourCoordinates;
 var consoleText;
@@ -235,7 +237,10 @@ function loadComplete(){
     playerLifeBar = document.getElementById('lifebar');
     playerTotalPoints = document.getElementById('totalPoints');
     scoreBoards = document.getElementById('scoreBoards');
-    nearbyMessageDesc = document.getElementById("placeDescription");
+
+    nearbyMessageDescTop = document.getElementById("placeDescriptionTop");
+    nearbyMessageDescBottom = document.getElementById("placeDescriptionBottom");
+
     nearbyMessageName = document.getElementById("placeName");
     yourCoordinates = document.getElementById("yourCoordinates");
     consoleText = document.getElementById("consoleText");
@@ -675,6 +680,7 @@ function tick(event) {
                         if (playerHealth < 0) {
                             playerHealth = 0;
                             gameOver = 1;
+                            //TODO !!! STOP all the other setIntervals
                         }
                         updatePlayerLifeBar();
                     }
@@ -1491,7 +1497,7 @@ function updateScoreBoard() {
         });
 }
 
-function updateNearbyMessage(){
+function updateNearbyMessage() {
     fetch(ORIGIN + "/api/nearbymessage?lat="+map.transform._center.lat+"&long="+map.transform._center.lng)
         .then((response) => {
             return response.json();
@@ -1502,12 +1508,18 @@ function updateNearbyMessage(){
                 message.name = '';
             }
             else{
+                if (nearbyMessageName.innerHTML === "🙤 " + message.name +" 🙦")
+                    return;
                 message.name = "&#128612; " + message.name + " &#128614;";
-            }
-            if (message.description === undefined)
-                message.description = '';
 
-            nearbyMessageDesc.innerHTML = message.description;
+            }
+            if (message.topText === undefined)
+                message.topText = '';
+            if (message.bottomText === undefined)
+                message.bottomText = '';
+
+            nearbyMessageDescTop.innerHTML = message.topText;
+            nearbyMessageDescBottom.innerHTML = message.bottomText;
             nearbyMessageName.innerHTML = message.name;
         });
 }

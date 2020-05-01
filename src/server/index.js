@@ -17,6 +17,25 @@ let radius = 0.5;
 const hostname = '127.0.0.1';
 const port = 80;
 
+const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
+    {topText: "", bottomText: " is beneath your feet" },
+    {topText: "", bottomText: " is in you sight"},
+    {topText: "The ancient place ", bottomText: " calls to you"},
+    {topText: "You have entered the cursed land nearby ", bottomText: ""},
+    {topText: "You have reached ", bottomText: ""},
+    {topText: "The ruins of ", bottomText: " glare upon you" },
+    {topText: "You are near ", bottomText: ""}
+
+];
+const otherFeatureMessages=[{topText: "", bottomText: " is in you sight"},
+    {topText: "The ancient place ", bottomText: " calls to you"},
+    {topText: "You have entered the cursed land nearby ", bottomText: ""},
+    {topText: "You have reached ", bottomText: ""},
+    {topText: "The ruins of ", bottomText: " glare upon you" },
+    {topText: "You are near ", bottomText: ""}
+
+];
+
 /** LOGIC */
 //Logger
 function logToFile(msg){
@@ -332,26 +351,45 @@ function getCurrentTime(playerPos) {
     return n*60+d.getUTCMinutes();
 }
 
+function streetMessage(feature) {
+    let position=Math.floor(Math.random() * streetMessages.length);
+    feature.topText=streetMessages[position].topText;
+    feature.bottomText=streetMessages[position].bottomText;
+}
+
+function otherFeatureMessage(feature) {
+    let position=Math.floor(Math.random() * otherFeatureMessages.length);
+    feature.topText=otherFeatureMessages[position].topText;
+    feature.bottomText=otherFeatureMessages[position].bottomText;
+}
 function getBestNearbyMessage(playerPos, features) {
-    let bestStreet = {dist: Infinity};
+    let bestFeature = {dist: Infinity};
     features.forEach(obj => {
-        if (obj["geometry"]["type"] === "Point"){
-            if (obj["properties"]["class"] === "street" || obj["properties"]["class"] === "primary"){
+        if (obj["geometry"]["type"] === "Point") {
+            if (obj["properties"]["class"] !== undefined && obj["properties"]["name"] !== undefined){
                 let dist = distance([playerPos.latitude, playerPos.longitude], obj["geometry"]["coordinates"]);
-                if (bestStreet.dist !== undefined && obj["properties"]["name"] !== undefined && bestStreet.dist > dist){
-                    bestStreet.dist = dist;
-                    bestStreet.name = obj["properties"]["name"];
+                if (bestFeature.dist !== undefined && bestFeature.dist > dist){
+                    bestFeature.dist = dist;
+                    bestFeature.name = obj["properties"]["name"];
+
+                    if (obj["properties"]["class"] === "street" || obj["properties"]["class"] === "primary" ||
+                        obj["properties"]["class"] === "secondary") {
+                        streetMessage(bestFeature);
+                    } else {
+                        otherFeatureMessage(bestFeature);
+                    }
                 }
             }
         }
     });
 
     let returnObj = {};
-    if (bestStreet.dist !== Infinity){
-        returnObj.name = bestStreet.name;
-        returnObj.description = "You are traveling on";
-    }
+    if (bestFeature.dist !== Infinity){
+        returnObj.name = bestFeature.name;
+        returnObj.topText = bestFeature.topText;
+        returnObj.bottomText = bestFeature.bottomText;
 
+    }
     return returnObj;
 }
 
