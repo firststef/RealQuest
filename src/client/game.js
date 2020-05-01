@@ -146,6 +146,7 @@ class PageLoader{
         this.callbackObject = callbackObject;
         this.completedCallbacks = [];
         this.onCallbackEnd = onCallbackEnd;
+        this.alreadyLoaded = false;
     }
 
     loadPage(){
@@ -161,9 +162,14 @@ class PageLoader{
         return Object.keys(this.callbackObject).every((key) => this.completedCallbacks.includes(key));
     }
 
+    isAlreadyLoaded(){
+        return this.alreadyLoaded;
+    }
+
     handleCompleted(){
-        if (this.isFinished()){
+        if (this.isFinished() && !this.alreadyLoaded){
             this.onCallbackEnd();
+            this.alreadyLoaded = true;
         }
     }
 }
@@ -220,16 +226,36 @@ function loadComplete(){
     document.getElementById("uiScreen").hidden = false;
 
     createjs.DisplayObject.prototype.centerX = function() {
-        return  this.x + this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+        try {
+            return this.x + this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+        }
+        catch (e) {
+            return this.x;
+        }
     };
     createjs.DisplayObject.prototype.centerY = function() {
-        return  this.y + this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
+        try{
+            return  this.y + this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
+        }
+        catch (e) {
+            return this.y;
+        }
     };
     createjs.DisplayObject.prototype.reverseCenterX = function(centerX) {
-        return  centerX - this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+        try {
+            return centerX - this.getBounds().width*this.scaleX*Math.sqrt(2)/2*Math.cos((this.rotation+45) * Math.PI / 180);
+        }
+        catch (e) {
+            return centerX;
+        }
     };
     createjs.DisplayObject.prototype.reverseCenterY = function(centerY) {
-        return  centerY - this.getBounds().height*this.scaleY*Math.sqrt(2)/2*Math.sin((this.rotation+45) * Math.PI / 180);
+        try {
+            return centerY - this.getBounds().height * this.scaleY * Math.sqrt(2) / 2 * Math.sin((this.rotation + 45) * Math.PI / 180);
+        }
+        catch (e) {
+            return centerY;
+        }
     };
 
     playerLifeBar = document.getElementById('lifebar');
@@ -361,9 +387,6 @@ function loadComplete(){
         playerRect.graphics.drawCircle(playerSprite.centerX(), playerSprite.centerY(), playerRadius);
     }
 
-    //Weather
-    updateWeatherOverlay();
-
     //Adding Layers to the tree
     stage.addChild(background);
     stage.addChild(camera);
@@ -374,9 +397,12 @@ function loadComplete(){
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
     camera.addChild(monsterLayer);
-    stage.addChild(weatherOverlay);
-    stage.addChild(luminosityOverlay);
+    //stage.addChild(weatherOverlay);
+    //stage.addChild(luminosityOverlay);
     stage.addChild(uiScreen);
+
+    updateWeatherOverlay();
+    setInterval(updateWeatherOverlay, 600000);
 
     //Adding Sprites to the tree
     if (DEBUG === true) {
@@ -1540,16 +1566,27 @@ function toggleScreen() {
     }
 }
 
-function setNightOverlay() {
-    luminosityOverlay = new createjs.Shape();
-    luminosityOverlay.graphics
-        .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety,
-            playerRadius, offsetx, offsety, playerRadius * 10)
-        .drawRect(0, 0, windowWidth, windowHeight);
-    luminosityOverlay.name = "luminosityOverlay";
+function setNightOverlay(on) {
+    let nightChild = stage.getChildByName("luminosityOverlay");
+    if (nightChild !== null){
+        stage.removeChild(nightChild);
+    }
+    if (on === true) {
+        luminosityOverlay = new createjs.Shape();
+        luminosityOverlay.graphics
+            .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety,
+                playerRadius, offsetx, offsety, playerRadius * 10)
+            .drawRect(0, 0, windowWidth, windowHeight);
+        luminosityOverlay.name = "luminosityOverlay";
+        stage.addChildAt(luminosityOverlay, 4);
+    }
 }
 
 function setWeatherOverlay(weather) {
+    let weatherChild = stage.getChildByName("weatherOverlay");
+    if (weatherChild !== null){
+        stage.removeChild(weatherChild);
+    }
     weatherSheet = new createjs.SpriteSheet({ //this will be replaced with weather
         framerate: 8,
         "images": [resourceLoader.getResult("weather")],
@@ -1603,13 +1640,16 @@ function setWeatherOverlay(weather) {
         }
         return true;
     };
+    stage.addChildAt(weatherOverlay, 3);
 }
 
 function updateWeatherOverlay(){
-    if (gameStartTime < 420 || gameStartTime > 1320) {
-        setNightOverlay();
+    if(this.initialDisplay !== undefined){
+        getServerTimeAndWeather();
     }
+    this.initialDisplay = true;
     setWeatherOverlay(gameWeather.weather[0].main);
+    setNightOverlay(gameStartTime < 420 || gameStartTime > 1320);
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
