@@ -1,13 +1,12 @@
 /** MODULES */
-const url = require('url');
+let url = require('url');
 const http = require('http');
-const https = require("https");
+const https = require('https');
 const fs = require('fs');
 const MongoClient = require('mongodb').MongoClient;
 const mongoUri = "mongodb+srv://twproj:realquest@realquest-5fa4g.gcp.mongodb.net/test?retryWrites=true&w=majority";
 
-/** VARIABLES */
-let config;
+let config = require('./config.json');
 
 //Logic
 let playerMap = new Map(); //player Map -> has socket and coordinates
@@ -25,7 +24,6 @@ const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
     {topText: "You have reached ", bottomText: ""},
     {topText: "The ruins of ", bottomText: " glare upon you" },
     {topText: "You are near ", bottomText: ""}
-
 ];
 const otherFeatureMessages=[{topText: "", bottomText: " is in you sight"},
     {topText: "The ancient place ", bottomText: " calls to you"},
@@ -51,16 +49,6 @@ function logToFile(msg){
 process.on('uncaughtException', function (err) {
     logToFile('Caught exception: ' + err.toString() + err.stack.toString());
 });
-
-//Config
-try {
-    config = fs.readFileSync('config.json', {encoding:'utf8', flag:'r'});
-}
-catch (e) {
-    logToFile('Config file not found');
-    return;
-}
-config = JSON.parse(config);
 
 //MongoDB
 const client = MongoClient.connect(mongoUri, {useNewUrlParser: true, useUnifiedTopology: true});
@@ -91,8 +79,8 @@ function serverHandler(req, res) {
             return;
         }
     } else {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
-        res.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
         let data;
         var resource = config.resources[parsedUrl.pathname];
