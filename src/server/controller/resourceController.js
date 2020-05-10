@@ -1,9 +1,5 @@
-let model = require('../model/index');
-let view = require('../view/index');
-let config = JSON.parse(require('./config.json'));
-
-class Controller{
-    get(req, res){
+class ResourceController {
+    plainFileExport(req, res, type){
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
@@ -34,6 +30,6 @@ class Controller{
     }
 }
 
-let controller = new Controller();
+let resourceController = new ResourceController();
 
-module.exports = {controller};
+module.exports = resourceController;
