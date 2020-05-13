@@ -277,7 +277,7 @@ table.topazCells tfoot .links a{
     display: none;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 1000px) {
     #console{
         display: none;
     }

@@ -36,7 +36,7 @@ const deleteLimitW = windowWidth/scale*1.4;
 const deleteLimitH = windowHeight/scale*1.4;
 const playerMaxHealth = 100;
 const moneyPowerUpValue = 50;
-const joyStickScreenMaxSize = 900;
+const joyStickScreenMaxSize = 1000;
 
 //Palette
 const groundColor = "#379481";
@@ -432,7 +432,7 @@ function loadComplete(){
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
 
     //Stick movement
-    isStickEnabled = windowWidth <= 900;
+    isStickEnabled = windowWidth <= joyStickScreenMaxSize;
     if (isStickEnabled){
         initStickDisplay();
     }
