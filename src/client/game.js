@@ -586,8 +586,6 @@ function tick(event) {
         if (player === undefined)
             return;
 
-        console.log("x y", leftStick.GetY(), leftStick.GetX());
-
         //Movement
         if (!writing) {
             let axisX = 0;
