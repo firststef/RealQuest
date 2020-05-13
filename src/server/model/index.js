@@ -1,5 +1,7 @@
 const config = require('../config/config');
 const ApiLoader = require('../utils/apiLoader');
+const https = require('https');
+const url = require('url');
 
 const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
     {topText: "", bottomText: " is beneath your feet" },
@@ -23,45 +25,25 @@ const radius = 0.5;
 class Model {
     constructor() {
         this.mongoClient = require('mongodb').MongoClient;
-        this.mongoClient.connect(config.mongoDB.uri, {useNewUrlParser: true, useUnifiedTopology: true});
+        this.client = this.mongoClient.connect(config.mongoDB.uri, {useNewUrlParser: true, useUnifiedTopology: true});
         this.playerMap = new Map();
     }
 
     getMongoClient() {
-        return this.mongoClient;
+        return this.client;
+    }
+
+    getPlayerMap() {
+        return this.playerMap;
     }
 
     distance(point1, point2) {
         return Math.sqrt(Math.pow((point1[0] - point2[0]), 2) + Math.pow((point1[1] - point2[1]), 2));
     }
 
-    getNearbyPlayers(firstPlayerObj, firstPlayerId) {
-        let otherPlayers = Array();
-        let dist;
-        this.playerMap.forEach((otherPlayerObj, otherPlayerId) => {
-            if (otherPlayerObj.coordinates === 0)
-                return;
-            dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
-            if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius) {
-                otherPlayers.push({
-                    id: otherPlayerId,
-                    username: otherPlayerObj.username,
-                    coordinates: otherPlayerObj.coordinates,
-                    currentPoints: otherPlayerObj.currentPoints,
-                    currentAnimation: otherPlayerObj.currentAnimation,
-                    currentAnimationFrame: otherPlayerObj.currentAnimationFrame,
-                    currentFrame: otherPlayerObj.currentFrame,
-                    scaleX: otherPlayerObj.scaleX
-                });
-            }
-        });
-
-        return otherPlayers;
-    }
-
     getLiveScores(count) {
         let LiveScores = Array();
-        this.playerMap.forEach((otherPlayerObj, otherPlayerId) => {
+        this.playerMap.forEach((otherPlayerObj) => {
             LiveScores.push({username: otherPlayerObj.username, currentPoints: otherPlayerObj.currentPoints});
         });
         LiveScores.sort(function (a, b) {
@@ -72,7 +54,7 @@ class Model {
     }
 
     getLeaderBoards(myScore, count, resolveCallback, rejectCallback) {
-        this.mongoClient
+        this.client
             .then(client => client.db("RealQuestDB")
                 .collection("leaderboard")
                 .find({score: {$gt: myScore}}, {projection: {_id: 0}})
@@ -197,7 +179,7 @@ class Model {
         features.forEach(obj => {
             if (obj["geometry"]["type"] === "Point") {
                 if (obj["properties"]["class"] !== undefined && obj["properties"]["name"] !== undefined) {
-                    let dist = distance([playerPos.latitude, playerPos.longitude], obj["geometry"]["coordinates"]);
+                    let dist = this.distance([playerPos.latitude, playerPos.longitude], obj["geometry"]["coordinates"]);
                     if (bestFeature.dist !== undefined && bestFeature.dist > dist) {
                         bestFeature.dist = dist;
                         bestFeature.name = obj["properties"]["name"];

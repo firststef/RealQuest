@@ -3,56 +3,52 @@ let url = require('url');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
-let config = require('./config.json');
 
-let router = require('routes/routes');
+let router = require('../server/routes/routes');
+let model = require('../server/model/index');
+let logToFile = require('../server/utils/logger')
 
 //Server
-const hostname = '127.0.0.1';
 const port = 80;
-
-//Server
-function serverHandler(req, res) {
-    const parsedUrl = url.parse(req.url, true);
-    if (parsedUrl.pathname === "/api/environment") {
-        router.callRoute(req, res);
-    } else if (parsedUrl.pathname === "/api/livescores") {
-        router.callRoute(req, res);
-    } else if (parsedUrl.pathname === "/api/leaderboards") {
-        router.callRoute(req, res);
-    } else if (parsedUrl.pathname === "/api/nearbymessage") {
-        router.callRoute(req, res);
-    } else {
-        res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        res.setHeader("Pragma", "no-cache");
-        res.setHeader("Expires", "0");
-        let data;
-        var resource = config.resources[parsedUrl.pathname];
-        if (resource !== undefined) {
-            try {
-                data = fs.readFileSync(resource.path);
-                res.statusCode = 200;
-                res.setHeader('Content-Type', resource.type);
-                res.write(data);
-                res.end();
-                return;
-            } catch (e) {
-                logToFile("File not read:" + req.url);
-            }
-        } else {
-            logToFile("Path not registered:" + req.url);
-        }
-    }
-    res.writeHead(404);
-    res.write('Not found');
-    res.end();
+function serverFunc(req, res) {
+    router.callRoute(req, res);
 }
 
-server = http.createServer(serverHandler);
+server = http.createServer(serverFunc);
 server.listen(port);
 
 //Socket
-var io = require('socket.io')(server);
+let playerMap = model.getPlayerMap();
+
+function distance(point1, point2) {
+    return Math.sqrt(Math.pow((point1[0] - point2[0]), 2) + Math.pow((point1[1] - point2[1]), 2));
+}
+
+function getNearbyPlayers(firstPlayerObj, firstPlayerId) {
+    let otherPlayers = Array();
+    let dist;
+    playerMap.forEach((otherPlayerObj, otherPlayerId) => {
+        if (otherPlayerObj.coordinates === 0)
+            return;
+        dist = distance(otherPlayerObj.coordinates, firstPlayerObj.coordinates);
+        if (firstPlayerId !== otherPlayerId && !isNaN(dist) && dist < radius) {
+            otherPlayers.push({
+                id: otherPlayerId,
+                username: otherPlayerObj.username,
+                coordinates: otherPlayerObj.coordinates,
+                currentPoints: otherPlayerObj.currentPoints,
+                currentAnimation: otherPlayerObj.currentAnimation,
+                currentAnimationFrame: otherPlayerObj.currentAnimationFrame,
+                currentFrame: otherPlayerObj.currentFrame,
+                scaleX: otherPlayerObj.scaleX
+            });
+        }
+    });
+
+    return otherPlayers;
+}
+
+let io = require('socket.io')(server);
 io.origins('*:*');
 io.on('connection', function (socket) {
     playerMap.set(socket.id, {coordinates: 0, currentPoints: 0, socket: socket, username: socket.handshake.query.username});
@@ -72,7 +68,7 @@ io.on('connection', function (socket) {
         let playerObj = playerMap.get(socket.id);
         let playerScore = playerObj.currentPoints;
         if(playerScore !== 0){
-            client
+            model.getMongoClient()
                 .then(client => client.db("RealQuestDB").collection("leaderboard").insertOne({username:playerObj.username, score:playerScore}))
                 .then(playerMap.delete(socket.id))
                 .catch(e => logToFile(e));

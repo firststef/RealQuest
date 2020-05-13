@@ -1,28 +1,26 @@
+let logger = require('../utils/logger');
+const fs = require('fs');
+
 class ResourceController {
-    plainFileExport(req, res, type){
+    plainFileExport(req, res, path, type){
         res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
         res.setHeader("Pragma", "no-cache");
         res.setHeader("Expires", "0");
         let data;
-        let resource = config.resources[parsedUrl.pathname];
-        if (resource !== undefined) {
+        if (path !== undefined && type !== undefined) {
             try {
-                data = fs.readFileSync(resource.path);
+                data = fs.readFileSync(path);
                 res.statusCode = 200;
-                res.setHeader('Content-Type', resource.type);
+                res.setHeader('Content-Type', type);
 
-                if (resource.isTemplated){
-                    let d = model.get_all();
-                    data = view.render(data, d);
-                }
                 res.write(data);
                 res.end();
                 return;
             } catch (e) {
-                logToFile("File not read:" + req.url);
+                logger("File not read:" + req.url);
             }
         } else {
-            logToFile("Path not registered:" + req.url);
+            logger("Arguments invalid:" + req.url);
         }
         res.writeHead(404);
         res.write('Not found');

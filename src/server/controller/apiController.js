@@ -1,7 +1,10 @@
 let model = require('../model/index');
 let logger = require('../utils/logger');
+let url = require('url');
 
 class ApiController {
+    constructor() {}
+
     reject(res, e){
         res.writeHead(404);
         logger(e);
@@ -42,14 +45,16 @@ class ApiController {
                 myScore = 0;
             myScore = parseFloat(myScore);
 
+            let thisRef = this;
+
             model.getLeaderBoards(
             myScore,
             count,
             (obj) => {
-                this.resolve(res, obj, 'text/json');
+                thisRef.resolve(res, obj, 'text/json');
             },
             (e) => {
-                this.reject(res, e);
+                thisRef.reject(res, e);
             });
 
             return;
@@ -62,11 +67,12 @@ class ApiController {
         const parsedUrl = url.parse(req.url, true);
         if (parsedUrl.query.long !== undefined && parsedUrl.query.lat !== undefined) {
             let playerPos = [parsedUrl.query.long, parsedUrl.query.lat];
+            let thisRef = this;
 
             model.getWeatherAndTime(
                 playerPos,
-                (obj) => this.resolve(res, obj, 'text/json'),
-                (e) => this.reject(res, e)
+                (obj) => thisRef.resolve(res, obj, 'text/json'),
+                (e) => thisRef.reject(res, e)
             );
 
             return;
@@ -79,11 +85,12 @@ class ApiController {
         const parsedUrl = url.parse(req.url, true);
         if (parsedUrl.query.long !== undefined && parsedUrl.query.lat !== undefined) {
             let playerPos = {longitude: parsedUrl.query.long, latitude: parsedUrl.query.lat};
+            let thisRef = this;
 
             model.getNearbyMessage(
                 playerPos,
-                (obj) => this.resolve(res, obj, 'text/json'),
-                (e) => this.reject(res, e)
+                (obj) => thisRef.resolve(res, obj, 'text/json'),
+                (e) => thisRef.reject(res, e)
             );
 
             return;

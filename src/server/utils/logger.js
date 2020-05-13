@@ -1,4 +1,5 @@
-//Logger
+const fs = require('fs');
+
 function logToFile(msg){
     msg = JSON.stringify(msg);
     fs.appendFile('twlogs/twproj-' + (new Date()).toString()
