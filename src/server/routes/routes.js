@@ -15,7 +15,7 @@ router.get('/style.css', resourceController.plainFileExport.bind(resourceControl
 router.get('/gamestyle.css', resourceController.plainFileExport.bind(resourceController), ['../client/gamestyle.css', 'text/css']);
 router.get('/index.js', resourceController.plainFileExport.bind(resourceController), ['../client/index.js', 'text/javascript']);
 router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game.js', 'text/javascript']);
-router.get('/joy.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/joy.js', 'text/javascript']);
+router.get('/joy.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/joy.min.js', 'text/javascript']);
 router.get('/sprites/realquest-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/realquest-logo.png', 'image/png']);
 router.get('/sprites/players.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/players.png', 'image/png']);
 router.get('/sprites/Epichero.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/Epichero.png', 'image/png']);
