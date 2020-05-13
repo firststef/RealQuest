@@ -9,6 +9,7 @@
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
     <script src="createjs.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+    <script src="joy.min.js"></script>
     <script src="game.js"></script>
 </head>
 
@@ -37,9 +38,13 @@
                 </div>
             </div>
             <div class="bottom-row">
-                <div class="console">
+                <div class="console" id="console">
                     <div class="console-text" id="consoleText"></div>
                     <input id="consoleInput" type="text">
+                </div>
+                <div class="mobileControl">
+                    <div id="leftStick" class="stick"></div>
+                    <div id="rightStick" class="stick"></div>
                 </div>
             </div>
         </div>

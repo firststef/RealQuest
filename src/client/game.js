@@ -12,8 +12,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
-//const ORIGIN = 'https://firststef.tools';
-const ORIGIN = 'http://localhost';
+const ORIGIN = 'https://firststef.tools';
+//const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -34,12 +34,9 @@ const MAX_COORDINATE=180;
 const initialDisplacement=0.000002;
 const deleteLimitW = windowWidth/scale*1.4;
 const deleteLimitH = windowHeight/scale*1.4;
-
-var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact
-
-
 const playerMaxHealth = 100;
 const moneyPowerUpValue = 50;
+const joyStickScreenMaxSize = 900;
 
 //Palette
 const groundColor = "#379481";
@@ -92,8 +89,9 @@ var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
+var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact
 
-var maxNrOfMonsters = 5; //made var from const to increase it as game goes on.
+var maxNrOfMonsters = 0; //made var from const to increase it as game goes on.
 var monsterSheet;
 var monsterSpawnTime=100;
 var nrOfMonsters=0;
@@ -120,6 +118,10 @@ var yourCoordinates;
 var consoleText;
 var textBox;
 
+var leftStick;
+var rightStick;
+var isStickEnabled;
+
 //GPX vars
 var GPXString = "";
 var GPXInterval;
@@ -127,6 +129,8 @@ var writing = false;
 
 //projectile vars
 var projectileSheet;
+const projectileCoolDown = 200;
+var projectileCoolDownFlag = true;
 
 //points vars
 var monstersKilled=0;
@@ -419,25 +423,19 @@ function loadComplete(){
     // GameEvents init
     stage.addEventListener("stagemousedown", (evt) => {
         document.getElementById("consoleInput").blur();
-        let arrowSprite = new createjs.Sprite(projectileSheet, "blue_attack");
-        arrowSprite.scaleX = 0.3;
-        arrowSprite.scaleY = 0.3;
-        let angle = Math.atan2(evt.stageX - offsetx*scale, -(evt.stageY - offsety*scale) );
-        arrowSprite.rotation = angle * (180/Math.PI) - 90;
-        let p = new Projectile(
-            arrowSprite,
-            arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
-            arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * playerRadius),
-            angle  - Math.PI / 2,
-            4,
-            3000
-        );
+        shootProjectile(evt.stageX - offsetx*scale, -(evt.stageY - offsety*scale));
     });
 
     //Input init
     Key = loadKeyHandler();
     window.addEventListener('keyup', function(event) { Key.onKeyup(event); }, false);
     window.addEventListener('keydown', function(event) { Key.onKeydown(event); }, false);
+
+    //Stick movement
+    isStickEnabled = windowWidth <= 900;
+    if (isStickEnabled){
+        initStickDisplay();
+    }
 
     //Server communication
     socket = io(socketServerAddress, {secure: true, query: {username: playerName}});
@@ -588,10 +586,15 @@ function tick(event) {
         if (player === undefined)
             return;
 
+        console.log("x y", leftStick.GetY(), leftStick.GetX());
+
+        //Movement
         if (!writing) {
             let axisX = 0;
             let axisY = 0;
-            if (Key.isDown(Key.W)) {
+
+            //Keyboard movement
+            if (Key.isDown(Key.W) || (isStickEnabled && rightStick.GetY() > 0)) {
                 // up
                 if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
@@ -600,7 +603,7 @@ function tick(event) {
                 if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
                     player.gotoAndPlay("runUp");
 
-            } else if (Key.isDown(Key.S)) {
+            } else if (Key.isDown(Key.S)|| (isStickEnabled && rightStick.GetY() < 0)) {
                 // down
                 if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
@@ -609,7 +612,7 @@ function tick(event) {
                 if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
                     player.gotoAndPlay("runDown");
             }
-            if (Key.isDown(Key.A)) {
+            if (Key.isDown(Key.A) || (isStickEnabled && rightStick.GetX() < 0)) {
                 // left
                 if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
@@ -630,7 +633,7 @@ function tick(event) {
                     0
                 );
 
-            } else if (Key.isDown(Key.D)) {
+            } else if (Key.isDown(Key.D) || (isStickEnabled && rightStick.GetX() > 0)) {
                 // right
                 if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius, mayRemove))
                     if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
@@ -681,6 +684,18 @@ function tick(event) {
             }
             camera.setTransform(-player.centerX() + offsetx, -player.centerY() + offsety);
             yourCoordinates.innerHTML = "Your coordinates: " + map.transform.center.lng.toFixed(2) + "," + map.transform.center.lat.toFixed(2);
+        }
+
+        if (isStickEnabled){
+            let x = parseInt(leftStick.GetX());
+            let y = parseInt(leftStick.GetY());
+            if (projectileCoolDownFlag && (x !== 0 || y !== 0)){
+                projectileCoolDownFlag = false
+
+                shootProjectile(x, y);
+
+                setTimeout(() => projectileCoolDownFlag = true, projectileCoolDown);
+            }
         }
 
         //Bullet collision
@@ -956,6 +971,22 @@ class Projectile {
             }
         }
     }
+}
+
+function shootProjectile(x, y){
+    let arrowSprite = new createjs.Sprite(projectileSheet, "blue_attack");
+    arrowSprite.scaleX = 0.3;
+    arrowSprite.scaleY = 0.3;
+    let angle = Math.atan2(x, y);
+    arrowSprite.rotation = angle * (180/Math.PI) - 90;
+    let p = new Projectile(
+        arrowSprite,
+        arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
+        arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * playerRadius),
+        angle  - Math.PI / 2,
+        4,
+        3000
+    );
 }
 
 class Monster{
@@ -1662,6 +1693,15 @@ function updateWeatherOverlay(){
     this.initialDisplay = true;
     setWeatherOverlay(gameWeather.weather[0].main);
     setNightOverlay(gameStartTime < 420 || gameStartTime > 1320);
+}
+
+function initStickDisplay(){
+    leftStick = new JoyStick('leftStick', {title: "leftStick"});
+    rightStick = new JoyStick('rightStick', {title: "rightStick"});
+    setTimeout(() => {
+        document.getElementById("leftStick").style.height = "unset"
+        document.getElementById("rightStick").style.height = "unset"
+    }, 1);
 }
 
 /* --------------------------------------------------------------------------------------------------------- UTILS */
