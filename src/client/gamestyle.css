@@ -111,7 +111,6 @@ body {
 }
 
 .right-ui {
-    height: 400px;
     flex-direction: row-reverse;
 }
 
@@ -268,4 +267,41 @@ table.topazCells tfoot .links a{
 
 .leader-boards-table td:first-child {
     color: white;
+}
+
+.mobileControl {
+    display: none;
+}
+
+.stick {
+    display: none;
+}
+
+@media only screen and (max-width: 900px) {
+    #console{
+        display: none;
+    }
+
+    .mobileControl {
+        display: flex;
+        flex-grow: 1;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .stick {
+        display: flex;
+        flex-grow: 0.2;
+        justify-content: center;
+        pointer-events: all;
+        align-items: flex-end;
+        width: 200px;
+        height: 200px;
+        margin: 10px;
+    }
+
+    .stick canvas {
+        width: unset;
+        height: unset;
+    }
 }
