@@ -758,7 +758,7 @@ function tick(event) {
                     arrowSprite.scaleX = projectileScale;
                     arrowSprite.scaleY = projectileScale;
                     arrowSprite.rotation = arrowAngle * (180/Math.PI) - 45;
-                    let p = new Projectile(
+                    new Projectile(
                         arrowSprite,
                         arrowSprite.reverseCenterX(sprite.centerX() + Math.sin(arrowAngle) * monsterRadius),
                         arrowSprite.reverseCenterY(sprite.centerY() - Math.cos(arrowAngle) * monsterRadius),
@@ -1251,24 +1251,14 @@ function drawPointArray(object, array, fill = false, color = "red") {
     array.forEach(function(point) {
         let x = getCoordinateX(point[0]);
         let y = getCoordinateY(point[1]);
-        if (x !== undefined){
-            if (x < mx)
-                mx = x;
-            if (x > Mx)
-                Mx = x;
-        }
-        else{
-            console.log("err on getcordx", point[0]);
-        }
-        if (y !== undefined){
-            if (y < my)
-                my = y;
-            if (y > My)
-                My = y;
-        }
-        else{
-            console.log("err on getcordy", point[1]);
-        }
+        if (x < mx)
+            mx = x;
+        else if (x > Mx)
+            Mx = x;
+        if (y < my)
+            my = y;
+        else if (y > My)
+            My = y;
         object.graphics.lineTo(getCoordinateX(point[0]), getCoordinateY(point[1]));
     });
     object.setBounds(mx, my, Mx-mx, My-my);
@@ -1405,17 +1395,6 @@ function checkIfPointOnLine(x, y, x1, y1, x2, y2){
 
 }
 function pointLineDistance(x0, y0, a, b, c){
-    //console.log("X= "+x0 +" Y= " + y0 +" a= " + a + " b= " + b +"  c= " +c);
-    var vec=[(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
-    /*console.log(b*x0);
-    console.log(a*y0);
-    console.log(b*x0-a*y0);
-    console.log(b*(b*x0-a*y0));
-    console.log(a*c);
-    console.log(b*(b*x0-a*y0)-a*c);
-    console.log(a*a+b*b);
-    console.log((b*(b*x0-a*y0)-a*c)/(a*a+b*b));
-    console.log(">>>>>>>>>>>>>>>>>>>>>>>>>");*/
     return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
 }
 function distance(x1, y1, x2, y2, x3, y3){

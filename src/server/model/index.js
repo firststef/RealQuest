@@ -1,7 +1,6 @@
 const config = require('../config/config');
 const ApiLoader = require('../utils/apiLoader');
 const https = require('https');
-const url = require('url');
 
 const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
     {topText: "", bottomText: " is beneath your feet" },
@@ -20,7 +19,6 @@ const otherFeatureMessages=[{topText: "", bottomText: " is in you sight"},
     {topText: "You are near ", bottomText: ""}
 
 ];
-const radius = 0.5;
 
 class Model {
     constructor() {
