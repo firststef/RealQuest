@@ -15,14 +15,19 @@
         <script src="index.js"></script>
     </head>
     <body onload="load();">
+        <header>RealQuest 2020 best game by Petrovici Stefan, Stoica George, Crainiciuc Calin</header>
         <div id="div_main_page">
-            <header>RealQuest 2020 best game by Petrovici Stefan, Stoica George, Crainiciuc Calin</header>
-            <div id="div_start_game">
-                <div class="div_start_game_title">
-                    <p><span class="first-title-letter">R</span>eal</p>
-                    <p><span class="first-title-letter">Q</span>uest</p>
+            <div class="div_main" id="div_start_game">
+                <div id="row1">
+                    <div id="div_start_game_title">
+                        <p><span class="first-title-letter">R</span>eal</p>
+                        <p><span class="first-title-letter">Q</span>uest</p>
+                    </div>
+                    <div>
+                        <img id="heroImage" src="../sprites/hero.png" alt="hero image"/>
+                    </div>
                 </div>
-                <div class="div_start_game_form">
+                <div id="div_start_game_form">
                     <form id="form">
                         <p id="formMessage">Please enable geolocation or enter coordinates below</p>
                         <div>
@@ -30,7 +35,7 @@
                             <input type="text" id="latitude_button" name="latitude" placeholder="Latitude [-90, +90]" value="47.162098">
                         </div>
                         <div>
-                            <label for="longitude_button">Longitude</label>
+                            <label >Longitude</label>
                             <input type="text" id="longitude_button" name="longitude" placeholder="Longitude [-180, +180]" value="27.598505">
                         </div>
                         <div>
@@ -40,24 +45,23 @@
                         <input type="button" id="submit_button" onclick="startGame();" value="START GAME" />
                     </form>
                 </div>
-                <img id="heroImage" src="../sprites/hero.png" />
             </div>
-            <div class="game-fun">
+            <div class="div_main" id="game-fun">
                 <p>RealQuest was created in a time when people could not travel in the land. A network portal was opened then by the human race.</p>
                 <p>Search for your friends on the network realm!</p>
             </div>
-            <div id="div_lore">
+            <div class="div_main" id="div_lore">
                 <div id="div_lore_text">
                     <h3>Story</h3>
                     <p> As time begins to move beyond the end of timeline, existance starts anew. Virtual entities had come to life from the past, foreshadowing the end of the beginning. Brave heroes, programmed in the future, are summoned to fight against chaos. Gostly shadows arise from ash to fight againt heroes. Who can defeat the most shadows and return beyond? Find out in the next episode of "Real Quest" </p>
                 </div>
                 <div id="div_lore_image">
-                    <img id="lore_image" src="./../sprites/Epichero.png">
+                    <img id="lore_image" src="./../sprites/Epichero.png" alt="Nice image bruh">
                 </div>
             </div>
-            <div id="div_specs">
+            <div class="div_main" id="div_specs">
                 <div id="div_specs_image">
-                    <img id="specs_image" src="./../sprites/multi.png">
+                    <img id="specs_image" src="./../sprites/multi.png" alt="Nice image bruh">
                 </div>
                 <div id="div_specs_text">
                     <h3>What is RealQuest?</h3>
@@ -65,11 +69,11 @@
                 </div>
             </div>
         </div>
-        <footer class = "footer">
-            <div id="div_coloana1">
+        <footer class="footer">
+            <div class="footer_col">
                 <h3>Github</h3>
             </div>
-            <div id="div_coloana2"> 
+            <div class="footer_col">
                 <div id="col2_title">
                     <p>Used libraries</p>
                 </div>

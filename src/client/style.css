@@ -22,88 +22,57 @@ header{
 }
 
 footer{
-    display:-webkit-box;
-    display:-ms-flexbox;
+
+    justify-content: space-around;
     display:flex;
     flex-wrap: wrap;
-    -webkit-box-orient: horizontal;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: row;
-            flex-direction: row;
+    flex-direction: row;
 }
 
-footer > div{
+.footer_col{
     background-color: black;
     color:white;
     font-size:17px;
-    display:-webkit-box;
-    display:-ms-flexbox;
     display:flex;
-    -webkit-box-flex:1;
-        -ms-flex:1 0 auto;
-            flex:1 0 auto;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
-
+    flex:1 0 auto;
+    flex-direction: column;
 }
 
 #div_main_page{
-    -ms-flex-wrap:wrap;
-        flex-wrap:wrap;
-    display:-webkit-box;
-    display:-ms-flexbox;
+    flex-wrap:wrap;
     display:flex;
-    -webkit-box-orient: vertical;
-    -webkit-box-direction: normal;
-        -ms-flex-direction: column;
-            flex-direction: column;
-    -webkit-box-align:stretch;
-        -ms-flex-align:stretch;
-            align-items:stretch;
+    flex-direction: column;
+    align-items:stretch;
 }
 
-#div_main_page > div {
-    -ms-flex-wrap:wrap;
-        flex-wrap:wrap;
-    display:-webkit-box;
-    display:-ms-flexbox;
-    display:flex;
-    -ms-flex-pack:distribute;
+.div_main {
+    flex-wrap: wrap;
+    display: flex;
+}
+
+#row1{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction:row;
+    justify-content: center;
 }
 
 #div_lore_text, #div_specs_text{
     background-color: #9f4e5f;
-    -ms-flex-wrap:wrap;
-        flex-wrap:wrap;
-}
-
-#div_header{
-    background-color: black;
-    font-size: 20px;
-    text-align:left;
-    -webkit-box-orient:vertical;
-    -webkit-box-direction:normal;
-        -ms-flex-direction:column;
-            flex-direction:column;
-    -webkit-box-align:stretch;
-        -ms-flex-align:stretch;
-            align-items:stretch;
 }
 
 #div_start_game {
-    height:60vh;
     background-image:url(../sprites/game_screen.png);
-    flex-direction: row;
+    flex-direction: column;
     align-content: center;
+    align-items: center;
     justify-content: center;
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
 }
 
-.div_start_game_title {
+#div_start_game_title {
     display: flex;
     font-family: LadyRadical, serif;
     font-size: 150px;
@@ -112,18 +81,17 @@ footer > div{
     flex-direction: column;
 }
 
-.div_start_game_title p {
-    display: flex;
+#div_start_game_title p {
     align-self: center;
     margin-bottom: 0;
     margin-top: 0;
 }
 
-.div_start_game_title p:nth-child(1){
+#div_start_game_title p:nth-child(1){
     margin-right: 100px;
 }
 
-.div_start_game_title p:nth-child(2){
+#div_start_game_title p:nth-child(2){
     margin-left: 100px;
 }
 
@@ -131,15 +99,16 @@ footer > div{
     color: #00fff0;
 }
 
-.div_start_game_form{
+#div_start_game_form{
     background-color:rgba(30, 115, 194, 0.5);
     color: white;
     border-radius: 4px;
-    padding:10px;
+    padding:50px;
     display: flex;
     height: 250px;
     width: 300px;
     margin: auto 30px;
+    margin-bottom: 20px;
     font-size: 20px;
 }
 
@@ -156,7 +125,7 @@ footer > div{
     margin-bottom: 5px;
 }
 
-.game-fun {
+#game-fun {
     background-color: red;
     color: white;
     margin: 0;
@@ -164,7 +133,7 @@ footer > div{
     font-size: 30px;
 }
 
-.game-fun p {
+#game-fun p {
     width: 100%;
     margin: 3px 10px;
 }
@@ -184,44 +153,12 @@ footer > div{
 #div_lore_text, #div_specs_text{
     text-align: center;
     margin-top: 10px;
-    -webkit-box-flex: 1;
-        -ms-flex: 1 0 55vw;
-            flex: 1 0 55vw;
+    font-size: 30px;
+    flex: 1 0 55vw;
 }
 
-#div_lore_image,#div_specs_image{
-    -webkit-box-flex: 0;
-        -ms-flex: 0 0 auto;
-            flex: 0 0 auto;
+#div_lore_image, #div_specs_image{
     margin-top:10px;
-}
-
-#div_footer{
-    -webkit-box-orient:vertical;
-    -webkit-box-direction:normal;
-        -ms-flex-direction:column;
-            flex-direction:column;
-    -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
-    -ms-flex-pack: distribute;
-        justify-content: space-around;
-}
-
-#div_footer > div{
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-orient:vertical;
-    -webkit-box-direction:normal;
-        -ms-flex-direction:column;
-            flex-direction:column;
-    -ms-flex-wrap: wrap;
-        flex-wrap: wrap;
-    -webkit-box-flex:1;
-        -ms-flex:1 0 auto;
-            flex:1 0 auto;
-    -ms-flex-pack: distribute;
-        justify-content: space-around;
 }
 
 img{
@@ -259,13 +196,13 @@ img{
 
 #latitude_button,#longitude_button,#username_input{
     background-color:white;
-	border-radius:20px;
-	display:inline-block;
-	color:black;
-	font-size:8px;
-	font-weight:bold;
-	padding:4px 4px;
-	text-decoration:none;
+    border-radius:20px;
+    display:inline-block;
+    color:black;
+    font-size:8px;
+    font-weight:bold;
+    padding:4px 4px;
+    text-decoration:none;
 }
 
 a:link{
@@ -276,4 +213,19 @@ a:link{
 a:hover{
     color: #004eff;
     text-decoration: underline;
+}
+
+@media (max-width: 1132px) {
+    #heroImage{
+        display: none;
+    }
+}
+
+@media (max-width:531px){
+    header, .footer_col, #div_start_game_form,#game-fun,#div_lore_text, #div_specs_text, #submit_button,\.form_input{
+        font-size: 12px;
+    }
+    #div_start_game_title{
+        font-size: 75px;
+    }
 }
