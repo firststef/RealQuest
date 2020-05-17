@@ -34,4 +34,8 @@ router.get('/sprites/cursorImg.png', resourceController.plainFileExport.bind(res
 router.get('/lady_radical.ttf', resourceController.plainFileExport.bind(resourceController), ['../client/lady_radical.ttf', 'plain']);
 router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceController), ['../client/alphbeta.ttf', 'plain']);
 
+router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/github-logo.png', 'image/png']);
+router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);
+router.get('/ScholarlyHTML.html', resourceController.plainFileExport.bind(resourceController), ['../client/ScholarlyHTML.html', 'text/html']);
+
 module.exports = router;
