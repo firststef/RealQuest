@@ -17,13 +17,12 @@ const ORIGIN = 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
-const scale = 2.5; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
+
 const windowWidth =  window.innerWidth;
 const windowHeight =  window.innerHeight;
 const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
 const buildingsBoxY=windowHeight*1.5;
-const offsetx = windowWidth / (2*scale); //used for offsetting the "camera" center
-const offsety = windowHeight / (2*scale);
+
 const playerWidth = 20;
 const playerRadius = 10; //radius of the player collision
 const collisionDelta=2;
@@ -32,10 +31,8 @@ const monsterRadius = 8 ;
 const projectileScale = 0.5;
 const MAX_COORDINATE=180;
 const initialDisplacement=0.000002;
-const deleteLimitW = windowWidth/scale*1.4;
-const deleteLimitH = windowHeight/scale*1.4;
-const playerMaxHealth = 100;
-const moneyPowerUpValue = 50;
+
+
 const joyStickScreenMaxSize = 1000;
 
 //Palette
@@ -85,6 +82,16 @@ var map;
 var weatherSheet;
 
 //Game Vars
+var scale = 2.5; // world pixel scale - every logical pixel is represented by (scale) number of pixels on the screen
+var offsetx = windowWidth / (2*scale); //used for offsetting the "camera" center
+var offsety = windowHeight / (2*scale);
+var deleteLimitW = windowWidth/scale*1.4;
+var deleteLimitH = windowHeight/scale*1.4;
+
+var playerMaxHealth = 100;
+var moneyPowerUpValue = 50;
+
+
 var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
@@ -205,6 +212,7 @@ function load() {
         {
             loadResources: loadImages,
             loadTimeAndWeather: getServerTimeAndWeather,
+            /* loadGameConfiguration: getGameConfiguration, */
             loadMap: setMap
         },
         loadComplete
@@ -1116,6 +1124,46 @@ function createPowerUps() {
 }
 
 /* --------------------------------------------------------------------------------------------------------- API FUNCTIONS */
+
+/* CONFIGURATION API */
+function getGameConfiguration(){
+    let configRequest = ORIGIN + "/api/configuration";
+    fetch(configRequest).
+    then((response) => {
+        return response.json();
+    }).then((data)=> {
+        if (data.maxNrOfMonsters !== undefined){
+            maxNrOfMonsters=data.maxNrOfMonsters;
+        }
+
+        if (data.isNight === true) { //data.staysNight
+            setNightOverlay(true);
+        }
+        if (data.rain === true) {
+            setWeatherOverlay("Rain");
+        }
+        if (data.snow === true) {
+            setWeatherOverlay("Snow");
+        }
+        if (data.playerMaxHealth !== undefined){
+            playerMaxHealth=data.playerMaxHealth;
+        }
+        if (data.moneyPowerUpValue !== undefined){
+            moneyPowerUpValue=data.moneyPowerUpValue;
+        }
+        if (data.speedDisplacement !== undefined){
+            speedDisplacement=data.speedDisplacement*displacement;
+        }
+        if (data.scale !== undefined) {
+            scale=data.scale;
+        }
+
+
+        pageLoader.notifyCompleted('loadGameConfiguration');
+    })
+
+}
+
 /* GEO TIME FUNCTIONS */
 
 function getServerTimeAndWeather(){
