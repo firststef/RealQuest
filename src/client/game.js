@@ -91,7 +91,7 @@ var deleteLimitH = windowHeight/scale*1.4;
 var playerMaxHealth = 100;
 var moneyPowerUpValue = 50;
 
-
+var leaderBoardCount =8;
 var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
@@ -109,7 +109,7 @@ var projectileSpawnTime=1000;
 //Power-ups
 var currentBox;
 var speedTimeout;
-var speedDisplacement=1.6*displacement;
+var speedDisplacement=1.4*displacement;
 var smashesLeft=0;
 const mayRemove=1;
 
@@ -152,6 +152,25 @@ var currentUpdateDelta = slowUpdateDelta;
 /* --------------------------------------------------------------------------------------------------------- GAME INIT FUNCTIONS */
 
 // entry point -> load() called by the canvas element on page load
+
+/* prepare forced weather configuration */
+class WeatherLoader{
+    constructor(){
+        this.callbacks = [];
+        this.callbackArguments = [];
+    }
+    addCallback(callback, callbackArgument){
+        this.callbacks.push(callback);
+        this.callbackArguments.push(callbackArgument);
+    }
+    loadCallbacks(){
+        for (let i =0; i<this.callbacks.length; i++){
+            this.callbacks[i](this.callbackArguments[i]);
+        }
+    }
+}
+var weatherLoader = new WeatherLoader();
+
 
 /** prepares the page */
 class PageLoader{
@@ -210,10 +229,11 @@ function load() {
 
     pageLoader = new PageLoader(
         {
+            loadGameConfiguration: getGameConfiguration,
             loadResources: loadImages,
             loadTimeAndWeather: getServerTimeAndWeather,
-            /* loadGameConfiguration: getGameConfiguration, */
             loadMap: setMap
+
         },
         loadComplete
     );
@@ -418,7 +438,9 @@ function loadComplete(){
     //stage.addChild(luminosityOverlay);
     stage.addChild(uiScreen);
 
-    updateWeatherOverlay();
+
+
+    updateWeatherOverlay(weatherLoader);
     setInterval(updateWeatherOverlay, 600000);
 
     //Adding Sprites to the tree
@@ -1132,21 +1154,31 @@ function getGameConfiguration(){
     then((response) => {
         return response.json();
     }).then((data)=> {
+
+        console.log('===========================');
+        console.log(data);
+        console.log('===========================');
         if (data.maxNrOfMonsters !== undefined){
             maxNrOfMonsters=data.maxNrOfMonsters;
         }
 
-        if (data.isNight === true) { //data.staysNight
-            setNightOverlay(true);
+        if (data.isNight !== undefined) { //data.staysNight
+            weatherLoader.addCallback(setNightOverlay, data.isNight);
+            // setNightOverlay(data.isNight);
         }
         if (data.rain === true) {
-            setWeatherOverlay("Rain");
+            weatherLoader.addCallback(setWeatherOverlay, "Rain");
+            // setWeatherOverlay("Rain");
         }
         if (data.snow === true) {
-            setWeatherOverlay("Snow");
+            weatherLoader.addCallback(setWeatherOverlay, "Snow");
+            // setWeatherOverlay("Snow");
         }
         if (data.playerMaxHealth !== undefined){
             playerMaxHealth=data.playerMaxHealth;
+        }
+        if (data.leaderBoardCount !== undefined){
+            leaderBoardCount=data.leaderBoardCount;
         }
         if (data.moneyPowerUpValue !== undefined){
             moneyPowerUpValue=data.moneyPowerUpValue;
@@ -1156,11 +1188,17 @@ function getGameConfiguration(){
         }
         if (data.scale !== undefined) {
             scale=data.scale;
+            offsetx = windowWidth / (2*scale);
+            offsety = windowHeight / (2*scale);
+            deleteLimitW = windowWidth/scale*1.4;
+            deleteLimitH = windowHeight/scale*1.4;
+            stage.scaleX = scale;
+            stage.scaleY = scale;
         }
 
-
         pageLoader.notifyCompleted('loadGameConfiguration');
-    })
+
+    });
 
 }
 
@@ -1607,7 +1645,7 @@ function updateNearbyMessage() {
 }
 
 function getLeaderBoards(myScore) {
-    fetch(ORIGIN + "/api/leaderboards?count=8&myScore=" + myScore)
+    fetch(ORIGIN + "/api/leaderboards?count="+ leaderBoardCount +"&myScore=" + myScore)
         .then((response) => {
             return response.json();
         })
@@ -1711,13 +1749,16 @@ function setWeatherOverlay(weather) {
     stage.addChildAt(weatherOverlay, 3);
 }
 
-function updateWeatherOverlay(){
+function updateWeatherOverlay(weatherLoader){
     if(this.initialDisplay !== undefined){
         getServerTimeAndWeather();
     }
     this.initialDisplay = true;
     setWeatherOverlay(gameWeather.weather[0].main);
     setNightOverlay(gameStartTime < 420 || gameStartTime > 1320);
+    if (weatherLoader !== undefined) {
+        weatherLoader.loadCallbacks();
+    }
 }
 
 function initStickDisplay(){

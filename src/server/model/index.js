@@ -1,6 +1,9 @@
 const config = require('../config/config');
 const ApiLoader = require('../utils/apiLoader');
 const https = require('https');
+const fs = require('fs');
+const gameConfiguration = 'config/gameConfiguration.json';
+
 
 const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
     {topText: "", bottomText: " is beneath your feet" },
@@ -220,8 +223,28 @@ class Model {
             rejectCallback(e);
         });
     }
+
+    readFromFile(){
+        return JSON.parse(fs.readFileSync(gameConfiguration, 'utf8'));
+    }
+
+    getGameConfiguration(resolveCallback, rejectCallback) {
+        let data=this.readFromFile();
+        // console.log('===========================');
+        // console.log(data);
+        // console.log('===========================');
+        if (data !== undefined)
+        {
+            resolveCallback(data);
+        }
+        else {
+            rejectCallback('Error at file reading');
+        }
+    }
 }
 
 let model = new Model();
+
+
 
 module.exports = model;

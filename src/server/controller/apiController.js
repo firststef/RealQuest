@@ -98,8 +98,22 @@ class ApiController {
 
         this.reject(res);
     }
+
+    sendBackGameConfiguration(req, res) {
+        const parsedUrl = url.parse(req.url, false);
+        let thisRef = this;
+        model.getGameConfiguration(
+            (obj) => thisRef.resolve(res, obj, 'text/json'),
+            (e) => thisRef.reject(res, e)
+        );
+    }
+
+
+
 }
 
 let apiController = new ApiController();
+
+
 
 module.exports = apiController;

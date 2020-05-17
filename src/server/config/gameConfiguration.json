@@ -1,0 +1,11 @@
+{
+  "maxNrOfMonsters" : 1,
+  "isNight" : false,
+  "rain" : false,
+  "snow" : true,
+  "playerMaxHealth" : 100,
+  "moneyPowerUpValue" : 50,
+  "speedDisplacement" : 1.45,
+  "scale" : 1.5,
+  "leaderboardCount" : 7
+}

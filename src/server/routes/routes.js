@@ -7,6 +7,7 @@ router.get('/api/livescores', apiController.sendBackLiveScores.bind(apiControlle
 router.get('/api/leaderboards', apiController.sendBackLeaderBoards.bind(apiController));
 router.get('/api/environment', apiController.sendBackWeatherAndTime.bind(apiController));
 router.get('/api/nearbymessage', apiController.sendBackNearbyMessage.bind(apiController));
+router.get('/api/configuration', apiController.sendBackGameConfiguration.bind(apiController));
 
 router.get('/', resourceController.plainFileExport.bind(resourceController), ['../client/index.html', 'text/html']);
 router.get('/sprites/rq-icon.ico', resourceController.plainFileExport.bind(resourceController), ['../sprites/rq-icon.ico', 'image/x-icon']);
