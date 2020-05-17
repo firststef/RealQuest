@@ -1231,7 +1231,7 @@ function setMap() {
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
         center: [playerPos[0], playerPos[1]],
-        zoom: 20
+        zoom: 18
     });
     map.on('load', function() {
         map.getCanvas().addEventListener(
@@ -1261,7 +1261,7 @@ function setMap() {
         document.getElementById("loadMapWheel").className = "";
         pageLoader.notifyCompleted('loadMap');
         searchCallback();
-        setInterval(searchCallback, 1000); //TODO: request doar cand se paraseste view-portul curent
+        setInterval(searchCallback, 3000); //TODO: request doar cand se paraseste view-portul curent
     });
     map["keyboard"].disable();
 }
