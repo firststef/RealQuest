@@ -91,7 +91,7 @@ var deleteLimitH = windowHeight/scale*1.4;
 var playerMaxHealth = 100;
 var moneyPowerUpValue = 50;
 
-var leaderBoardCount =8;
+var leaderBoardCount = 8;
 var player;
 var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
@@ -1179,6 +1179,9 @@ function getGameConfiguration(){
         }
         if (data.leaderBoardCount !== undefined){
             leaderBoardCount=data.leaderBoardCount;
+        }
+        if (data.displacement !== undefined){
+            displacement=data.displacement;
         }
         if (data.moneyPowerUpValue !== undefined){
             moneyPowerUpValue=data.moneyPowerUpValue;
