@@ -22,7 +22,6 @@ header{
 }
 
 footer{
-
     justify-content: space-around;
     display:flex;
     flex-wrap: wrap;
@@ -36,18 +35,19 @@ footer{
     display:flex;
     flex:1 0 auto;
     flex-direction: column;
+    margin-left: 10px;
 }
 
 #div_main_page{
-    flex-wrap:wrap;
     display:flex;
+    flex-wrap:wrap;
     flex-direction: column;
     align-items:stretch;
 }
 
 .div_main {
-    flex-wrap: wrap;
     display: flex;
+    flex-wrap: wrap;
 }
 
 #row1{
@@ -107,8 +107,7 @@ footer{
     display: flex;
     height: 250px;
     width: 300px;
-    margin: auto 30px;
-    margin-bottom: 20px;
+    margin: auto 30px 20px;
     font-size: 20px;
 }
 
@@ -150,11 +149,20 @@ footer{
     height: 200px;
 }
 
-#div_lore_text, #div_specs_text{
+#div_lore_text{
     text-align: center;
     margin-top: 10px;
     font-size: 30px;
     flex: 1 0 55vw;
+    margin-right: 10px;
+}
+
+#div_specs_text{
+    text-align: center;
+    margin-top: 10px;
+    font-size: 30px;
+    flex: 1 0 55vw;
+    margin-left: 10px;
 }
 
 #div_lore_image, #div_specs_image{
