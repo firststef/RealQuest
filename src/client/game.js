@@ -49,7 +49,7 @@ const socketServerAddress = ORIGIN;
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
 
-var playerName = "admin";
+var playerName = "player";
 
 var pageLoader;
 var resourceLoader; // resource loader
@@ -823,7 +823,7 @@ function tick(event) {
             maxNrOfMonsters++;
         }
         monsterSpawnTime--;
-        totalPoints=totalPoints+1*(ticks/monsterSpawner+1);
+        totalPoints=totalPoints+(ticks / monsterSpawner + 1);
         if (monsterSpawnTime <= 0 && nrOfMonsters < maxNrOfMonsters) {
             monsterSpawnTime = 100;
             nrOfMonsters++;
@@ -1279,6 +1279,31 @@ function downloadGPX(){
     element.click();
 
     document.body.removeChild(element);
+}
+
+function downloadLeaderboard(){
+    fetch(ORIGIN + "/api/leaderboards?count=10&myScore=0")
+        .then((response) => {
+            return response.json();
+        })
+        .then(response => {
+            let csvText = '';
+            response.players.forEach(player => { csvText += (player.username + ',' + player.score + '\n');})
+            return csvText;
+        })
+        .then(text => {
+            let filename = "leaderboard.csv";
+            let element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+    });
 }
 
 /* --------------------------------------------------------------------------------------------------------- GAME MAP FUNCTIONS */

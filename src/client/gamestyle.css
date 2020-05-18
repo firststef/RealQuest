@@ -55,6 +55,7 @@ body {
 }
 
 .button {
+    margin-top:10px;
     background-color: #00b1f2;
     border-radius:3px;
     display:inline-block;
