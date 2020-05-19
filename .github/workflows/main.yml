@@ -22,6 +22,7 @@ jobs:
         port: ${{ secrets.PORT }} 
         script: |
           cd /usr/local/lsws/twproj/src/server
+          git reset --hard
           git pull
           npm install
           service lsws restart
