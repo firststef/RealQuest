@@ -14,14 +14,17 @@ function load() {
     }
 
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(successGetLocation, () => {console.log("Location could not be found")});
+        navigator.geolocation.getCurrentPosition(successGetLocation, () => {
+            //console.log("Location could not be found")});
+            alert("Location could not be found");
+        });
     }
 }
 
 function formValidation(lat, longitude, username) {
     let val2 = parseFloat(longitude);
     let val1 = parseFloat(lat);
-    console.log(val1 + " " + val2);
+    // console.log(val1 + " " + val2);
     return !isNaN(val1) && val1 <= 90 && val1 >= -90 && !isNaN(val2) && val2 <= 180 && val2 >= -180 && username.length > 4 && username.length < 10;
 }
 

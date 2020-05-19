@@ -1155,9 +1155,9 @@ function getGameConfiguration(){
         return response.json();
     }).then((data)=> {
 
-        console.log('===========================');
-        console.log(data);
-        console.log('===========================');
+        // console.log('===========================');
+        // console.log(data);
+        // console.log('===========================');
         if (data.maxNrOfMonsters !== undefined){
             maxNrOfMonsters=data.maxNrOfMonsters;
         }
@@ -1266,9 +1266,7 @@ function setMap() {
     map["keyboard"].disable();
 }
 
-function downloadGPX(){
-    let text = GPXString;
-    let filename = "track.gpx";
+function createFile(text, filename){
     let element = document.createElement('a');
     element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
     element.setAttribute('download', filename);
@@ -1279,6 +1277,12 @@ function downloadGPX(){
     element.click();
 
     document.body.removeChild(element);
+}
+
+function downloadGPX(){
+    let text = GPXString;
+    let filename = "track.gpx";
+    createFile(text,filename);
 }
 
 function downloadLeaderboard(){
@@ -1293,16 +1297,7 @@ function downloadLeaderboard(){
         })
         .then(text => {
             let filename = "leaderboard.csv";
-            let element = document.createElement('a');
-            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-            element.setAttribute('download', filename);
-
-            element.style.display = 'none';
-            document.body.appendChild(element);
-
-            element.click();
-
-            document.body.removeChild(element);
+            createFile(text,filename);
     });
 }
 
