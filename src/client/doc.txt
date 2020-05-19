@@ -1,0 +1,102 @@
+Cerința proiectului:
+
+Pe baza unui API REST ori GraphQL propriu, să se realizeze o aplicație web de tip joc "Monster hunter" utilizând hărți reale preluate de la un serviciu web de cartografiere (ex. Google maps sau openstreetmaps.org). În joc vor fi simulate condițiile de vreme exterioare (vreme și luminozitate), parametri preluați de asemenea de la servicii web specializate. Locația de start a jucătorului va fi preluată prin intermediul API-ului de geolocalizare pus la dispoziție în HTML5 și jucătorul va fi capabil să vadă alți jucători pe hartă comunicând în timp real cu serverul utilizând WebSockets.
+
+Scopul jocului este de a obține cât mai multe puncte din învingerea inamicilor, inamici ce apar pe harta preluată cum s-a menționat mai sus. Inamicii -- folosind o strategie (euristică) generată prin program -- tind a se apropia de avatarul jucătorului și dacă acesta nu se ferește de proiectilele lor, viața sa va scădea progresiv ( în concordanță cu artileria din dotarea inamicilor) până când va ajunge la zero puncte de vitalitate -- în acest caz, jocul se va termina pentru acel jucător și punctajul său este considerat final. În același mod, inamicii pot fi învinși prin scăderea punctelor de vitalitate prin contactul cu proiectilele/armamentul jucătorului. La finalul jocului se va afișa un clasament global al jucătorilor și punctajele lor.
+
+Sistemul va furniza în timp real clasamentul global al primilor J jucători și punctajele lor (minimal, în format XML, CSV). De asemenea se va permite descărcarea într-un format specific traciectoriilor GPS (ex. format GPX) a traseului parcurs de jucator în lumea reală.
+
+1. Despre realizarea jocului
+
+Primul pas a fost documentarea legata de api-urile pe care le vom utiliza. Am utilizat 3 api-uri: pentru timp, vreme si geolocatie. Api-urile apartin domeniilor dev.virtualearth.net, openweathermap.org si mapbox.com. Vom detalia utilizarea lor cand ajungem la ele in implementare.
+
+Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest joc, aveam nevoie de:
+- o modalitate prin care sa desenam forme geometrice in zone diferite (ex. cladirile)
+- folosirea de imagini (sprite-uri pentru personaj, monstri)
+- capturarea comenzilor utilizatorului
+- animatii de sprite-uri (pentru miscarea jucatorului)
+- sa putem muta formele geometrice 
+
+Primele 3 cerinte erau indeplinite nativ de Canvas, insa pentru urmatoarele doua lucrurile nu erau asa de simple de realizat. 
+In primul rand animatiile trebuiau realizate prin impartirea foii de animatie (spritesheet) in mai multe cadre, si inlocuirea cadrului curent la un anumit interval, in functie de viteza animatiei. 
+In al doilea rand, mutarea entitatilor desenate pe ecran necesita o arhitectura arborescenta, in care fiecare nod copil se orienta relativ la parintele sau. Un exemplu de ce este nevoie de aceasta: stim ca pentru a observa efectul de miscare a personajului trebuie sa observam o translatie a obiectelor din interiorul lumii pe masura ce jucatorul se misca, si de asemenea trebuie ca acesta sa ramana in mijlocul ecranului, pentru ca utilizatorul sa vada la fel de mult din harta pe masura ce o parcurge. Pentru a crea acest efect in interiorul lumii 2d create, observam ca vom avea nevoie de un nod parinte, care contine obiectele lumii, inclusiv personajul, si trebuie sa mutam personajul relativ la acest nod, in functie de input. Ceea ce nu este asa de evident este ca tot in acelasi timp trebuie sa mutam si lumea cu totul, pentru a urmari personajul si a-l mentine in mijloc (nu avem in canvas conceptul de camera virtuala, care poate sa inspecteze obiecte intr-o locatie oarecare, ci noi desenam pe un viewport, si deci trebuie sa mutam obiectele). Fara o arhitectura si o implementare care sa ne ofere suportul pentru relatiile de tip parinte-copil, lucrul acesta ar fi fost extrem de dificil.
+
+In urma realizarilor acestor doua cerinte din urma, ne-am dat seama ca o implementare elaborata a acestora ar dura foarte mult. Din acest motiv, am cautat o implementare open-source ca sa ne ajute. Asa am descoperit CreateJS, o librarie cu o licenta deschisa si care avea implementari esentiale pentru jocul nostru.
+
+Cum am folosit CreateJS
+
+Libraria permitea sa instantiem forme geometrice si imagini animate (sprite-uri) prin construirea de obiecte. Principiul de baza este urmatorul. Nodul radacina trebuia instantiat ca un obiect de tip Stage, si pentru fiecare copil adaugat lui, nodul parinte il va orienta in functie de pozitia proprie si deplasament.
+
+Cum pentru proiect exista restrictia de a nu folosi decat librarii, am avut grija ca alegerea noastra sa nu fie framework, si am judecat ca aceasta indeplineste conditia luand in considerare urmatoarele:
+- functiile din createjs reprezinta wrappere peste functiile clasice de desenat pe canvas, pastrand signaturi similare cu cele din api-ul original
+- clasele din createjs pot fi instantiate de noi cand dorim, avand control complet asupra obiectelor din lume
+- createjs nu ruleaza independent de codul nostru, positia obiectelor pe canvas se actualizeaza doar cand apelam stage.update(), stage fiind un obiect instantiat de noi
+- createjs are un obiect static, Ticker, si are un rol de timer - calculeaza in functie de framerate-ul pe care il dorim si apeluri la requestAnimationFrame, cand trebuie sa apelam bucla principala (functia de update) a jocului, care este definita de noi. Folosim acest obiect static pentru a castiga performanta pe browser.
+
+Dupa ce am capturat input-ul de la utilizator prin handle-uri pe evenimente de input de la tastatura si am introdus o imagine pentru personaj, am reusit sa facem un personaj care se putea orienta in spatiu.
+
+Realizarea hartii
+
+Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta. Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris mai jos. 
+
+>>vector de poligoane si de puncte
+Dupa ce am adaugat cladirile, am adaugat un algoritm pentru coliziune, la inceput foloseam o librarie cu un algoritm bazat pe intersectie de poligoane, dar dupa, am renuntat la ea si am facut noi o implementare mai optima, calculand distante fata de muchiile cladirii. Am adaugat doua optimizari pentru coliziune, prima calculeaza limite pentru cladire si se asigura ca vom face operatia de calcul de coliziune (care este costisitoare) doar in interiorul acestei limite, iar a doua calcula pe un interval limitele cladirilor si elimina cladirile indepartate, aplicand coliziunea doar pe cele care erau in raza noastra de actiune.
+
+Afisarea vremii
+
+Apeland serviciile pentru timp si vreme, completand ca si parametru locatia curenta a jucatorului, distingem tipul vremii: insorit, innourat cu ploaie, ninsoare si tipul de luminozitate: luminos/ intunecat. Pentru animatia de ninsoare si ploaie, a fost necesar sa folosim api-ul nativ pentru setari mai avansate: ploaia trebuia sa aiba o animatie, si de asemenea, pentru a optimiza sprite-ul (sa nu avem o imagine mare formata din imagini mici repetate), buffer-ul sprite-ului trebuia repetat pe tot ecranul. In plus, am explicat mai sus ca pentru a crea efectul de miscare, trebuie sa mutam personajul, dar si lumea, ca sa pastram in mijloc caracterul. Doar ca lumea trebuie mutata in sens invers miscarii personajului. Deci, trebuia sa deplasam originea imaginii cu distanta de de plasare a jucatorului. Clasele din CreateJS pot folosi functii trimise de noi in care apelam functiile de canvas native, acesta fiind modul de lucru pentru efectele complexe. Am realizat o astfel de functie, CreateJS-ul se asigura de schimbarea animatiei iar noi desenam pe tot ecranul animatia curenta si cu deplasamentul potrivit miscarii.
+
+Incarcarea Resurselor
+
+Pe langa api-urile care trebuie accesate la inceput, jocul trebuie sa incarce imaginile pentru jucator, monstri etc. Cum aceasta incarcare se realizeaza asincron, nu stim exact care dintre ele se va termina primul. Pentru asta am realizat pageloader... 
+
+Mecanicile de baza ale jocului. Interactiunea cu inamicii
+
+Scopul jocului este obtinerea unui punctaj cat mai mare. Acesta depinde de cati monstri ai invins si cat de mult ai rezistat in joc. Jucatorul se deplaseaza cu ajutorul tastelor WASD si poate arunca proiectile prin alegerea directiei folosind mouse-ul. Jocul se termina cand viata caracterului ajunge la 0, adica cand toata bara rosie din stanga-sus a ecranului se goleste.
+In cazul detectarii de coliziune cu o cladire, jucatorului nu i se va permite deplasarea spre aceasta.
+Monstrii sunt de doua tipuri, primul tip poate lansa proiectile spre personaj, iar al doilea tip este mult mai rapid, insa nu are proiectile. Monstrii blocheaza trecerea,iar daca sunt in contact cu jucatorul, acesta pierde puncte de vitalitate. 
+
+Bonusuri
+
+Pe harta apar din cand in cand anumite iconite care reprezinta un avantaj (uneori temporar) pentru jucator: sacul de bani reprezinta 50 de puncte in plus, papucul cu aripi ofera cateva secunde de viteza dubla, iar cheile mov pot "deschide" cladirile, adica jucatorul poate sa treaca prin ele. Cheile sunt stivuibile, dar papucii reseteaza intervalul de viteza la contact.
+
+Arta si design
+
+Un joc este un proiect foarte laborios, pentru ca este format din foarte multe elemente: ideea jocului, cat de distractiva este aceasta, design-ul jocului, daca resursele dau un aspect estetic impreuna (consistenta), mecanica de baza a jocului, ce progres va avea jucatorul ()
+
+Resursele grafice au fost desenate de noi (Sprite-ul personajului si al monstrilor, animatiile, cele doua imagini cu eroul de pe pagina principala, sprite-urile pentru power-up-uri), dar pot fi folosite de cine doreste. 
+
+Formatele exportate
+
+Pe parcursul jocului sunt salvate punctele geografice prin care trece jucatorul, iar la final el poate descarca un fisier GPX cu traseul parcurs. De asemenea 
+
+
+Multiplayer
+
+Un lucru interesant la un joc retro este sa ai capabilitati multiplayer. Jucatorii isi pot observa unul celuilalt pozitia si pot interactiona prin intermediul chat-ului. Din pacate calculele nu se realizeaza la nivel de server, ci jocul e mai mult client-based, si sunt explicate mai jos motivele si incercarile noastre.
+
+Versiunea de mobil
+
+Pentru versiunea de mobil am adaugat o implementare luata de pe un repo open-source pentru un joystick html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru miscarea personajului, iar cel din stanga, daca nu este in starea default, trimite un proiectil in directia in care este indreptat.  
+
+Despre dependinta la Mapbox GL JS
+
+Unul din api-urile pe care le-am folosit a fost cel de geolocatie. Acesta ne intorcea cele mai apropiate obiecte (strazi, cladiri, monumente, etc). Insa problema era ca nu ne intorcea coordonatele conturului acestora. Am observat dupa ce pornisem proiectul de putin timp ca nu exista un api pentru delimitarile cladirilor/monumentelor/formelor de relief, care sa fie accesibil prin cerere http. Pana si google, care are o colectie foarte mare de harti si alte api-uri legate de acestea, nu avea un astfel de serviciu. Nici Openstreetmaps, nici alte domenii. Si pe noi ne-a intrigat acest aspect, dar exista intr-adevar un serviciu (Mapbox) care permitea descarcarea de fisiere compresate care contineau astfel de informatii. Insa in ciuda efortului depus, nu am reusit sa despachetam formatul respective (.pbf/.mvt), la inceput folosind gunzip, sau alte librarii, in javascript, in python. Formatul pe care Mapbox il punea la dispozitie pare ca se despacheta diferit fata de .pbf-urile normale, apartinand google. Un alt domeniu, openstreetmaps, mentiona ca are datele respective, dar printre implementarile oferite de ei, nu am gasit nicio implementare viabila. Cand spunem ca nu erau viabile, ne referim la mai multe probleme, in primul rand, noi doream initial ceva care sa fie sub forma de api, sau daca trebuia sa despachetam noi formatele, sa avem si o librarie care sa faca asta, dar unele implementari erau sdk-uri, librarii cu licenta non-open-source, sau scrise in c++ (si nu voiam server in c++).
+
+https://docs.mapbox.com/vector-tiles/https://docs.mapbox.com/vector-tiles/specification/#what-the-spec-doesnt-cover - "This specification IS NOT intended to explain how to use vector tiles as a dataset"
+
+Dar am gasit o solutie pana la urma. Totusi hartile pe care le vedem noi pe site-uri cum fac?, ne-am intrebat. Am descoperit ca intr-o implementare pentru harti embedded folosind canvas pentru web, era posibil pentru noi sa interogam harta la momentul curent si sa intoarcem coordonatele cladirilor. Dar, din pacate, cand am incercat sa luam aceasta librarie sa o punem pe server ca sa incapsulam intr-un api propriu functionalitatea, am descoperit ca libraria era incompatibila cu node.js - era doar pentru web. Si da, am incercat, in primul rand sa reparam dependintele, dupa sa emulam un browser pe serverul de node, insa, dupa multe incercari, am renuntat. In final, pentru a construi harta noastra, ne folosim de harta celor de la Mapbox. Libraria este open-source, insa cum despacheteaza exact formatul, nu am reusit sa reproducem, am investigat si am trecut din nou prin implementari si prin gunzip si prin librarii, dar a trebuit sa alegem ca solutie finala utilizarea acestei librarii pe front-end. Daca am fi reusit, am fi putut sa mutam cladirile, interactiunea cu ele pe server, si sa facem jocul si mai performant, si chiar ne-am fi dorit acest lucru. Insa aveam doar optiunea de frontend, iar ideea de a transmite coordonatele serverului pentru a controla el coliziunea nu ar fi fost un lucru de ajutor.
+
+2. Despre Aplicatie
+
+Pe prima pagina este formularul de intrare in joc. La incarcarea paginii, browser-ul va cere permisiunea pentru geolocatie. In cazul in care utilizatorul isi da acordul pentru preluarea datelor, 
+
+LocalStorage
+
+Ne-am asigurat sa avem html-ul si css-ul valid.
+
+MVC
+
+Pentru a realiza o arhitectura MVC am creat clasele Router, Controller si Model. Router-ul face legatura dintre ruta la care primim request-ul si controller-ul care trebuie sa intoarca raspunsul. Sunt doua tipuri de controllere: ApiController si ResourceController. 
+
+DeepScan

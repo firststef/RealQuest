@@ -34,7 +34,7 @@ function startGame() {
         jumpToGame();
     }
     else{
-        let str = "Invalid coordinates or username";
+        let str = "Invalid coordinates or username(5-9 ch)";
         document.getElementById("formMessage").innerHTML = str.fontcolor("red");
     }
 }

@@ -59,6 +59,7 @@ footer{
 
 #div_lore_text, #div_specs_text{
     background-color: #9f4e5f;
+    padding: 10px;
 }
 
 #div_start_game {
@@ -141,19 +142,11 @@ footer{
     justify-content:stretch;
 }
 
-#lore_image {
-    height: 200px;
-}
-
-#specs_image {
-    height: 200px;
-}
-
 #div_lore_text{
     text-align: center;
     margin-top: 10px;
     font-size: 30px;
-    flex: 1 0 55vw;
+    flex: 2;
     margin-right: 10px;
 }
 
@@ -161,12 +154,14 @@ footer{
     text-align: center;
     margin-top: 10px;
     font-size: 30px;
-    flex: 1 0 55vw;
+    flex: 1;
     margin-left: 10px;
 }
 
 #div_lore_image, #div_specs_image{
     margin-top:10px;
+    align-self: center;
+    flex: 1;
 }
 
 img{
@@ -228,6 +223,27 @@ a:hover{
         display: none;
     }
 }
+
+@media (max-width: 830px) {
+    .div_main {
+        flex-direction: column;
+    }
+
+    #div_lore_text, #div_specs_text {
+        margin: 0 !important;
+        margin-top: 10px !important;
+    }
+
+    #div_specs_image, #div_lore_image {
+        display: flex;
+        align-self: center;
+    }
+
+    #div_specs {
+        flex-direction: column-reverse;
+    }
+}
+
 
 @media (max-width:531px){
     header, .footer_col, #div_start_game_form,#game-fun,#div_lore_text, #div_specs_text, #submit_button,\.form_input{

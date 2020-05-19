@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Real Quest</title>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.css" rel="stylesheet" /> <!-- Mapbox shows a warning without this -->
     <link href="gamestyle.css" rel="stylesheet" type="text/css"/>
     <link rel="icon" href="../sprites/rq-icon.ico" type="image/x-icon" />
     <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.1/mapbox-gl.js"></script>
@@ -39,7 +40,9 @@
             </div>
             <div class="bottom-row">
                 <div class="console" id="console">
-                    <div class="console-text" id="consoleText"></div>
+                    <div class="console-text" id="consoleText">
+                        [Game] Use WASD to move, click to shoot the monsters.<br>
+                    </div>
                     <input id="consoleInput" type="text">
                 </div>
                 <div class="mobileControl">
@@ -60,8 +63,8 @@
         </div>
         <h3>LeaderBoards</h3>
         <table id="leaderBoards" class="leader-boards-table"><tr><td>Loading leaderboards <div class="loader-wheel"></div></td></tr></table>
-        <h4 id="yourScore"></h4>
-        <h4 id="yourPlace"></h4>
+        <h4 id="yourScore">0</h4>
+        <h4 id="yourPlace">1</h4>
         <div id='downloadLeaderboardDiv' class='button' onclick="downloadLeaderboard()">
             Leaderbord CSV
         </div>
