@@ -1155,9 +1155,9 @@ function getGameConfiguration(){
         return response.json();
     }).then((data)=> {
 
-        console.log('===========================');
-        console.log(data);
-        console.log('===========================');
+        // console.log('===========================');
+        // console.log(data);
+        // console.log('===========================');
         if (data.maxNrOfMonsters !== undefined){
             maxNrOfMonsters=data.maxNrOfMonsters;
         }
