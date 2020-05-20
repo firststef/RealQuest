@@ -34,8 +34,8 @@ router.get('/sprites/hero.png', resourceController.plainFileExport.bind(resource
 router.get('/createjs.js', resourceController.plainFileExport.bind(resourceController), ['../client/createjs.js', 'text/javascript']);
 router.get('/favicon.ico', resourceController.plainFileExport.bind(resourceController), ['../sprites/realquest-logo.png', 'image/png']);
 router.get('/sprites/cursorImg.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/cursorImg.png', 'image/png']);
-router.get('/lady_radical.ttf', resourceController.plainFileExport.bind(resourceController), ['../client/lady_radical.ttf', 'plain']);
-router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceController), ['../client/alphbeta.ttf', 'plain']);
+router.get('/lady_radical.ttf', resourceController.plainFileExport.bind(resourceController), ['../sprites/fonts/lady_radical.ttf', 'plain']);
+router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceController), ['../sprites/fonts/alphbeta.ttf', 'plain']);
 
 router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/github-logo.png', 'image/png']);
 router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);

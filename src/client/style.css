@@ -1,11 +1,11 @@
 @font-face {
     font-family: LadyRadical;
-    src: url(lady_radical.ttf);
+    src: url(./lady_radical.ttf);
 }
 
 @font-face {
     font-family: AlphaBeta;
-    src: url(alphbeta.ttf);
+    src: url(./alphbeta.ttf);
 }
 
 body{
