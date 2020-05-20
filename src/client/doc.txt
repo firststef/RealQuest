@@ -48,7 +48,7 @@ Apeland serviciile pentru timp si vreme, completand ca si parametru locatia cure
 
 Incarcarea Resurselor
 
-Pe langa api-urile care trebuie accesate la inceput, jocul trebuie sa incarce imaginile pentru jucator, monstri etc. Cum aceasta incarcare se realizeaza asincron, nu stim exact care dintre ele se va termina primul. Pentru asta am realizat pageloader... 
+Pe langa api-urile care trebuie accesate la inceput, jocul trebuie sa incarce imaginile pentru jucator, monstri etc. Cum aceasta incarcare se realizeaza asincron, nu stim exact care dintre apelurile asincrone se va termina primul/ultimul/in ce ordine. Trebuia sa asteptam cateva secunde pentru ca acestea sa sa termine, si se vedea o pagina goala la inceput, pana incepea jocul, asa ca am pus o pagina de incarcare si am creat PageLoader, o clasa care inregistreaza functii asincrone si apeleaza un callback de terminare dupa ce toate functiile sunt terminate. In cazul nostru, noi doream sa afisam jocul cand se termina de incarcat, si am adaugat si pictograme care sa arate progresul, daca s-a incarcat sau nu resursa respectiva. Cand PageLoader termina asteparea, jocul incepe.
 
 Mecanicile de baza ale jocului. Interactiunea cu inamicii
 
@@ -89,14 +89,20 @@ Dar am gasit o solutie pana la urma. Totusi hartile pe care le vedem noi pe site
 
 2. Despre Aplicatie
 
-Pe prima pagina este formularul de intrare in joc. La incarcarea paginii, browser-ul va cere permisiunea pentru geolocatie. In cazul in care utilizatorul isi da acordul pentru preluarea datelor, 
-
-LocalStorage
-
-Ne-am asigurat sa avem html-ul si css-ul valid.
+Pe prima pagina este formularul de intrare in joc. La incarcarea paginii, browser-ul va cere permisiunea pentru geolocatie. In cazul in care utilizatorul isi da acordul pentru preluarea datelor, se completeaza in formularul de inceput de joc coordonatele sale. Dupa ce un utilizator isi scrie un username dorit, este directionat pe pagina jocului. Transmiterea coordonatelor si a numelui de utilizator intre pagini este realizata cu LocalStorage pe browser-ele care suporta aceasta, altfel prin intermediul parametrilor in adresa url.
 
 MVC
 
-Pentru a realiza o arhitectura MVC am creat clasele Router, Controller si Model. Router-ul face legatura dintre ruta la care primim request-ul si controller-ul care trebuie sa intoarca raspunsul. Sunt doua tipuri de controllere: ApiController si ResourceController. 
+Pentru a realiza o arhitectura MVC am creat clasele Router, Controller si Model. Router-ul face legatura dintre ruta la care primim request-ul si controller-ul care trebuie sa intoarca raspunsul. Sunt doua tipuri de controllere: ApiController si ResourceController. ResourceController se ocupa cu citirea fisierelor resursa si trimiterea lor, iar ApiController executa o anumita procedura si intoarce rezultatul acesteia. Controllerele comunica cu clasa Model, responsabila cu accesul la baza de date si logica aplicatiei.
 
-DeepScan
+3. Dezvoltarea aplicatiei
+
+Github 
+
+Pentru managementul codului sursa am folosit Github. Aceasta platforma a venit cu o multime de avantaje, si am fost foarte multumiti de ea. Pe langa posibilitatea de a vedea in browser codul sursa si a modificarilor facute pe parcursul proiectului, Github ne-a permis sa facem si un Project Board. Pe acest board noi puteam stabili si crea task-uri, ca sa stim care este partea din proiect de care trebuie sa se ocupe fiecare. De asemenea ne arata si statistici, cat de mult am scris, cat de des, si cat mai avem pana terminam toate cerintele.
+
+DeepScan https://deepscan.io/
+
+DeepScan este un analizator static pentru javascript, si ne-a permis sa observam erori sau sa ne imbunatatim codul. De exemplu acesta ne spunea cand o variabila este declarata dar nu este folosita nicaieri, cand o anumita conditie ajungea sa fie indeplinita mereu, etc. DeepScan ofera analiza gratis la conectarea cu Github prin programul Github Student Developer Pack. 
+
+Continuous deployment

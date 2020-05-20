@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="ro">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Scholarly HTML</title>
     <link rel="stylesheet" href="https://w3c.github.io/scholarly-html/css/scholarly.min.css">
     <script src="https://w3c.github.io/scholarly-html/js/scholarly.min.js"></script>
-  </head>
-  <body prefix="schema: http://schema.org" style="font-family: calibri !important;">
+</head>
+
+<body prefix="schema: http://schema.org" style="font-family: calibri !important;">
     <header>
         <h1>Real Quest</h1>
-    </header> 
+    </header>
 
     <div role="contentinfo">
         <!-- <ol role="directory">
@@ -45,93 +47,184 @@
         <dl>
             <dt>Autori</dt>
             <dd>
-            <a href="https://github.com/blox-dev">Crainiciuc Călin Ștefan</a>
-            &amp;
-            <a href="https://github.com/firststef">Petrovici Ștefan</a>
-            &amp;
-            <a href="https://github.com/ancestor-mithril">Stoica George</a>
-            
+                <a href="https://github.com/blox-dev">Crainiciuc Călin Ștefan</a>
+                &amp;
+                <a href="https://github.com/firststef">Petrovici Ștefan</a>
+                &amp;
+                <a href="https://github.com/ancestor-mithril">Stoica George</a>
+
             </dd>
             <dt>Erori și recomandări</dt>
             <dd>
-            <a href="https://github.com/firststef/twproj/issues">Issues and PRs welcome!</a>
+                <a href="https://github.com/firststef/twproj/issues">Issues and PRs welcome!</a>
             </dd>
 
             <dt>Licență</dt>
             <dd>
-            <a href="">!! nu stiu daca trebuie pus ceva aici???</a>
+                <a href="">!! nu stiu daca trebuie pus ceva aici???</a>
             </dd>
         </dl>
     </div>
     <section typeof="sa:Abstract" id="abstract" role="doc-abstract">
         <h2>Abstracțiune</h2>
         <p>
-            <q>Real Quest</q> este o aplicație care permite utilizatorilor să se materializeze într-un tărâm mistic, copie de rang secund a lumii reale, pentru a explora 
+            <q>Real Quest</q> este o aplicație care permite utilizatorilor să se materializeze într-un tărâm mistic,
+            copie de rang secund a lumii reale, pentru a explora
             și vâna monștrii care vor să elimine orice formă de viață.
         </p>
     </section>
     <section id="introduction" role="doc-introduction">
         <h2>Introducere</h2>
         <p>
-            Jocul <q>Real Quest</q> apelează la servicii web pentru a prelua informații despre locația utilizatorului și mediul în care se află, simulând mișcarea acestuia pe o hartă. Elementele spațiu-temporale reale sunt însoțite de monștrii virtuali, care vor ataca jucătorul. 
+            Jocul <q>Real Quest</q> apelează la servicii web pentru a prelua informații despre locația utilizatorului și
+            mediul în care se află, simulând mișcarea acestuia pe o hartă. Elementele spațiu-temporale reale sunt
+            însoțite de monștrii virtuali, care vor ataca jucătorul.
         </p>
 
         <p>
-            Clientul poate să explore împrejurimile, orientându-se dupa detalii precum numele de străzi și de clădiri, luptându-se cu monștrii pentru a câstiga puncte și a supraviețuii cât mai mult.
+            Clientul poate să explore împrejurimile, orientându-se dupa detalii precum numele de străzi și de clădiri,
+            luptându-se cu monștrii pentru a câstiga puncte și a supraviețuii cât mai mult.
         </p>
     </section>
     <section id="motivation">
         <h2>Motivație</h2>
         <p>
-            Acest joc a survenit din dorința noastră de a ?? (no idea, e ideea lui Stefan)
+            Acest proiect reprezinta tema noastra pentru proiectul de curs de Tehnologii Web al Facultatii de
+            Informatica al Universitatii Alexandru Ioan Cuza.
         </p>
+    </section>
+    <section id="problem">
+        <h2>Cerință</h2>
+        <p>
+            Pe baza unui API REST ori GraphQL propriu, să se realizeze o aplicație web de tip joc "Monster hunter"
+            utilizând hărți reale preluate de la un serviciu web de cartografiere (ex. Google maps sau
+            openstreetmaps.org). În joc vor fi simulate condițiile de vreme exterioare (vreme și luminozitate),
+            parametri preluați de asemenea de la servicii web specializate. Locația de start a jucătorului va fi
+            preluată prin intermediul API-ului de geolocalizare pus la dispoziție în HTML5 și jucătorul va fi capabil să
+            vadă alți jucători pe hartă comunicând în timp real cu serverul utilizând WebSockets.
+        </p>
+        <p>
+            Scopul jocului este de a obține cât mai multe puncte din învingerea inamicilor, inamici ce apar pe harta
+            preluată cum s-a menționat mai sus. Inamicii -- folosind o strategie (euristică) generată prin program --
+            tind a se apropia de avatarul jucătorului și dacă acesta nu se ferește de proiectilele lor, viața sa va
+            scădea progresiv ( în concordanță cu artileria din dotarea inamicilor) până când va ajunge la zero puncte de
+            vitalitate -- în acest caz, jocul se va termina pentru acel jucător și punctajul său este considerat final.
+            În același mod, inamicii pot fi învinși prin scăderea punctelor de vitalitate prin contactul cu
+            proiectilele/armamentul jucătorului. La finalul jocului se va afișa un clasament global al jucătorilor și
+            punctajele lor.
+        </p>
+        <p>
+            Sistemul va furniza în timp real clasamentul global al primilor J jucători și punctajele lor (minimal, în
+            format XML, CSV). De asemenea se va permite descărcarea într-un format specific traciectoriilor GPS (ex.
+            format GPX) a traseului parcurs de jucator în lumea reală.
+        </p>
+    </section>
+    <section id="game">
+        <h2>Implementarea jocului</h2>
+
+        <section id="preparation">
+            <h3>Pregătire și considerente</h3>
+            <p>Primul pas a fost documentarea legata de api-urile pe care le vom utiliza. Am utilizat 3 api-uri: pentru
+                timp, vreme si geolocatie. Api-urile apartin domeniilor dev.virtualearth.net, openweathermap.org si
+                mapbox.com. Vom detalia utilizarea lor cand ajungem la ele in implementare.</p>
+
+            <p>Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare
+                fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest
+                joc, aveam nevoie de:
+                - o modalitate prin care sa desenam forme geometrice in zone diferite (ex. cladirile)
+                - folosirea de imagini (sprite-uri pentru personaj, monstri)
+                - capturarea comenzilor utilizatorului
+                - animatii de sprite-uri (pentru miscarea jucatorului)
+                - sa putem muta formele geometrice </p>
+            <p>
+                Primele 3 cerinte erau indeplinite nativ de Canvas, insa pentru urmatoarele doua lucrurile nu erau asa
+                de simple de realizat.
+            </p>
+            <p>
+                In primul rand animatiile trebuiau realizate prin impartirea foii de animatie (spritesheet) in mai multe
+                cadre, si inlocuirea cadrului curent la un anumit interval, in functie de viteza animatiei.
+                In al doilea rand, mutarea entitatilor desenate pe ecran necesita o arhitectura arborescenta, in care
+                fiecare nod copil se orienta relativ la parintele sau. Un exemplu de ce este nevoie de aceasta: stim ca
+                pentru a observa efectul de miscare a personajului trebuie sa observam o translatie a obiectelor din
+                interiorul lumii pe masura ce jucatorul se misca, si de asemenea trebuie ca acesta sa ramana in mijlocul
+                ecranului, pentru ca utilizatorul sa vada la fel de mult din harta pe masura ce o parcurge. Pentru a
+                crea acest efect in interiorul lumii 2d create, observam ca vom avea nevoie de un nod parinte, care
+                contine obiectele lumii, inclusiv personajul, si trebuie sa mutam personajul relativ la acest nod, in
+                functie de input. Ceea ce nu este asa de evident este ca tot in acelasi timp trebuie sa mutam si lumea
+                cu totul, pentru a urmari personajul si a-l mentine in mijloc (nu avem in canvas conceptul de camera
+                virtuala, care poate sa inspecteze obiecte intr-o locatie oarecare, ci noi desenam pe un viewport, si
+                deci trebuie sa mutam obiectele). Fara o arhitectura si o implementare care sa ne ofere suportul pentru
+                relatiile de tip parinte-copil, lucrul acesta ar fi fost extrem de dificil.
+            </p>
+            <p>
+                In urma realizarilor acestor doua cerinte din urma, ne-am dat seama ca o implementare elaborata a
+                acestora ar dura foarte mult. Din acest motiv, am cautat o implementare open-source ca sa ne ajute. Asa
+                am descoperit CreateJS, o librarie cu o licenta deschisa si care avea implementari esentiale pentru
+                jocul nostru.
+            </p>
+        </section>
+        <section>
+            <h3>Cum am folosit CreateJS</h3>
+            
+        </section>
     </section>
     <section id="structure">
         <h2>Structura proiectului</h2>
         <p>
-            Fiind o aplicatie web, aceasta este structurată in interfața grafică prin care clientul are acces la joc, aplicația server care tratează cerințele clienților
+            Fiind o aplicatie web, aceasta este structurată in interfața grafică prin care clientul are acces la joc,
+            aplicația server care tratează cerințele clienților
             și un modul care se ocupă cu desfășurarea și logica jocului.
         </p>
         <section id="client">
             <h3>Client</h3>
             <p>
-                Partea vizibilă utilizatorilor, clientul este reprezentat de pagini web create prin intermediul interacțiunii dintre HTML, CSS si JavaScript.
+                Partea vizibilă utilizatorilor, clientul este reprezentat de pagini web create prin intermediul
+                interacțiunii dintre HTML, CSS si JavaScript.
             </p>
             <section id="html">
                 <h4>Paginile clientului</h4>
                 <p>
-                    Utilizatorul are acces la pagina de start, care conține o scurtă descriere și poveste a jocului, precum si funcția  de preluare a coordonatelor 
-                    utilizatorilor prin modulul API de geolocație al HTML5. 
+                    Utilizatorul are acces la pagina de start, care conține o scurtă descriere și poveste a jocului,
+                    precum si funcția de preluare a coordonatelor
+                    utilizatorilor prin modulul API de geolocație al HTML5.
                 </p>
                 <p>
                     ??design html si css??
                 </p>
                 <p>
-                    După apăsarea butonului de începere a jocului, se trimit către pagina de joc prin postare coordonatele utilizatorului și numele acestuia. 
-                    Aplicația joc conține un canvas pe care este desenat un personaj care poate fi controlat de către client, precum
-                    și clădirile, străzile și apa din imediata apropiere a coordonatelor primite.  
+                    După apăsarea butonului de începere a jocului, se trimit către pagina de joc prin postare
+                    coordonatele utilizatorului și numele acestuia.
+                    Aplicația joc conține un canvas pe care este desenat un personaj care poate fi controlat de către
+                    client, precum
+                    și clădirile, străzile și apa din imediata apropiere a coordonatelor primite.
                 </p>
-                
 
-                
-                
+
+
+
             </section>
             <section id="game-canvas">
                 <h4>Canvasul jocului</h4>
                 <p>
-                    Animația jocului este înglobată in canvasul de pe pagina de joc. Harta jocului este primită sub forma de colecție de poligoane sau multipoligoane 
-                    care sunt alcătuite din colectii de puncte, iar clădirile, drumurile si apa sunt figuri desenate prin unirea punctelor si umplerea poligoanelor. 
+                    Animația jocului este înglobată in canvasul de pe pagina de joc. Harta jocului este primită sub
+                    forma de colecție de poligoane sau multipoligoane
+                    care sunt alcătuite din colectii de puncte, iar clădirile, drumurile si apa sunt figuri desenate
+                    prin unirea punctelor si umplerea poligoanelor.
                 </p>
                 <p>
                     Aceste figuri sunt adăugate ca și elemente copil ale (?) unui obiect (?) + (CreateJS!!)
                 </p>
                 <p>
-                    In plus, personajul care poate fi controlat de catre utilizator este centrat in permanență, restul elementelor, mișcându-se în funcție de deplasarea
-                    acestuia. Alte persoaneje ale celorlalți eventuali utilizatori sunt desenate doar daca sunt primite coordonate ale poziției acestora pe ecranul 
-                    clientului curent. Inamicii sunt generați aleator (+ alte detalii ale designului) si se vor deplasa înspre coordonatele jucătorului.
+                    In plus, personajul care poate fi controlat de catre utilizator este centrat in permanență, restul
+                    elementelor, mișcându-se în funcție de deplasarea
+                    acestuia. Alte persoaneje ale celorlalți eventuali utilizatori sunt desenate doar daca sunt primite
+                    coordonate ale poziției acestora pe ecranul
+                    clientului curent. Inamicii sunt generați aleator (+ alte detalii ale designului) si se vor deplasa
+                    înspre coordonatele jucătorului.
                 </p>
                 <p>
-                    Atât utilizatorul cât și unii inamicii au acces la crearea unor proiectile. Clientul poate crea câte un proiectil la fiecare clic, iar monștrii 
+                    Atât utilizatorul cât și unii inamicii au acces la crearea unor proiectile. Clientul poate crea câte
+                    un proiectil la fiecare clic, iar monștrii
                     la un anumit interval. Proiectilul este un sprite care + (informatii despre el)
                 </p>
 
@@ -144,71 +237,87 @@
             <section id="client-side-services">
                 <h4>Serviciile pe partea de client</h4>
                 <p>
-                    Pe partea de client se face apel atât la servicii API REST interne, deținute de către server, cât și la servicii externe.
+                    Pe partea de client se face apel atât la servicii API REST interne, deținute de către server, cât și
+                    la servicii externe.
                 </p>
                 <p>
-                    Clientul trimite la începutul jocului o cerere către server pentru primirea datelor temporale și a condițiilor meteorologice în funcție
-                    de coordonatele curente. Clientul așteaptă răspunsul serverului și in funcție de timp și vreme încarcă în canvas animația pentru zi sau noapte 
+                    Clientul trimite la începutul jocului o cerere către server pentru primirea datelor temporale și a
+                    condițiilor meteorologice în funcție
+                    de coordonatele curente. Clientul așteaptă răspunsul serverului și in funcție de timp și vreme
+                    încarcă în canvas animația pentru zi sau noapte
                     și eventualele animații pentru vreme ploioasă sau ninsoare.
                 </p>
-                
+
 
                 <p>
-                    Tot înainte de joc se face si o primă cerere către serviciul extern <a href="https://docs.mapbox.com/">mapbox API</a>, care pentru o pereche de 
-                    coordonate primite va întoarce în format JSON o colecție de caracteristici, printre care sunt incluse clădiri, drumuri și spații care conțin apă. 
-                    Aceste date vor fi folosite pentru desenarea hărții de joc. Pe parcursul jocului, in funcție de deplasarea utilizatorului se vor face cereri 
+                    Tot înainte de joc se face si o primă cerere către serviciul extern <a
+                        href="https://docs.mapbox.com/">mapbox API</a>, care pentru o pereche de
+                    coordonate primite va întoarce în format JSON o colecție de caracteristici, printre care sunt
+                    incluse clădiri, drumuri și spații care conțin apă.
+                    Aceste date vor fi folosite pentru desenarea hărții de joc. Pe parcursul jocului, in funcție de
+                    deplasarea utilizatorului se vor face cereri
                     suplimentare pentru noi elemente ale hartii.
                 </p>
 
                 <p>
-                    Clasamentul este obținut prin apelarea unui serviciu intern al serverului, care va întoarce un numar de jucători online ordonați descrescător după 
-                    punctaj. O descriere a locației curente a utilizatorului este obținută tot de pe server, clientul putând afla numele celei mai apropiate străzi, 
-                    clădiri sau monument din imediata vecinătate a jucatorului. 
+                    Clasamentul este obținut prin apelarea unui serviciu intern al serverului, care va întoarce un numar
+                    de jucători online ordonați descrescător după
+                    punctaj. O descriere a locației curente a utilizatorului este obținută tot de pe server, clientul
+                    putând afla numele celei mai apropiate străzi,
+                    clădiri sau monument din imediata vecinătate a jucatorului.
                 </p>
 
                 <p>
-                    La finalul jocului este apelat un alt serviciu al serverului, care va întoarce clasamentul clientului raportat la toți utilizatorii care au jucat 
+                    La finalul jocului este apelat un alt serviciu al serverului, care va întoarce clasamentul
+                    clientului raportat la toți utilizatorii care au jucat
                     vreodată jocul.
                 </p>
-                
+
             </section>
         </section>
         <section id="server">
             <h3>Server</h3>
             <p>
-                Aplicația server care deservește utilizatorii a fost creată utilizatând <q>Node JS</q> și folosind standardul MVC. (? ar mai trebuii detalii?)
+                Aplicația server care deservește utilizatorii a fost creată utilizatând <q>Node JS</q> și folosind
+                standardul MVC. (? ar mai trebuii detalii?)
             </p>
-            
+
             <section id="mvc">
                 <h4>Structura serverului</h4>
                 <p>
                     (Aicea cred ca ar fi mai bine ca Stefan sa explice, ca el am facut acest MVC)
                 </p>
-                
-                
+
+
             </section>
 
             <section id="server-apis">
                 <h4>Serviciile puse la dispozitie de catre server</h4>
                 <p>
-                    Aplicația server pune la dispoziția utilizatorilor servicii care implementează principiul API REST (? bold text??), acestea putând fi accesate de 
-                    către clienți prin metoda HTTP GET.  
+                    Aplicația server pune la dispoziția utilizatorilor servicii care implementează principiul API REST
+                    (? bold text??), acestea putând fi accesate de
+                    către clienți prin metoda HTTP GET.
                 </p>
-                
+
                 <p>
-                    Serverul ofera un serviciu de aflare a timpului și a spațiului în funcție de coordonate geografice trimise de către utilizatori. Aceste date sunt 
-                    oferite de către server prin apelarea la rândul lui a altor servicii externe, dar în caz de eroare a apelarii aplicatia server poate calcula 
-                    matematic timpul unui client in functie de ora curenta si distanțarea acestuia față de Greenwich. 
+                    Serverul ofera un serviciu de aflare a timpului și a spațiului în funcție de coordonate geografice
+                    trimise de către utilizatori. Aceste date sunt
+                    oferite de către server prin apelarea la rândul lui a altor servicii externe, dar în caz de eroare a
+                    apelarii aplicatia server poate calcula
+                    matematic timpul unui client in functie de ora curenta si distanțarea acestuia față de Greenwich.
                 </p>
-                
+
                 <p>
-                    Clasamentul tuturor utilizatorilor online este reținut de către server, acesta trimițând-ul și clienților. Punctajul clientilor este obtinut prin 
-                    intermediul comunicarii continue a acestora a propriului punctaj utilizand tehnologia <q>SocketIO</q> (??poate trebuie alte taguri), iar serverul 
+                    Clasamentul tuturor utilizatorilor online este reținut de către server, acesta trimițând-ul și
+                    clienților. Punctajul clientilor este obtinut prin
+                    intermediul comunicarii continue a acestora a propriului punctaj utilizand tehnologia
+                    <q>SocketIO</q> (??poate trebuie alte taguri), iar serverul
                     îi ordonează descrescător.
                 </p>
 
                 <p>
-                    De asemenea serverul pune la dispoziție un serviciu de întoarcere a celor mai mari punctaje înregistrate în baza de date pe tot parcursul istoricului 
+                    De asemenea serverul pune la dispoziție un serviciu de întoarcere a celor mai mari punctaje
+                    înregistrate în baza de date pe tot parcursul istoricului
                     jocului și a poziției clientului curent în funcție de ceilalți jucători.
                 </p>
             </section>
@@ -216,42 +325,51 @@
             <section id="server-side-services">
                 <h4>Serviciile folosite de catre server</h4>
                 <p>
-                    Pentru a deservi unele cereri ale clienților, serverul utilizează la rândul lui servicii API REST externe. 
+                    Pentru a deservi unele cereri ale clienților, serverul utilizează la rândul lui servicii API REST
+                    externe.
                 </p>
                 <p>
-                    Timpul specific unor coordonate spațiale este obținut prin folosirea serviciului pus la dispozitie de<a href="https://dev.virtualearth.net">virtualearth</a>, 
-                    iar vremea prin folosirea <a href="https://api.openweathermap.org/">openweathermap</a>. De asemenea, pentru descrierea locației curente ale
-                    clienților este folosit un serviciu al <a href="https://api.mapbox.com/">mapbox</a>, care pune pentru un set de coordonate întoarce cele mai apropiate 
+                    Timpul specific unor coordonate spațiale este obținut prin folosirea serviciului pus la dispozitie
+                    de<a href="https://dev.virtualearth.net">virtualearth</a>,
+                    iar vremea prin folosirea <a href="https://api.openweathermap.org/">openweathermap</a>. De asemenea,
+                    pentru descrierea locației curente ale
+                    clienților este folosit un serviciu al <a href="https://api.mapbox.com/">mapbox</a>, care pune
+                    pentru un set de coordonate întoarce cele mai apropiate
                     obiective (străzi sau clădiri).
                 </p>
-                
+
             </section>
-            
+
         </section>
         <section id="game">
             <h3>Mecanica jocului</h3>
             <p>
-                „Cea mai complexă și voluminoasă parte a aplicației este reprezentată de desfășurarea jocului. Majoritatea resurselor necesare sunt rulate pe partea 
+                „Cea mai complexă și voluminoasă parte a aplicației este reprezentată de desfășurarea jocului.
+                Majoritatea resurselor necesare sunt rulate pe partea
                 de client, pentru a nu supraîncărca serverul în cazul în care sunt foarte mulți utilizatori.„
             </p>
             <p>
                 ?
             </p>
-    
+
             <section id="mapbox">
                 <h4>Harta jocului</h4>
                 <p>
-                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi, zone cu apă. Întrucât este implementat un sistem 
-                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de îndepărtate de jucător. Fiecare caracteristică a 
-                    hărții este transformată intr-un sprite (+detalii). 
+                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi,
+                    zone cu apă. Întrucât este implementat un sistem
+                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de
+                    îndepărtate de jucător. Fiecare caracteristică a
+                    hărții este transformată intr-un sprite (+detalii).
                 </p>
-                
+
                 <p>
-                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi, zone cu apă. Întrucât este implementat un sistem 
-                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de îndepărtate de jucător. Fiecare caracteristică a 
-                    hărții este transformată intr-un sprite (+detalii). 
+                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi,
+                    zone cu apă. Întrucât este implementat un sistem
+                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de
+                    îndepărtate de jucător. Fiecare caracteristică a
+                    hărții este transformată intr-un sprite (+detalii).
                 </p>
-                
+
             </section>
 
             <section id="player-actions">
@@ -259,8 +377,8 @@
                 <p>
                     Acest paragraf este despre generarea de evenimente de catre jucator
                 </p>
-                
-                
+
+
             </section>
 
             <section id="game-community">
@@ -268,13 +386,14 @@
                 <p>
                     Acest paragraf este despre socket io si !pvp
                 </p>
-                
-                
+
+
             </section>
-            
+
         </section>
     </section>
 
 
-  </body>
+</body>
+
 </html>
