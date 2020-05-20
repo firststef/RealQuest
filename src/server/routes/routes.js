@@ -16,8 +16,6 @@ router.get('/style.css', resourceController.plainFileExport.bind(resourceControl
 router.get('/gamestyle.css', resourceController.plainFileExport.bind(resourceController), ['../client/gamestyle.css', 'text/css']);
 router.get('/index.js', resourceController.plainFileExport.bind(resourceController), ['../client/index.js', 'text/javascript']);
 
-router.get('/socket.io.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/socket.io.min.js', 'text/javascript']);
-router.get('/mapbox-gl.js', resourceController.plainFileExport.bind(resourceController), ['../client/mapbox-gl.js', 'text/javascript']);
 
 
 router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game.js', 'text/javascript']);
@@ -43,7 +41,6 @@ router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(r
 router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);
 router.get('/ScholarlyHTML.html', resourceController.plainFileExport.bind(resourceController), ['../client/ScholarlyHTML.html', 'text/html']);
 
-router.get('/mapbox-gl.css', resourceController.plainFileExport.bind(resourceController), ['../client/mapbox-gl.css', 'text/css']);
 
 
 
