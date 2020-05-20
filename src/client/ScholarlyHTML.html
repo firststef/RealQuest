@@ -163,9 +163,170 @@
                 jocul nostru.
             </p>
         </section>
-        <section>
+        <section id="createjs">
             <h3>Cum am folosit CreateJS</h3>
-            
+            <p>
+                Libraria permitea sa instantiem forme geometrice si imagini animate (sprite-uri) prin construirea de
+                obiecte. Principiul de baza este urmatorul. Nodul radacina trebuia instantiat ca un obiect de tip Stage,
+                si pentru fiecare copil adaugat lui, nodul parinte il va orienta in functie de pozitia proprie si
+                deplasament.
+            </p>
+            <p>
+                Cum pentru proiect exista restrictia de a nu folosi decat librarii, am avut grija ca alegerea noastra sa
+                nu fie framework, si am judecat ca aceasta indeplineste conditia luand in considerare urmatoarele:
+                - functiile din createjs reprezinta wrappere peste functiile clasice de desenat pe canvas, pastrand
+                signaturi similare cu cele din api-ul original
+                - clasele din createjs pot fi instantiate de noi cand dorim, avand control complet asupra obiectelor din
+                lume
+                - createjs nu ruleaza independent de codul nostru, positia obiectelor pe canvas se actualizeaza doar
+                cand apelam stage.update(), stage fiind un obiect instantiat de noi
+            </p>
+            <p>
+                Createjs are un obiect folosit pentru optimizare pe browser, Ticker, si are un rol de timer - calculeaza
+                in functie de framerate-ul
+                pe care il dorim si apeluri la requestAnimationFrame, cand trebuie sa apelam bucla principala (functia
+                de update) a jocului, care este definita de noi.
+            </p>
+            <p>
+                Dupa ce am capturat input-ul de la utilizator prin handle-uri pe evenimente de input de la tastatura si
+                am introdus o imagine pentru personaj, am reusit sa facem un personaj care se putea orienta in spatiu.
+            </p>
+        </section>
+        <section id="">
+            <h3>Realizarea hartii</h3>
+            <p>Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta.
+                Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa
+                se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris in sectiunea
+                de mai jos, despre Mapbox. Coordonatele pe care le primim sunt puse in vectori sau multivectori de
+                coordonate. Un vector de coordonate reprezinta conturul unei strazi/cladiri/mase de apa. Coordonatele
+                cladirilor sunt salvate in doua locuri: prima data ca si forma geometrica pe ecran, iar a doua oara
+                intr-un vector ca sa ne dam seama cand o cladire a fost deja primita si desenata, si ca sa calculam
+                coliziunile cu jucatorii.</p>
+            <p>
+                Dupa ce am adaugat cladirile, am adaugat un algoritm pentru coliziune, la inceput foloseam o librarie cu
+                un algoritm bazat pe intersectie de poligoane, dar dupa, am renuntat la ea si am facut noi o
+                implementare mai optima, calculand distante fata de muchiile cladirii. Am adaugat doua optimizari pentru
+                coliziune, prima calculeaza limite pentru cladire si se asigura ca vom face operatia de calcul de
+                coliziune (care este costisitoare) doar in interiorul acestei limite, iar a doua calcula pe un interval
+                limitele cladirilor si elimina cladirile indepartate, aplicand coliziunea doar pe cele care erau in raza
+                noastra de actiune.
+            </p>
+        </section>
+        <section id="weather">
+            <h3>Afisarea vremii</h3>
+            <p>
+                Apeland serviciile pentru timp si vreme, completand ca si parametru locatia curenta a jucatorului,
+                distingem tipul vremii: insorit, innourat cu ploaie, ninsoare si tipul de luminozitate: luminos/
+                intunecat. In cazul in care serviciul esueaza, avem o functie care calculeaza aproximativ ora pe glob si
+                o intoarce.
+            </p>
+            <p>
+                Pentru animatia de ninsoare si ploaie, a fost necesar sa folosim api-ul nativ pentru setari
+                mai avansate: ploaia trebuia sa aiba o animatie, si de asemenea, pentru a optimiza sprite-ul (sa nu avem
+                o imagine mare formata din imagini mici repetate), buffer-ul sprite-ului trebuia repetat pe tot ecranul.
+                In plus, am explicat mai sus ca pentru a crea efectul de miscare, trebuie sa mutam personajul, dar si
+                lumea, ca sa pastram in mijloc caracterul. Doar ca lumea trebuie mutata in sens invers miscarii
+                personajului. Deci, trebuia sa deplasam originea imaginii cu distanta de de plasare a jucatorului.
+                Clasele din CreateJS pot folosi functii trimise de noi in care apelam functiile de canvas native, acesta
+                fiind modul de lucru pentru efectele complexe. Am realizat o astfel de functie, CreateJS-ul se asigura
+                de schimbarea animatiei iar noi desenam pe tot ecranul animatia curenta si cu deplasamentul potrivit
+                miscarii.
+            </p>
+        </section>
+        <section id="loading">
+            <h3>Incarcarea Resurselor</h3>
+            <p>Pe langa api-urile care trebuie accesate la inceput, jocul trebuie sa incarce imaginile pentru jucator,
+                monstri etc. Cum aceasta incarcare se realizeaza asincron, nu stim exact care dintre apelurile asincrone
+                se va termina primul/ultimul/in ce ordine. Trebuia sa asteptam cateva secunde pentru ca acestea sa sa
+                termine, si se vedea o pagina goala la inceput, pana incepea jocul, asa ca am pus o pagina de incarcare
+                si am creat PageLoader, o clasa care inregistreaza functii asincrone si apeleaza un callback de
+                terminare dupa ce toate functiile sunt terminate. In cazul nostru, noi doream sa afisam jocul cand se
+                termina de incarcat, si am adaugat si pictograme care sa arate progresul, daca s-a incarcat sau nu
+                resursa respectiva.</p>
+            <p>Imaginile se incarca cu ajutorul unei clase din createjs, LoadQueue. Buffer-ul primit este folosit mai
+                apoi la crearea din animatii prin impartirea ei in sectiuni, in functie de dimensiunea cadrelor si
+                numarul lor.</p>
+            <p>Cand PageLoader termina asteparea, jocul incepe.</p>
+        </section>
+        <section id="mechanics">
+            <h3>Mecanicile de baza ale jocului. Interactiunea cu inamicii</h3>
+            <p>Scopul jocului este obtinerea unui punctaj cat mai mare. Acesta depinde de cati monstri ai invins si cat
+                de mult ai rezistat in joc. Jucatorul se deplaseaza cu ajutorul tastelor WASD si poate arunca proiectile
+                prin alegerea directiei folosind mouse-ul. Jocul se termina cand viata caracterului ajunge la 0, adica
+                cand toata bara rosie din stanga-sus a ecranului se goleste.</p>
+            <p>
+                In cazul detectarii de coliziune cu o cladire, jucatorului nu i se va permite deplasarea spre aceasta.
+                Monstrii sunt de doua tipuri, primul tip poate lansa proiectile spre personaj, iar al doilea tip este
+                mult mai rapid, insa nu are proiectile. Monstrii blocheaza trecerea,iar daca sunt in contact cu
+                jucatorul, acesta pierde puncte de vitalitate.
+            </p>
+        </section>
+        <section id="bonuses">
+            <h3>Bonusuri</h3>
+            <p>Pe harta apar din cand in cand anumite iconite care reprezinta un avantaj (uneori temporar) pentru
+                jucator: sacul de bani reprezinta 50 de puncte in plus, papucul cu aripi ofera cateva secunde de viteza
+                dubla, iar cheile mov pot "deschide" cladirile, adica jucatorul poate sa treaca prin ele. Cheile sunt
+                stivuibile, dar papucii reseteaza intervalul de viteza la contact.</p>
+        </section>
+        <section id="art">
+            <h3>Arta si design</h3>
+            <p>Un joc este un proiect foarte laborios, pentru ca este format din foarte multe elemente: ideea jocului,
+                cat de distractiva este aceasta, design-ul jocului, daca resursele dau un aspect estetic impreuna
+                (consistenta), mecanica de baza a jocului, cat de echilibrate sunt castigurile fata de efortul depus de
+                jucator, cat de accesibile sunt controalele etc. Am incercat sa avem in vedere toate aceste aspecte,
+                realizand cat mai mult din fiecare.</p>
+            <p>
+                Resursele grafice au fost desenate de noi (Sprite-ul personajului si al monstrilor, animatiile, cele
+                doua imagini cu eroul de pe pagina principala, sprite-urile pentru power-up-uri), dar pot fi folosite de
+                cine doreste.
+            </p>
+            <p>De asemenea am scris si o introducere pe pagina principala, pentru a oferi un context jocului. </p>
+        </section>
+        <section id="formats">
+            <h3>Formatele exportate</h3>
+            <p>
+                Pe parcursul jocului sunt salvate punctele geografice prin care trece jucatorul, iar la final el poate
+                descarca un fisier GPX cu traseul parcurs. De asemenea pe pagina de final, utilizatorul poate descarca
+                clasamentul jocului in format CSV.
+            </p>
+        </section>
+        <section id="multiplayer">
+            <h3>Multiplayer</h3>
+            <p>
+                Un lucru interesant la un joc retro este sa ai capabilitati multiplayer. Jucatorii isi pot observa unul
+                celuilalt pozitia si pot interactiona prin intermediul chat-ului. Din pacate calculele nu se realizeaza
+                la nivel de server, ci jocul e mai mult client-based, si sunt explicate mai jos motivele si incercarile
+                noastre.
+            </p>
+        </section>
+        <section id="mobile">
+            <h3>Versiunea de mobil</h3>
+            <p>
+                Pentru versiunea de mobil am adaugat o implementare luata de pe un repo open-source pentru un joystick
+                html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru miscarea personajului, iar
+                cel din stanga, daca nu este in starea default, trimite un proiectil in directia in care este indreptat.
+            </p>
+        </section>
+        <section id="mapbox">
+            <h3>Despre dependinta la Mapbox GL JS</h3>
+            <p>
+                Unul din api-urile pe care le-am folosit a fost cel de geolocatie. Acesta ne intorcea cele mai apropiate
+                obiecte (strazi, cladiri, monumente, etc). Insa problema era ca nu ne intorcea coordonatele conturului
+                acestora. Am cautat suplimentar fata de acesta alt serviciu si am realizat la dupa ce pornisem proiectul
+                ca nu exista un api pentru delimitarile
+                cladirilor/monumentelor/formelor de relief, care sa fie accesibil prin cerere http. Pana si google, care
+                are o colectie foarte mare de harti si alte api-uri legate de acestea, nu avea un astfel de serviciu.
+                Nici Openstreetmaps, nici alte domenii. Si pe noi ne-a intrigat acest aspect, dar exista intr-adevar un
+                serviciu (Mapbox) care permitea descarcarea de fisiere compresate care contineau astfel de informatii.
+                Insa in ciuda efortului depus, nu am reusit sa despachetam formatul respective (.pbf/.mvt), la inceput
+                folosind gunzip, sau alte librarii, in javascript, in python. Formatul pe care Mapbox il punea la
+                dispozitie pare ca se despacheta diferit fata de .pbf-urile normale, apartinand google. Un alt domeniu,
+                openstreetmaps, mentiona ca are datele respective, dar printre implementarile oferite de ei, nu am gasit
+                nicio implementare viabila. Cand spunem ca nu erau viabile, ne referim la mai multe probleme, in primul
+                rand, noi doream initial ceva care sa fie sub forma de api, sau daca trebuia sa despachetam noi
+                formatele, sa avem si o librarie care sa faca asta, dar unele implementari erau sdk-uri, librarii cu
+                licenta non-open-source, sau scrise in c++ (si nu voiam server in c++).
+            </p>
         </section>
     </section>
     <section id="structure">

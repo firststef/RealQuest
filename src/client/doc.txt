@@ -37,9 +37,8 @@ Dupa ce am capturat input-ul de la utilizator prin handle-uri pe evenimente de i
 
 Realizarea hartii
 
-Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta. Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris mai jos. 
+Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta. Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris in sectiunea de mai jos, despre Mapbox. Coordonatele pe care le primim sunt puse in vectori sau multivectori de coordonate. Un vector de coordonate reprezinta conturul unei strazi/cladiri/mase de apa. Coordonatele cladirilor sunt salvate in doua locuri: prima data ca si forma geometrica pe ecran, iar a doua oara intr-un vector ca sa ne dam seama cand o cladire a fost deja primita si desenata, si ca sa calculam coliziunile cu jucatorii.
 
->>vector de poligoane si de puncte
 Dupa ce am adaugat cladirile, am adaugat un algoritm pentru coliziune, la inceput foloseam o librarie cu un algoritm bazat pe intersectie de poligoane, dar dupa, am renuntat la ea si am facut noi o implementare mai optima, calculand distante fata de muchiile cladirii. Am adaugat doua optimizari pentru coliziune, prima calculeaza limite pentru cladire si se asigura ca vom face operatia de calcul de coliziune (care este costisitoare) doar in interiorul acestei limite, iar a doua calcula pe un interval limitele cladirilor si elimina cladirile indepartate, aplicand coliziunea doar pe cele care erau in raza noastra de actiune.
 
 Afisarea vremii
@@ -68,8 +67,7 @@ Resursele grafice au fost desenate de noi (Sprite-ul personajului si al monstril
 
 Formatele exportate
 
-Pe parcursul jocului sunt salvate punctele geografice prin care trece jucatorul, iar la final el poate descarca un fisier GPX cu traseul parcurs. De asemenea 
-
+Pe parcursul jocului sunt salvate punctele geografice prin care trece jucatorul, iar la final el poate descarca un fisier GPX cu traseul parcurs. De asemenea pe pagina de final, utilizatorul poate descarca clasamentul jocului in format CSV.
 
 Multiplayer
 
