@@ -15,6 +15,11 @@ router.get('/game.html', resourceController.plainFileExport.bind(resourceControl
 router.get('/style.css', resourceController.plainFileExport.bind(resourceController), ['../client/style.css', 'text/css']);
 router.get('/gamestyle.css', resourceController.plainFileExport.bind(resourceController), ['../client/gamestyle.css', 'text/css']);
 router.get('/index.js', resourceController.plainFileExport.bind(resourceController), ['../client/index.js', 'text/javascript']);
+
+router.get('/socket.io.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/socket.io.min.js', 'text/javascript']);
+router.get('/mapbox-gl.js', resourceController.plainFileExport.bind(resourceController), ['../client/mapbox-gl.js', 'text/javascript']);
+
+
 router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game.js', 'text/javascript']);
 router.get('/joy.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/joy.min.js', 'text/javascript']);
 router.get('/sprites/realquest-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/realquest-logo.png', 'image/png']);
@@ -37,5 +42,10 @@ router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceCont
 router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/github-logo.png', 'image/png']);
 router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);
 router.get('/ScholarlyHTML.html', resourceController.plainFileExport.bind(resourceController), ['../client/ScholarlyHTML.html', 'text/html']);
+
+router.get('/mapbox-gl.css', resourceController.plainFileExport.bind(resourceController), ['../client/mapbox-gl.css', 'text/css']);
+
+
+
 
 module.exports = router;
