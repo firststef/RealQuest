@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>Scholarly HTML</title>
     <link rel="stylesheet" href="https://w3c.github.io/scholarly-html/css/scholarly.min.css">
+    <link rel="icon" href="../sprites/rq-icon.ico" type="image/x-icon" />
     <script src="https://w3c.github.io/scholarly-html/js/scholarly.min.js"></script>
 </head>
 
@@ -15,35 +16,6 @@
     </header>
 
     <div role="contentinfo">
-        <!-- <ol role="directory">
-            <li><a href="#abstract"><span>1. </span>Abstractiune</a></li>
-            <li><a href="#introduction"><span>2. </span>Introducere</a></li>
-            <li><a href="#motivation"><span>3. </span>Motivatie</a>
-            <li><a href="#structure"><span>4. </span>Structura proiectului</a>
-                <ol role="directory">
-                    <li><a href="#client"><span>4.1 </span>Client</a></li>
-                    <ol role="directory">
-                        <li><a href="#html"><span>4.1.1 </span>Paginile clientului</a></li>
-                        <li><a href="#game-canvas"><span>4.1.2 </span>Canvasul jocului</a></li>
-                        <li><a href="#client-side-services"><span>4.1.3 </span>Serviciile pe partea de client</a></li>
-                    </ol>
-                    <li><a href="#server"><span>4.2 </span>Server</a></li>
-                    <ol role="directory">
-                        <li><a href="#mvc"><span>4.2.1 </span>Structura serverului</a></li>
-                        <li><a href="#server-apis"><span>4.2.2 </span>Serviciile puse la dispozitie de catre server</a></li>
-                        <li><a href="#server-side-services"><span>4.2.3 </span>Serviciile folosite de catre server</a></li>
-                    </ol>
-                    <li><a href="#game"><span>4.3 </span>Mecanica jocului</a></li>
-                    <ol role="directory">
-                        <li><a href="#mapbox"><span>4.3.1 </span>Harta jocului</a></li>
-                        <li><a href="#player-actions"><span>4.3.2 </span>Generarea de evenimente de catre jucator</a></li>
-                        <li><a href="#game-community"><span>4.3.3 </span>Interactiunea jucatorului cu mediul inconjurator</a></li>
-                    </ol>
-                </ol>
-            </li>
-            <li><a href="#techs"><span>5. </span>Tehnologii utilizate</a></li>
-            <li><a href="#biblio-references"><span>6. </span>Referinte</a></li>
-        </ol> -->
         <dl>
             <dt>Autori</dt>
             <dd>
@@ -68,7 +40,7 @@
     <section typeof="sa:Abstract" id="abstract" role="doc-abstract">
         <h2>Abstracțiune</h2>
         <p>
-            <q>Real Quest</q> este o aplicație care permite utilizatorilor să se materializeze într-un tărâm mistic,
+            <q>Real Quest</q> este o aplicație-joc care permite utilizatorilor să se materializeze într-un tărâm mistic,
             copie de rang secund a lumii reale, pentru a explora
             și vâna monștrii care vor să elimine orice formă de viață.
         </p>
@@ -80,7 +52,6 @@
             mediul în care se află, simulând mișcarea acestuia pe o hartă. Elementele spațiu-temporale reale sunt
             însoțite de monștrii virtuali, care vor ataca jucătorul.
         </p>
-
         <p>
             Clientul poate să explore împrejurimile, orientându-se dupa detalii precum numele de străzi și de clădiri,
             luptându-se cu monștrii pentru a câstiga puncte și a supraviețuii cât mai mult.
@@ -89,12 +60,14 @@
     <section id="motivation">
         <h2>Motivație</h2>
         <p>
-            Acest proiect reprezinta tema noastra pentru proiectul de curs de Tehnologii Web al Facultatii de
-            Informatica al Universitatii Alexandru Ioan Cuza.
+            Acest proiect reprezinta tema noastra de proiect pentru cursul Tehnologii Web al Facultatii de
+            Informatica al Universitatii Alexandru Ioan Cuza. Ideea proiectului a fost propusa de noi, fiind pasionati
+            de jocuri si dorind sa incercam un proiect venind cu o idee proprie, prin care sa invatam cat mai multe
+            despre web in timp ce construim ceva interactiv, care sa ne placa atat noua, cat si altora.
         </p>
     </section>
     <section id="problem">
-        <h2>Cerință</h2>
+        <h2>Formula proiectului</h2>
         <p>
             Pe baza unui API REST ori GraphQL propriu, să se realizeze o aplicație web de tip joc "Monster hunter"
             utilizând hărți reale preluate de la un serviciu web de cartografiere (ex. Google maps sau
@@ -126,7 +99,9 @@
             <h3>Pregătire și considerente</h3>
             <p>Primul pas a fost documentarea legata de api-urile pe care le vom utiliza. Am utilizat 3 api-uri: pentru
                 timp, vreme si geolocatie. Api-urile apartin domeniilor dev.virtualearth.net, openweathermap.org si
-                mapbox.com. Vom detalia utilizarea lor cand ajungem la ele in implementare.</p>
+                mapbox.com. Serverul preia informatiile necesare clientului, iar aplicatia client comunica REST cu
+                serverul prin api-ul nostru pentru a initializa conditiile exterioare si harta. Vom detalia utilizarea
+                lor cand ajungem la ele in implementare.</p>
 
             <p>Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare
                 fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest
@@ -192,13 +167,13 @@
                 am introdus o imagine pentru personaj, am reusit sa facem un personaj care se putea orienta in spatiu.
             </p>
         </section>
-        <section id="">
+        <section id="map">
             <h3>Realizarea hartii</h3>
             <p>Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta.
                 Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa
                 se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris in sectiunea
                 de mai jos, despre Mapbox. Coordonatele pe care le primim sunt puse in vectori sau multivectori de
-                coordonate. Un vector de coordonate reprezinta conturul unei strazi/cladiri/mase de apa. Coordonatele
+                coordonate. Un vector de coordonate reprezinta conturul unei strazi/ cladiri/ mase de apa. Coordonatele
                 cladirilor sunt salvate in doua locuri: prima data ca si forma geometrica pe ecran, iar a doua oara
                 intr-un vector ca sa ne dam seama cand o cladire a fost deja primita si desenata, si ca sa calculam
                 coliziunile cu jucatorii.</p>
@@ -217,8 +192,8 @@
             <p>
                 Apeland serviciile pentru timp si vreme, completand ca si parametru locatia curenta a jucatorului,
                 distingem tipul vremii: insorit, innourat cu ploaie, ninsoare si tipul de luminozitate: luminos/
-                intunecat. In cazul in care serviciul esueaza, avem o functie care calculeaza aproximativ ora pe glob si
-                o intoarce.
+                intunecat. In cazul in care serviciul esueaza, avem o functie care calculeaza aproximativ ora pe glob
+                dupa deplasarea fata de Greenwich si o intoarce.
             </p>
             <p>
                 Pentru animatia de ninsoare si ploaie, a fost necesar sa folosim api-ul nativ pentru setari
@@ -281,6 +256,19 @@
                 cine doreste.
             </p>
             <p>De asemenea am scris si o introducere pe pagina principala, pentru a oferi un context jocului. </p>
+            <p>Pentru majoritatea jocurilor, interfata jocului (UI-ul), este integrata in aceeasi tehnologie ca restul
+                jocului. Insa, in loc sa o facem din dreptunghiuri, chenare, text, butoane desenate in interiorul
+                canvas-ului, am decis sa folosim html-ul si css-ul. Pana la urma, aceasta este cea mai utilizata
+                tehnologie pentru realizarea de interfete si este extrem de bine testata. In plus, puteam sa ne folosim
+                direct cunostintele legate de frontend, in loc sa calculam si sa implementam noi un sistem pentru
+                interfata.</p>
+        </section>
+        <section id="gameEnd">
+            <h3>Sfarsitul jocului</h3>
+            <p>
+                Cand jucatorul isi pierde toate punctele de vitalitate, jocul afiseaza punctajul jucatorului, locul sau
+                in clasament si primii jucatori. De aici ei pot descarca traseul parcurs si top-ul jucatorilor.
+            </p>
         </section>
         <section id="formats">
             <h3>Formatele exportate</h3>
@@ -290,268 +278,320 @@
                 clasamentul jocului in format CSV.
             </p>
         </section>
-        <section id="multiplayer">
-            <h3>Multiplayer</h3>
-            <p>
-                Un lucru interesant la un joc retro este sa ai capabilitati multiplayer. Jucatorii isi pot observa unul
-                celuilalt pozitia si pot interactiona prin intermediul chat-ului. Din pacate calculele nu se realizeaza
-                la nivel de server, ci jocul e mai mult client-based, si sunt explicate mai jos motivele si incercarile
-                noastre.
-            </p>
-        </section>
         <section id="mobile">
             <h3>Versiunea de mobil</h3>
             <p>
-                Pentru versiunea de mobil am adaugat o implementare luata de pe un repo open-source pentru un joystick
+                Pentru versiunea de mobil am adaugat o implementare open-source numita JOY.JS pentru un joystick
                 html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru miscarea personajului, iar
                 cel din stanga, daca nu este in starea default, trimite un proiectil in directia in care este indreptat.
             </p>
         </section>
         <section id="mapbox">
-            <h3>Despre dependinta la Mapbox GL JS</h3>
+            <h3>Hartile din Mapbox GL JS</h3>
             <p>
                 Unul din api-urile pe care le-am folosit a fost cel de geolocatie. Acesta ne intorcea cele mai apropiate
                 obiecte (strazi, cladiri, monumente, etc). Insa problema era ca nu ne intorcea coordonatele conturului
                 acestora. Am cautat suplimentar fata de acesta alt serviciu si am realizat la dupa ce pornisem proiectul
                 ca nu exista un api pentru delimitarile
-                cladirilor/monumentelor/formelor de relief, care sa fie accesibil prin cerere http. Pana si google, care
-                are o colectie foarte mare de harti si alte api-uri legate de acestea, nu avea un astfel de serviciu.
-                Nici Openstreetmaps, nici alte domenii. Si pe noi ne-a intrigat acest aspect, dar exista intr-adevar un
-                serviciu (Mapbox) care permitea descarcarea de fisiere compresate care contineau astfel de informatii.
+                cladirilor/ monumentelor/ formelor de relief, care sa fie accesibil prin cerere http. Pana si google,
+                care are o colectie foarte mare de harti si alte api-uri legate de acestea, nu avea un astfel de
+                serviciu.
+                Nici Openstreetmaps, nici alte domenii. Si pe noi ne-a intrigat acest aspect, dar am descoperit un
+                serviciu de la Mapbox care permitea descarcarea de fisiere compresate care contineau astfel de
+                informatii.
                 Insa in ciuda efortului depus, nu am reusit sa despachetam formatul respective (.pbf/.mvt), la inceput
                 folosind gunzip, sau alte librarii, in javascript, in python. Formatul pe care Mapbox il punea la
                 dispozitie pare ca se despacheta diferit fata de .pbf-urile normale, apartinand google. Un alt domeniu,
-                openstreetmaps, mentiona ca are datele respective, dar printre implementarile oferite de ei, nu am gasit
+                openstreetmaps, mentiona ca are datele respective, dar printre implementarile oferite de ei pentru
+                lucrul cu aceste fisiere, nu am gasit
                 nicio implementare viabila. Cand spunem ca nu erau viabile, ne referim la mai multe probleme, in primul
                 rand, noi doream initial ceva care sa fie sub forma de api, sau daca trebuia sa despachetam noi
                 formatele, sa avem si o librarie care sa faca asta, dar unele implementari erau sdk-uri, librarii cu
                 licenta non-open-source, sau scrise in c++ (si nu voiam server in c++).
             </p>
+            <p>
+                Dar am gasit o solutie pana la urma. Totusi hartile pe care le vedem noi pe site-uri cum fac?, ne-am
+                intrebat. Am descoperit ca intr-o implementare pentru harti embedded folosind canvas pentru web, era
+                posibil pentru noi sa interogam harta la momentul curent si sa intoarcem coordonatele cladirilor. Dar,
+                din pacate, cand am incercat sa luam aceasta librarie sa o punem pe server ca sa incapsulam intr-un api
+                propriu functionalitatea, am descoperit ca libraria era incompatibila cu node.js - era doar pentru web.
+                Si da, am incercat, in primul rand sa reparam dependintele, dupa sa emulam un browser pe serverul de
+                node, insa, dupa multe incercari, am renuntat. In final, pentru a construi harta noastra, ne folosim de
+                harta celor de la Mapbox. Libraria este open-source, insa cum despacheteaza exact formatul, nu am reusit
+                sa reproducem, am investigat si am trecut din nou prin implementari si prin gunzip si prin librarii, dar
+                a trebuit sa alegem ca solutie finala utilizarea acestei librarii pe front-end. Daca am fi reusit, am fi
+                putut sa mutam cladirile, interactiunea cu ele pe server, si sa facem jocul si mai performant, si chiar
+                ne-am fi dorit acest lucru. Insa aveam doar optiunea de frontend, iar ideea de a transmite coordonatele
+                serverului pentru a controla el coliziunea nu ar fi fost un lucru benefic.
+            </p>
+        </section>
+        <section id="multiplayer">
+            <h3>Multiplayer</h3>
+            <p>Un lucru interesant la un joc retro este sa ai capabilitati multiplayer. In aplicatia noastra jucatorii
+                isi pot observa unul celuilalt pozitia, orientarea curenta si pot interactiona prin intermediul
+                chat-ului. Totusi, ei nu se vor putea ciocni sau lupta monstri impreuna. Calculele nu se realizeaza la
+                nivel de server, ci jocul este client-based, din cauza ca nu puteam muta calculele pe server,
+                desi daca reuseam, am fi fost si mai multumiti.
+            </p>
+            <p>
+                La inceperea jocului se realizeaza o conexiune cu serverul prin SocketIO (detalii mai jos). Clientul
+                trimite la un interval de timp, la inceput mai mare (1s), coordonatele serverului. Daca jucatorul are in
+                jurul sau pe altcineva, acest interval se micsoreaza la o anumita valoare, astfel incat coordonatele sa
+                fie transmise mai repede pentru a fi actualizate intre clienti. Acest mod de comunicare reprezinta o
+                optimizare pentru a nu folosi intens resursele atunci cand jucatorii nu au pe cineva in proximitatea
+                lor.
+            </p>
+            <p>
+                Odata cu coordonatele trimise, jucatorii trimit si punctajul curent, iar serverul realizeaza un
+                clasament live al jucatorilor pe care il ofera prin api. Pe UI-ul jocului in coltul din dreapta sus este
+                o tabela care se actualizeaza live apeland acest api.
+            </p>
+            <p>
+                La deconectare, serverul intelege ca sesiunea de joc a utilizatorului s-a terminat si inregistreaza in
+                baza de date ultimul punctaj obtinut. Clientul va obtine prin apelarea api-ului locul sau in clasament
+                dupa inserare si top-ul jucatorilor.
+            </p>
         </section>
     </section>
-    <section id="structure">
-        <h2>Structura proiectului</h2>
-        <p>
-            Fiind o aplicatie web, aceasta este structurată in interfața grafică prin care clientul are acces la joc,
-            aplicația server care tratează cerințele clienților
-            și un modul care se ocupă cu desfășurarea și logica jocului.
-        </p>
-        <section id="client">
-            <h3>Client</h3>
+    <section id="app">
+        <h2>Implementarea aplicatiei</h2>
+
+        <section id="site">
+            <h3>Realizarea paginilor site-ului</h3>
             <p>
-                Partea vizibilă utilizatorilor, clientul este reprezentat de pagini web create prin intermediul
-                interacțiunii dintre HTML, CSS si JavaScript.
+                Pe prima pagina este formularul de intrare in joc. La incarcarea paginii, browser-ul va cere permisiunea
+                pentru geolocatie. In cazul in care utilizatorul isi da acordul pentru preluarea datelor, se completeaza
+                in formularul de inceput de joc coordonatele sale. Altfel el ramane cu anumite coordonate default,
+                acestea fiind o anumita zona din Iasi, orasul in care a fost implementat acest proiect. Dupa ce un
+                utilizator isi scrie un username dorit,
+                este directionat pe pagina jocului. Transmiterea coordonatelor si a numelui de utilizator intre pagini
+                este realizata cu LocalStorage pe browser-ele care suporta aceasta, altfel prin intermediul parametrilor
+                in adresa url.
             </p>
-            <section id="html">
-                <h4>Paginile clientului</h4>
-                <p>
-                    Utilizatorul are acces la pagina de start, care conține o scurtă descriere și poveste a jocului,
-                    precum si funcția de preluare a coordonatelor
-                    utilizatorilor prin modulul API de geolocație al HTML5.
-                </p>
-                <p>
-                    ??design html si css??
-                </p>
-                <p>
-                    După apăsarea butonului de începere a jocului, se trimit către pagina de joc prin postare
-                    coordonatele utilizatorului și numele acestuia.
-                    Aplicația joc conține un canvas pe care este desenat un personaj care poate fi controlat de către
-                    client, precum
-                    și clădirile, străzile și apa din imediata apropiere a coordonatelor primite.
-                </p>
-
-
-
-
-            </section>
-            <section id="game-canvas">
-                <h4>Canvasul jocului</h4>
-                <p>
-                    Animația jocului este înglobată in canvasul de pe pagina de joc. Harta jocului este primită sub
-                    forma de colecție de poligoane sau multipoligoane
-                    care sunt alcătuite din colectii de puncte, iar clădirile, drumurile si apa sunt figuri desenate
-                    prin unirea punctelor si umplerea poligoanelor.
-                </p>
-                <p>
-                    Aceste figuri sunt adăugate ca și elemente copil ale (?) unui obiect (?) + (CreateJS!!)
-                </p>
-                <p>
-                    In plus, personajul care poate fi controlat de catre utilizator este centrat in permanență, restul
-                    elementelor, mișcându-se în funcție de deplasarea
-                    acestuia. Alte persoaneje ale celorlalți eventuali utilizatori sunt desenate doar daca sunt primite
-                    coordonate ale poziției acestora pe ecranul
-                    clientului curent. Inamicii sunt generați aleator (+ alte detalii ale designului) si se vor deplasa
-                    înspre coordonatele jucătorului.
-                </p>
-                <p>
-                    Atât utilizatorul cât și unii inamicii au acces la crearea unor proiectile. Clientul poate crea câte
-                    un proiectil la fiecare clic, iar monștrii
-                    la un anumit interval. Proiectilul este un sprite care + (informatii despre el)
-                </p>
-
-                <p>
-                    În funcție de condițiile temporale si meteorologice, pe canvas este adaugată o animație (+detalii)
-                </p>
-            </section>
-
-
-            <section id="client-side-services">
-                <h4>Serviciile pe partea de client</h4>
-                <p>
-                    Pe partea de client se face apel atât la servicii API REST interne, deținute de către server, cât și
-                    la servicii externe.
-                </p>
-                <p>
-                    Clientul trimite la începutul jocului o cerere către server pentru primirea datelor temporale și a
-                    condițiilor meteorologice în funcție
-                    de coordonatele curente. Clientul așteaptă răspunsul serverului și in funcție de timp și vreme
-                    încarcă în canvas animația pentru zi sau noapte
-                    și eventualele animații pentru vreme ploioasă sau ninsoare.
-                </p>
-
-
-                <p>
-                    Tot înainte de joc se face si o primă cerere către serviciul extern <a
-                        href="https://docs.mapbox.com/">mapbox API</a>, care pentru o pereche de
-                    coordonate primite va întoarce în format JSON o colecție de caracteristici, printre care sunt
-                    incluse clădiri, drumuri și spații care conțin apă.
-                    Aceste date vor fi folosite pentru desenarea hărții de joc. Pe parcursul jocului, in funcție de
-                    deplasarea utilizatorului se vor face cereri
-                    suplimentare pentru noi elemente ale hartii.
-                </p>
-
-                <p>
-                    Clasamentul este obținut prin apelarea unui serviciu intern al serverului, care va întoarce un numar
-                    de jucători online ordonați descrescător după
-                    punctaj. O descriere a locației curente a utilizatorului este obținută tot de pe server, clientul
-                    putând afla numele celei mai apropiate străzi,
-                    clădiri sau monument din imediata vecinătate a jucatorului.
-                </p>
-
-                <p>
-                    La finalul jocului este apelat un alt serviciu al serverului, care va întoarce clasamentul
-                    clientului raportat la toți utilizatorii care au jucat
-                    vreodată jocul.
-                </p>
-
-            </section>
+            <p>
+                Paginile au fost analizate cu grija sa permita
+            </p>
         </section>
         <section id="server">
-            <h3>Server</h3>
+            <h3>Pornirea server-ului</h3>
             <p>
-                Aplicația server care deservește utilizatorii a fost creată utilizatând <q>Node JS</q> și folosind
-                standardul MVC. (? ar mai trebuii detalii?)
+                Intrucat incepusem sa invatam javascript cu implementarea jocului si din operatiile de frontend, ne-am
+                hotarat sa pastram limbajul si sa apelam la tehnologiile NodeJS. De asemenea aveam la inceput intentia
+                sa integram algoritmii pentru coliziune si alte functionalitati ale jocului pe server, pentru
+                performanta, insa s-a dovedit ca trebuie sa le pastram pe client.
             </p>
-
-            <section id="mvc">
-                <h4>Structura serverului</h4>
-                <p>
-                    (Aicea cred ca ar fi mai bine ca Stefan sa explice, ca el am facut acest MVC)
-                </p>
-
-
-            </section>
-
-            <section id="server-apis">
-                <h4>Serviciile puse la dispozitie de catre server</h4>
-                <p>
-                    Aplicația server pune la dispoziția utilizatorilor servicii care implementează principiul API REST
-                    (? bold text??), acestea putând fi accesate de
-                    către clienți prin metoda HTTP GET.
-                </p>
-
-                <p>
-                    Serverul ofera un serviciu de aflare a timpului și a spațiului în funcție de coordonate geografice
-                    trimise de către utilizatori. Aceste date sunt
-                    oferite de către server prin apelarea la rândul lui a altor servicii externe, dar în caz de eroare a
-                    apelarii aplicatia server poate calcula
-                    matematic timpul unui client in functie de ora curenta si distanțarea acestuia față de Greenwich.
-                </p>
-
-                <p>
-                    Clasamentul tuturor utilizatorilor online este reținut de către server, acesta trimițând-ul și
-                    clienților. Punctajul clientilor este obtinut prin
-                    intermediul comunicarii continue a acestora a propriului punctaj utilizand tehnologia
-                    <q>SocketIO</q> (??poate trebuie alte taguri), iar serverul
-                    îi ordonează descrescător.
-                </p>
-
-                <p>
-                    De asemenea serverul pune la dispoziție un serviciu de întoarcere a celor mai mari punctaje
-                    înregistrate în baza de date pe tot parcursul istoricului
-                    jocului și a poziției clientului curent în funcție de ceilalți jucători.
-                </p>
-            </section>
-
-            <section id="server-side-services">
-                <h4>Serviciile folosite de catre server</h4>
-                <p>
-                    Pentru a deservi unele cereri ale clienților, serverul utilizează la rândul lui servicii API REST
-                    externe.
-                </p>
-                <p>
-                    Timpul specific unor coordonate spațiale este obținut prin folosirea serviciului pus la dispozitie
-                    de<a href="https://dev.virtualearth.net">virtualearth</a>,
-                    iar vremea prin folosirea <a href="https://api.openweathermap.org/">openweathermap</a>. De asemenea,
-                    pentru descrierea locației curente ale
-                    clienților este folosit un serviciu al <a href="https://api.mapbox.com/">mapbox</a>, care pune
-                    pentru un set de coordonate întoarce cele mai apropiate
-                    obiective (străzi sau clădiri).
-                </p>
-
-            </section>
-
+            <p>
+                Serverul trebuia atat sa intoarca fisierele pentru pagini, dar trebuia si sa comunice cu clientul prin
+                api de tip REST. La inceput faceam un switch pentru a detecta daca era o resursa sau un api si apelam
+                functiile potrivite. Un fisier de configurare pe server in format json ne spunea ce fisiere avem, ruta
+                pe care puteau fi accesate si tipul lor. Insa dupa am renuntat la acest fisier de configurare pentru
+                pagini si recurs la o implementare mai organizata, cea de tip MVC.
+            </p>
         </section>
-        <section id="game">
-            <h3>Mecanica jocului</h3>
+        <section id="mvc">
+            <h3>Arhitectura MVC</h3>
             <p>
-                „Cea mai complexă și voluminoasă parte a aplicației este reprezentată de desfășurarea jocului.
-                Majoritatea resurselor necesare sunt rulate pe partea
-                de client, pentru a nu supraîncărca serverul în cazul în care sunt foarte mulți utilizatori.„
+                Pentru a realiza o arhitectura MVC am creat clasele Router, Controller si Model. Router-ul face legatura
+                dintre ruta la care primim request-ul si controller-ul care trebuie sa intoarca raspunsul. Sunt doua
+                tipuri de controllere: ApiController si ResourceController. ResourceController se ocupa cu citirea
+                fisierelor resursa si trimiterea lor, iar ApiController executa o anumita procedura si intoarce
+                rezultatul acesteia. Controller-ele comunica cu clasa Model, responsabila cu accesul la baza de date si
+                logica aplicatiei. Pentru fisierele pe care trebuiau aplicate template-uri, am fi putut utiliza o clasa
+                View care sa substituie campurile ce aveau continutul '{{ variabila }}' cu valoarea respectiva din
+                Model, insa noi am folosit mai mult api-uri ca sa ne umplem continutul, avand nevoie de versiunea live,
+                si nu versiunea la incarcare.
             </p>
-            <p>
-                ?
-            </p>
-
-            <section id="mapbox">
-                <h4>Harta jocului</h4>
-                <p>
-                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi,
-                    zone cu apă. Întrucât este implementat un sistem
-                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de
-                    îndepărtate de jucător. Fiecare caracteristică a
-                    hărții este transformată intr-un sprite (+detalii).
-                </p>
-
-                <p>
-                    Fiecare client va reține într-o colecție toate obiectele specifice hărții de joc: clădiri, străzi,
-                    zone cu apă. Întrucât este implementat un sistem
-                    de coleziune între jucător și clădiri, sunt eliminate din colecție toate clădirile destul de
-                    îndepărtate de jucător. Fiecare caracteristică a
-                    hărții este transformată intr-un sprite (+detalii).
-                </p>
-
-            </section>
-
-            <section id="player-actions">
-                <h4>Generarea de evenimente de catre jucator</h4>
-                <p>
-                    Acest paragraf este despre generarea de evenimente de catre jucator
-                </p>
-
-
-            </section>
-
-            <section id="game-community">
-                <h4>Interactiunea jucatorului in mediul online</h4>
-                <p>
-                    Acest paragraf este despre socket io si !pvp
-                </p>
-
-
-            </section>
-
+            <p>Model foloseste o clasa asemanatoare cu PageLoader, ApiLoader, si el cu rol de a incarca asincron
+                api-urile si a intoarce in acelasi timp raspunsul. Diferenta este ca in timp ce PageLoader stoca datele
+                primite la nivel global, ApiLoader nu poate pune in variabile global rezultatele si le ofera
+                callback-urilor un context local in care sa-si puna rezultatul interogarilor si de asemenea rezolva
+                request-ul primit doar daca toate callback-urile au reusit, iar in
+                caz contrar trimite un cod de eroare.</p>
         </section>
+        <section id="socketio">
+            <h3>Comunicarea prin SocketIO</h3>
+            <p>Websocket-urile permit comunicarea in timp real cu clientii, lucru necesar in momentul in care vrem
+                ca jucatorii sa se poata vedea unii pe ceilalti in acelasi timp. Pe aceasta tehnologie se bazeaza
+                libraria SocketIO, pe care am integrat-o cu jocul nostru, atat pe partea de server cat si pe partea de
+                client. In momentul conectarii se creeaza socket-uri, clientul si serverul ramanand conectati pe tot
+                parcursul jocului. Comunicarea incepe cu clientul trimitand o cerere HTTP catre server cu
+                continutul"Upgrade: websocket". Daca serverul accepta, comunicarea se realizeaza din acel moment cu
+                protocolul WS, care trimite si accepta pachete mai mici, pentru a creste viteza. </p>
+            <p>
+                Serverul si clientul isi pot trimite unul altuia evenimente si un buffer de date odata cu acel
+                eveniment.
+            </p>
+            <p>Cea mai des implementata aplicatie a websocket-urilor sunt chat-urile, si am vrut sa includem si noi o
+                fereastra de chat. Asa putem folosi functionalitatea de broadcast a serverului de websocket-uri, care
+                atunci cand primeste un eveniment de la client ca s-a trimis un mesaj, face broadcast pentru toti
+                clientii conectati cu datele primite.</p>
+        </section>
+        <section id="bd">
+            <h3>Baza de date</h3>
+            <p>Pentru baza de date am folosit MongoDB, fiind o alegere recomandata pentru serverele de NodeJS, si dorind
+                sa experimentam cu o baza de date NoSQL. De asemenea serviciile MongoDB ne permiteau sa folosim o baza
+                de date in cloud gratis, si asta ne-a permis sa nu mai ingreunam proiectul cu o configuratie locala a
+                bazei de date, noi lucrand fiecare separat.</p>
+        </section>
+        <section id="api">
+            <h3>Api-urile create</h3>
+            <p>Aplicatia foloseste activ informatiile gasite pe server si le preia comunicand REST cu acesta.</p>
+            <section id="livescores">
+                <h4>Livescores</h4>
+                <p>Acest api primeste ca parametru in url o constanta "count", si intoarce primele "count" inregistrari
+                    de utilizatori din lista de jucatori activi, sortati dupa punctaj. Inregistrarile sunt sub forma
+                    unui json cu un vector de obiecte.</p>
+                <figure typeof="schema:SoftwareSourceCode">
+                    <pre>
+[{"username": "player1", "currentPoints":"100"}, {"username":"player2", "currentPoints": "11"}...]
+                    </pre>
+                </figure>
+            </section>
+            <section id="leaderboards">
+                <h4>LeaderBoards</h4>
+                <p>Acest api returneaza primii "count" jucatori dupa punctaj care au terminat jocul, si care au un
+                    punctaj mai mare decat parametrul optional "myScore". Pe langa vectorul de obiecte, daca am vrea sa
+                    stim cati jucatori sunt cu punctaj mai mare decat myScore, dar totusi sa intoarcem doar "count"
+                    elemente, api-ul intoarce numarul de astfel de jucatori sub campul "myPlace".
+                </p>
+                <figure typeof="schema:SoftwareSourceCode">
+                    <pre>
+{"players":[{"username": "player1", "currentPoints":"100"}, {"username":"player2", "currentPoints": "11"}...], "myPlace":"1"}
+                    </pre>
+                </figure>
+            </section>
+            <section id="weathertime">
+                <h4>Weather and Time</h4>
+                <p>Api-ul ofera informatii despre vreme si timp la coordonatele trimise ca parametri: ["lat", "lng"]. In obiectul "weather" sunt mai multe informatii, dar jocul foloseste in special campul "main", care poate fi ["Rain", "Snow", etc.] si campul "time" care precizeaza ora in minute.
+                </p>
+                <figure typeof="schema:SoftwareSourceCode">
+                    <pre>
+{"weather": {...},"time": 900}
+                    </pre>
+                </figure>
+            </section>
+            <section id="nearby">
+                <h4>NeabyFeatures</h4>
+                <p>Acest api intoarce o descriere a locației curente a utilizatorului (trimise ca ["lat", "lng"]),
+                    clientul putând afla numele
+                    celei mai apropiate străzi, clădiri sau monument din imediata vecinătate a jucatorului. Mesajele
+                    sunt personalizate cu formulari misterioase cu rolul de a pastra o nuanta de poveste intr-un context
+                    realistic.</p>
+                <figure typeof="schema:SoftwareSourceCode">
+                    <pre>
+{"name": "Strada Palas","topText": "","bottomText": " is in your sight"}
+                    </pre>
+                </figure>
+            </section>
+            <section id="aconfig">
+                <h4>Config</h4>
+                <p>Nu in ultimul rand este api-ul de config, care intoarce clientului parametri pentru joc, asa cum au
+                    fost stabiliti de administator.</p>
+                <figure typeof="schema:SoftwareSourceCode">
+                    <pre>
+{"maxNrOfMonsters":10,"isNight":false,"rain":false,"snow":false,"playerMaxHealth":100,"moneyPowerUpValue":50,"displacement":0.000002,"speedDisplacement":1.45,"scale":2.5,"leaderBoardCount":7}
+                    </pre>
+                </figure>
+            </section>
+        </section>
+        <section id="config">
+            <h3>Modulul de configurare</h3>
+            <p>
+                Ca si administratori ai serverului, putem ajusta anumiti parametri ai jocului in functie de feedback-ul
+                pe care il primim de la jucatori sau daca observam un mod prin care putem imbunatati experienta jocului.
+                Aceasta o facem printr-un fisier de configurare, care contine constante pentru joc: cati monstri sunt
+                creati la inceput, numarul de puncte de viata ale jucatorului, se poate seta o vreme globala pentru joc,
+                la ce scala este desenata harta etc.
+            </p>
+        </section>
+    </section>
+    <section id="development">
+        <h2>Procesul de dezvoltare</h2>
+
+        <section id="repo">
+            <h3>Github</h3>
+            <p>
+                Pentru managementul codului sursa am folosit Github. Aceasta platforma a venit cu o multime de avantaje,
+                si am fost foarte multumiti de ea. Pe langa posibilitatea de a vedea in browser codul sursa si a
+                modificarilor facute pe parcursul proiectului, Github ne-a permis sa facem si un Project Board. Pe acest
+                board noi puteam stabili si crea task-uri, ca sa stim care este partea din proiect de care trebuie sa se
+                ocupe fiecare. De asemenea ne arata si statistici, cat de mult am scris, cat de des, si cat mai avem
+                pana terminam toate cerintele.
+            </p>
+        </section>
+        <section id="static">
+            <h3>Analiza statica</h3>
+            <p>DeepScan este un analizator static pentru javascript, si ne-a permis sa observam erori sau sa ne
+                imbunatatim codul. De exemplu acesta ne spunea cand o variabila este declarata dar nu este folosita
+                nicaieri, cand o anumita conditie ajungea sa fie indeplinita mereu, etc. DeepScan ofera analiza gratis
+                la conectarea cu Github prin programul Github Student Developer Pack.
+            </p>
+        </section>
+        <section id="deployment">
+            <h3>Lansare continua (Continuous Deployment)</h3>
+            <p>
+                Probabil cea mai folositoare metoda de testare pentru proiect a fost ca am putut avea versiunea live a
+                proiectului inca de la inceput. Folosind oferta gratis de la DigitalOcean in parteneriat cu Github, am
+                putut configura un vm pe care sa pornim serverul nostru. La scurt timp, am adaugat o optiune in Github
+                ca la fiecare push pe branch-ul master sa actualizam serverul. Am facut asta utilizand o actiune
+                open-source de la Github prin care putem sa inseram o cheie ssh care sa se conecteze la masina virtuala
+                si sa faca un git pull, dupa care sa reporneasca serverul. Initial eram reticenti la folosirea unei chei
+                ssh pe un repo public, gandindu-ne ca oricine ar putea sa ia cheia si sa se conecteze la server, insa
+                Github a implementat foarte inteligent solutia pentru astfel de probleme: pe Github exista o sectiune
+                numita "Secrets". Aici se pot pune date de tip nume-valoare, date care pot fi folosite in actiuni, iar
+                modul in care acestea ofera securitate sistemului este ca odata inserata o valoare, ea nu poate fi
+                accesata de niciun membru, ci e posibil sa fie utilizata doar in actiuni. A fost prima data cand am
+                implementat o astfel de actiune, dar cei de la Github au facut ca tot procesul sa fie foarte usor si la
+                indemana de realizat, iar in final, am reusit. Serverul se actualiza la fiecare schimbare care o puneam
+                pe repo.
+            </p>
+        </section>
+        <section id="logging">
+            <h3>Inregistrarea erorilor in log</h3>
+            <p>
+                Atunci cand serverul nostru este la distanta, se poate intampla ca ceva sa mearga rau, iar noi sa nu
+                realizam sau sa putem vedea output-ul pentru ca nu avem acces imediat la acea masina. Pentru asta am
+                implementat ca la fiecare pornire,
+                serverul sa faca un fisier de log intr-un folder, si sa il numeasca utilizand data si ora la care a fost
+                pornit. Astfel, daca vom avea nevoie sa vedem din ce motiv a picat serverul sau daca s-a intamplat ceva
+                neprevazut, putem inspecta log-urile.
+            </p>
+            <p>
+                Mai trebuie mentionat ca fisierul de log-uri a trebuit sa-l trecem ca exceptie in .gitignore, pentru ca
+                sa nu existe conflicte de vreun fel cand serverul executa pull pe repo (ar fi putut vedea un conflict
+                intre doua fisiere de log numite la fel).
+            </p>
+        </section>
+    </section>
+    <section id="conclusion">
+        <h2>Concluzii</h2>
+        <p></p>
+    </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </section>
 
 

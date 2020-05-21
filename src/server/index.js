@@ -14,10 +14,10 @@ function serverFunc(req, res) {
     router.callRoute(req, res);
 }
 
-server = http.createServer(serverFunc);
+let server = http.createServer(serverFunc);
 server.listen(port);
 
-//Socket
+//Socket Server
 let playerMap = model.getPlayerMap();
 
 function distance(point1, point2) {

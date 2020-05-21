@@ -15,12 +15,8 @@ router.get('/game.html', resourceController.plainFileExport.bind(resourceControl
 router.get('/style.css', resourceController.plainFileExport.bind(resourceController), ['../client/style.css', 'text/css']);
 router.get('/gamestyle.css', resourceController.plainFileExport.bind(resourceController), ['../client/gamestyle.css', 'text/css']);
 router.get('/index.js', resourceController.plainFileExport.bind(resourceController), ['../client/index.js', 'text/javascript']);
-
-
-
 router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game.js', 'text/javascript']);
 router.get('/joy.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/joy.min.js', 'text/javascript']);
-router.get('/sprites/realquest-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/realquest-logo.png', 'image/png']);
 router.get('/sprites/players.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/players.png', 'image/png']);
 router.get('/sprites/Epichero.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/Epichero.png', 'image/png']);
 router.get('/sprites/lofiProjs.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/lofiProjs.png', 'image/png']);
@@ -32,17 +28,12 @@ router.get('/sprites/game_screen.png', resourceController.plainFileExport.bind(r
 router.get('/sprites/multi.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/multi.png', 'image/png']);
 router.get('/sprites/hero.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/hero.png', 'image/png']);
 router.get('/createjs.js', resourceController.plainFileExport.bind(resourceController), ['../client/createjs.js', 'text/javascript']);
-router.get('/favicon.ico', resourceController.plainFileExport.bind(resourceController), ['../sprites/realquest-logo.png', 'image/png']);
+router.get('/favicon.ico', resourceController.plainFileExport.bind(resourceController), ['../sprites/rq-icon.ico', 'image/x-icon']);
 router.get('/sprites/cursorImg.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/cursorImg.png', 'image/png']);
 router.get('/lady_radical.ttf', resourceController.plainFileExport.bind(resourceController), ['../sprites/fonts/lady_radical.ttf', 'plain']);
 router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceController), ['../sprites/fonts/alphbeta.ttf', 'plain']);
-
 router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/github-logo.png', 'image/png']);
 router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);
 router.get('/ScholarlyHTML.html', resourceController.plainFileExport.bind(resourceController), ['../client/ScholarlyHTML.html', 'text/html']);
-
-
-
-
 
 module.exports = router;

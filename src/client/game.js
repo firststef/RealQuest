@@ -8,7 +8,6 @@ SECTIONS:
 6.GAME COLLISIONS FUNCTIONS
 7.UI FUNCTIONS
 8.UTILS
-9.NOTES
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
@@ -1824,38 +1823,3 @@ function isLocalStorageSupported() {
         return false;
     }
 }
-
-/* --------------------------------------------------------------------------------------------------------- NOTES
-
-//TODO: to rename to center pos - the default spawn position
-//TODO: playerWidth seems useless, collision will be made after radius
-//TODO: use update in tick() only when something changed
-//TODO: make the DrawFeatures functions pass less feature objects, only type and arrays
-//todo optimizare verificare schimbare - update() only when the game changes
-//todo: on resize event
-//TODO: responsive UI
-//TODO: monster mini health-bar
-//TODO: we might wanna add a function to subtract from player the damage, but in this function we select only the highest damage in the recent seconds
-//TODO: add grass
-//TODO: fewer calls to playerGetPos
-
-Polygon has this format: Main[ Array[ Point[], Point[]... ], ...]
-MultiPolygon has this format: Main[ Polygon[Array[ Point[], Point[]... ], ...], ...]
-
-setTransform() muta jucatorul fata de pozitia lui initiala - cea la care se afla cand a fost introdus sub parintele lui
-1) coordonatele 200,200
-2) add child
-3) set transform (10,0)
-=> a fost mutat 10 px in drepta
-
-cache functionality was moved to BitmapCache
-
-note: optimization: the player already checks collision with monsters, but monsters check again to see if they can move:
-- what if we can return an array with collided monsters ids?
-
-note: querySource features might be of better use
-
-note: event deprecation on internet explorer could be solved with:
-https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events#The_old-fashioned_way
-
-*/
