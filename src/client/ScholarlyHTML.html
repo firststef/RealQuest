@@ -100,7 +100,7 @@
                 <a href ="https://openweathermap.org">openweathermap.org</a> și <a href ="https://mapbox.com">mapbox.com</a>.
                 Serverul preia informațiile necesare clientului, iar aplicația client comunica REST cu serverul prin
                 api-ul nostru pentru a inițializa condițiile exterioare și harta. Vom detalia utilizarea
-                lor în capitolele următoare.</p>
+                lor în <a href="#api">capitolele următoare</a>.</p>
 
             <p>Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare
                 fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest
@@ -178,7 +178,7 @@
                 API-ul de geolocație preia coordonate pentru străzi, clădiri, și mase de apă și le creează ca obiecte pe hartă.
                 Ordinea în care desenăm obiectele creează și efectul de stratificare, necesar pentru noi pentru ca jucătorul să
                 se poziționeze deasupra străzilor și nu sub acestea. Modul în care preluăm coordonatele este descris în secțiunea
-                de mai jos, despre <>Mapbox<>. Coordonatele pe care le primim sunt puse în vectori sau multivectori de
+                de mai jos, despre <a href="#mapbox">Mapbox</a>. Coordonatele pe care le primim sunt puse în vectori sau multivectori de
                 coordonate. Un vector de coordonate reprezintă conturul unei străzi,clădiri sau mase de apă. Coordonatele
                 clădirilor sunt păstrate în două locuri: prima dată ca și formă geometrică pe ecran, iar a două oară
                 într-un vector ca să ne dăm seama când o clădire a fost deja primită și desenată, și să calculăm
@@ -222,7 +222,7 @@
                 monștri etc. Cum această încărcare se realizează asincron, nu știm exact care dintre apelurile asincrone
                 se va termina primul sau în ce ordine. Trebuie să așteptăm câteva secunde pentru ca acestea să se
                 termine, și se vedea o pagină goală până începea jocul, așa că am creat o pagină temporară de încărcare
-                și am creat PageLoader, o clasa care înregistrează funcții asincrone și apelează un <>callback<> după ce
+                și am creat PageLoader, o clasa care înregistrează funcții asincrone și le apeleaza după ce
                 toate funcțiile sunt pregătite. Am adăugat și pictograme care să arate progresul, dacă s-a încărcat sau
                 nu resursa respectivă.
             </p>
@@ -304,8 +304,9 @@
         <section id="mobile">
             <h3>Versiunea de mobil</h3>
             <p>
-                Pentru versiunea de mobil am adăugat o implementare open-source numită JOY.JS pentru un joystick
-                html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru mișcarea personajului, iar
+                Pentru versiunea de mobil am adăugat o implementare open-source numită
+                <a href="https://github.com/bobboteck/JoyStick/blob/master/joy.js">JOY.JS</a> pentru un joystick
+                html5. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru mișcarea personajului, iar
                 cel din stânga, dacă nu este în starea de bază, trimite un proiectil în direcția în care este îndreptat.
             </p>
         </section>
@@ -361,7 +362,8 @@
                 nivel de server, ci jocul este orientat spre client, din cauză că nu am reușit să mutăm calculele pe server.
             </p>
             <p>
-                La începutul jocului se realizează o conexiune cu serverul prin SocketIO (detalii mai jos). Clientul
+                La începutul jocului se realizează o conexiune cu serverul prin SocketIO (<a href="#socketio">
+                detalii mai jos)</a>. Clientul
                 trimite la un interval de timp coordonatele serverului, la început mai mare (1s). Dacă jucătorul are în
                 jurul său pe altcineva, acest interval se micșorează la o anumită valoare, astfel încât coordonatele să
                 fie transmise mai repede pentru a fi actualizate între clienți. Acest mod de comunicare reprezintă o
@@ -475,6 +477,7 @@
             </p>
             <section id="livescores">
                 <h4>Livescores</h4>
+                <h5>Ruta: /api/livescores</h5>
                 <p>
                     Acest api primește că parametru în url o constantă "count", și întoarce primele "count" înregistrări
                     de utilizatori din lista de jucători activi, sortați după punctaj. Înregistrările sunt în format
@@ -488,6 +491,7 @@
             </section>
             <section id="leaderboards">
                 <h4>LeaderBoards</h4>
+                <h5>Ruta: /api/leaderboards</h5>
                 <p>
                     Acest api returnează primii "count" jucători după punctaj care au terminat jocul, și care au un
                     punctaj mai mare decât parametrul opțional "myScore". Pe lângă vectorul de obiecte, dacă am vrea să
@@ -502,6 +506,7 @@
             </section>
             <section id="weathertime">
                 <h4>Time And Weather</h4>
+                <h5>Ruta: /api/environment</h5>
                 <p>
                     Api-ul oferă informații despre vreme și timp la coordonatele trimise ca parametri: ["lat", "lng"].
                     În obiectul "weather" sunt mai multe informații, dar jocul folosește în special câmpul "main",
@@ -514,7 +519,8 @@
                 </figure>
             </section>
             <section id="nearby">
-                <h4>NearbyFeatures</h4>
+                <h4>Nearby Features</h4>
+                <h5>Ruta: /api/nearbymessage</h5>
                 <p>
                     Acest api întoarce o descriere a locației curente a utilizatorului (trimise ca ["lat", "lng"]),
                     clientul putând afla numele celei mai apropiate străzi, clădiri sau monument. Mesajele
@@ -529,6 +535,7 @@
             </section>
             <section id="aconfig">
                 <h4>Config</h4>
+                <h5>Ruta: /api/configuration</h5>
                 <p>
                     Nu în ultimul rând este api-ul de config, care întoarce clientului parametri pentru joc, așa cum au
                     fost stabiliți de administator.
@@ -583,14 +590,15 @@
                 că la fiecare actualizare a codului să actualizăm și serverul. Am făcut asta utilizând o acțiune
                 open-source de la Github prin care putem să inserăm o cheie ssh care să se conecteze la mașină virtuală
                 și să facă un git pull, după care să repornească serverul. Inițial eram reticenți la folosirea unei chei
-                ssh pe un repo public, gândindu-ne că oricine ar putea să ia cheia și să se conecteze la server, însă
+                ssh pe un depozit(repository) public, gândindu-ne că oricine ar putea să ia cheia și să se conecteze la
+                server, însă
                 Github a implementat foarte inteligent soluția pentru astfel de probleme: pe Github există o secțiune
                 numită "Secrets". Aici se pot pune date de tip nume-valoare, date care pot fi folosite în acțiuni, iar
                 modul în care acestea oferă securitate sistemului este că odată inserată o valoare, ea nu poate fi
                 accesată de niciun membru, ci e posibil să fie utilizată doar în acțiuni. A fost prima dată când am
                 implementat o astfel de acțiune, dar cei de la Github au făcut că tot procesul să fie foarte ușor și la
                 îndemână de realizat, iar în final, am reușit. Serverul se actualiza la fiecare schimbare care o puneam
-                pe repo.
+                pe depozit.
             </p>
         </section>
         <section id="logging">
@@ -599,7 +607,8 @@
                 Atunci când serverul nostru este la distanță, se poate întâmpla ca ceva să meargă rău, iar noi să nu
                 realizăm sau să putem vedea output-ul pentru că nu avem acces imediat la acea mașină. Pentru asta am
                 implementat la fiecare pornire,
-                serverul să facă un fișier de log într-un folder, și să îl numească utilizând data și ora la care a fost
+                serverul să facă un fișier de loguri într-un folder, și să îl numească utilizând data și ora la care a
+                fost
                 pornit. Astfel, dacă vom avea nevoie să vedem din ce motiv a picat serverul sau dacă s-a întâmplat ceva
                 neprevăzut, putem inspecta fișierele cu erori.
             </p>
@@ -612,9 +621,9 @@
         <section id="contributions">
             <h3>Contributii</h3>
             <p>Toata echipa a lucrat la joc si fiecare a progresat mult prin acest proiect.</p>
-            <p>Stefan s-a ocupat in principal cu integrarea librariilor, input-uri pe pagina jocului, proiectilele pentru user, design, resursele grafice, o parte din mvc, unele api-uri pe server, documentatie, etc.</p>
-            <p>Calin s-a ocupat de pagina principala, monstrii, gpx, csv, diagrama c4, o parte din mvc, documentatie, etc.</p>
-            <p>George a realizat algoritmul de coliziune, proiectile la monstrii, unele api-uri pe server, cateva bonusuri,documentatie, etc.</p>
+            <p>Ștefan s-a ocupat in principal cu integrarea librăriilor, input-uri pe pagina jocului, proiectilele pentru user, design, resursele grafice, o parte din mvc, unele api-uri pe server, documentație, etc.</p>
+            <p>Călin s-a ocupat de pagina principală, monștri, gpx, csv, diagrama c4, o parte din mvc, documentație, etc.</p>
+            <p>George a realizat algoritmul de coliziune, proiectilele monștrilor, unele api-uri pe server, câteva bonusuri, documentație, etc.</p>
         </section>
     </section>
     <section id="conclusion">
@@ -627,7 +636,7 @@
     </section>
 
     <section id="biblio-references">
-        <h2>Referințe</h2>
+        <h2>References</h2>
         <ol>
             <li property="schema:citation" role="doc-biblioentry" typeof="schema:ScholarlyArticle"  id="Scholarly-html"
             resource="https://w3c.github.io/scholarly-html/">
@@ -657,32 +666,14 @@
                     <a href="https://socket.io/">SocketIO</a>
                 </cite>
             </li>
+            <li property="schema:citation" role="doc-biblioentry" typeof="schema:WebPage"  id="joy-js"
+                resource="https://github.com/bobboteck/JoyStick/blob/master/joy.js">
+                <cite property="schema:name">
+                    <a href="https://github.com/bobboteck/JoyStick/blob/master/joy.js">JOY-JS</a>
+                </cite>
+            </li>
         </ol>
     </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     </section>
 
