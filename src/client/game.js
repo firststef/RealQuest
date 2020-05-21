@@ -11,8 +11,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -1173,8 +1173,9 @@ function getGameConfiguration(){
             weatherLoader.addCallback(setWeatherOverlay, "Snow");
             // setWeatherOverlay("Snow");
         }
-        if (data.playerMaxHealth !== undefined){
+        if (data.playerMaxHealth !== undefined) {
             playerMaxHealth=data.playerMaxHealth;
+            playerHealth=playerMaxHealth;
         }
         if (data.leaderBoardCount !== undefined){
             leaderBoardCount=data.leaderBoardCount;

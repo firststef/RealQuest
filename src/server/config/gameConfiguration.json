@@ -7,6 +7,6 @@
   "moneyPowerUpValue" : 50,
   "displacement" : 0.000002,
   "speedDisplacement" : 1.45,
-  "scale" : 2.5,
+  "_comment" : {"scale" : 2.5},
   "leaderBoardCount" : 7
 }
