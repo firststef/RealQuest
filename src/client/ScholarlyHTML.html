@@ -10,7 +10,7 @@
     <script src="https://w3c.github.io/scholarly-html/js/scholarly.min.js"></script>
 </head>
 
-<body prefix="schema: http://schema.org" style="font-family: calibri !important;">
+<body prefix="schema: http://schema.org" style="font-family: calibri !important; font-size: 14pt;">
     <header>
         <h1>Real Quest</h1>
     </header>
@@ -38,32 +38,31 @@
         </dl>
     </div>
     <section typeof="sa:Abstract" id="abstract" role="doc-abstract">
-        <h2>Abstracțiune</h2>
+        <h2>Concept</h2>
         <p>
             <q>Real Quest</q> este o aplicație-joc care permite utilizatorilor să se materializeze într-un tărâm mistic,
-            copie de rang secund a lumii reale, pentru a explora
-            și vâna monștrii care vor să elimine orice formă de viață.
+            copie a lumii reale, pentru a explora și vâna monștrii care vor să elimine orice formă de viață.
         </p>
     </section>
     <section id="introduction" role="doc-introduction">
         <h2>Introducere</h2>
         <p>
             Jocul <q>Real Quest</q> apelează la servicii web pentru a prelua informații despre locația utilizatorului și
-            mediul în care se află, simulând mișcarea acestuia pe o hartă. Elementele spațiu-temporale reale sunt
+            mediul în care se află, simulând mișcarea acestuia pe o hartă. Elementele spațio-temporale reale sunt
             însoțite de monștrii virtuali, care vor ataca jucătorul.
         </p>
         <p>
-            Clientul poate să explore împrejurimile, orientându-se dupa detalii precum numele de străzi și de clădiri,
-            luptându-se cu monștrii pentru a câstiga puncte și a supraviețuii cât mai mult.
+            Clientul poate să exploreze împrejurimile, orientându-se dupa detalii precum numele de străzi și de clădiri,
+            luptându-se cu monștri pentru a câstiga puncte și a supraviețui cât mai mult.
         </p>
     </section>
     <section id="motivation">
         <h2>Motivație</h2>
         <p>
-            Acest proiect reprezinta tema noastra de proiect pentru cursul Tehnologii Web al Facultatii de
-            Informatica al Universitatii Alexandru Ioan Cuza. Ideea proiectului a fost propusa de noi, fiind pasionati
-            de jocuri si dorind sa incercam un proiect venind cu o idee proprie, prin care sa invatam cat mai multe
-            despre web in timp ce construim ceva interactiv, care sa ne placa atat noua, cat si altora.
+            Acest sit web reprezintă tema noastră de proiect pentru cursul Tehnologii Web al Facultății de
+            Informatică al Universității Alexandru Ioan Cuza. Ideea proiectului a fost adusă de noi, fiind pasionați
+            de jocuri, prin care ne-am propus să invățăm cât mai multe despre web în timp ce construim ceva interactiv,
+            care să ne placă atât nouă, cât și altora.
         </p>
     </section>
     <section id="problem">
@@ -77,19 +76,18 @@
             vadă alți jucători pe hartă comunicând în timp real cu serverul utilizând WebSockets.
         </p>
         <p>
-            Scopul jocului este de a obține cât mai multe puncte din învingerea inamicilor, inamici ce apar pe harta
-            preluată cum s-a menționat mai sus. Inamicii -- folosind o strategie (euristică) generată prin program --
-            tind a se apropia de avatarul jucătorului și dacă acesta nu se ferește de proiectilele lor, viața sa va
-            scădea progresiv ( în concordanță cu artileria din dotarea inamicilor) până când va ajunge la zero puncte de
-            vitalitate -- în acest caz, jocul se va termina pentru acel jucător și punctajul său este considerat final.
-            În același mod, inamicii pot fi învinși prin scăderea punctelor de vitalitate prin contactul cu
-            proiectilele/armamentul jucătorului. La finalul jocului se va afișa un clasament global al jucătorilor și
-            punctajele lor.
+            Scopul jocului este de a obține cât mai multe puncte din învingerea inamicilor, monștri ce apar pe harta
+            preluată cum s-a menționat mai sus. Inamicii -- folosind o strategie euristică -- se apropie de avatarul 
+            jucătorului și dacă acesta nu se ferește de proiectilele lor, viața sa va scădea progresiv ( în concordanță
+            cu artileria din dotarea inamicilor) până când va ajunge la zero puncte de vitalitate -- în acest caz,
+            jocul se va termina pentru acel jucător și punctajul său este considerat final. În același mod, inamicii
+            pot fi învinși prin scăderea punctelor de vitalitate prin contactul cu proiectilele jucătorului. La
+            finalul jocului se va afișa un clasament global al jucătorilor și punctajele lor.
         </p>
         <p>
-            Sistemul va furniza în timp real clasamentul global al primilor J jucători și punctajele lor (minimal, în
-            format XML, CSV). De asemenea se va permite descărcarea într-un format specific traciectoriilor GPS (ex.
-            format GPX) a traseului parcurs de jucator în lumea reală.
+            Sistemul va furniza în timp real clasamentul global al primilor N jucători și punctajele lor (minimal, în
+            format XML, CSV). De asemenea se va permite descărcarea într-un format specific traiectoriilor GPS (ex.
+            format GPX) a traseului parcurs de jucător în lumea reală.
         </p>
     </section>
     <section id="game">
@@ -97,193 +95,218 @@
 
         <section id="preparation">
             <h3>Pregătire și considerente</h3>
-            <p>Primul pas a fost documentarea legata de api-urile pe care le vom utiliza. Am utilizat 3 api-uri: pentru
-                timp, vreme si geolocatie. Api-urile apartin domeniilor dev.virtualearth.net, openweathermap.org si
-                mapbox.com. Serverul preia informatiile necesare clientului, iar aplicatia client comunica REST cu
-                serverul prin api-ul nostru pentru a initializa conditiile exterioare si harta. Vom detalia utilizarea
-                lor cand ajungem la ele in implementare.</p>
+            <p>Primul pas a fost documentarea legată de api-urile pe care le vom utiliza. Am utilizat 3 api-uri: pentru
+                timp, vreme și geolocatie. Api-urile aparțin domeniilor <a href ="https://dev.virtualearth.net">dev.virtualearth.net</a>,
+                <a href ="https://openweathermap.org">openweathermap.org</a> și <a href ="https://mapbox.com">mapbox.com</a>.
+                Serverul preia informațiile necesare clientului, iar aplicația client comunica REST cu serverul prin
+                api-ul nostru pentru a inițializa condițiile exterioare și harta. Vom detalia utilizarea
+                lor în capitolele următoare.</p>
 
             <p>Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare
                 fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest
                 joc, aveam nevoie de:
-                - o modalitate prin care sa desenam forme geometrice in zone diferite (ex. cladirile)
-                - folosirea de imagini (sprite-uri pentru personaj, monstri)
-                - capturarea comenzilor utilizatorului
-                - animatii de sprite-uri (pentru miscarea jucatorului)
-                - sa putem muta formele geometrice </p>
-            <p>
-                Primele 3 cerinte erau indeplinite nativ de Canvas, insa pentru urmatoarele doua lucrurile nu erau asa
-                de simple de realizat.
+                <div style="padding-left:3em;">
+                - o modalitate prin care să desenăm forme geometrice în zone diferite (ex. clădirile) <br>
+                - folosirea de imagini (sprite-uri pentru personaj, monștri) <br>
+                - capturarea comenzilor utilizatorului <br>
+                - animații de sprite-uri (pentru mișcarea jucătorului) <br>
+                - să putem muta formele geometrice <br>
+                </div>
             </p>
             <p>
-                In primul rand animatiile trebuiau realizate prin impartirea foii de animatie (spritesheet) in mai multe
-                cadre, si inlocuirea cadrului curent la un anumit interval, in functie de viteza animatiei.
-                In al doilea rand, mutarea entitatilor desenate pe ecran necesita o arhitectura arborescenta, in care
-                fiecare nod copil se orienta relativ la parintele sau. Un exemplu de ce este nevoie de aceasta: stim ca
-                pentru a observa efectul de miscare a personajului trebuie sa observam o translatie a obiectelor din
-                interiorul lumii pe masura ce jucatorul se misca, si de asemenea trebuie ca acesta sa ramana in mijlocul
-                ecranului, pentru ca utilizatorul sa vada la fel de mult din harta pe masura ce o parcurge. Pentru a
-                crea acest efect in interiorul lumii 2d create, observam ca vom avea nevoie de un nod parinte, care
-                contine obiectele lumii, inclusiv personajul, si trebuie sa mutam personajul relativ la acest nod, in
-                functie de input. Ceea ce nu este asa de evident este ca tot in acelasi timp trebuie sa mutam si lumea
-                cu totul, pentru a urmari personajul si a-l mentine in mijloc (nu avem in canvas conceptul de camera
-                virtuala, care poate sa inspecteze obiecte intr-o locatie oarecare, ci noi desenam pe un viewport, si
-                deci trebuie sa mutam obiectele). Fara o arhitectura si o implementare care sa ne ofere suportul pentru
-                relatiile de tip parinte-copil, lucrul acesta ar fi fost extrem de dificil.
+                Primele 3 cerințe erau îndeplinite nativ de canvas, însă pentru următoarele două lucrurile nu erau așa
+                de simplu de realizat.
             </p>
             <p>
-                In urma realizarilor acestor doua cerinte din urma, ne-am dat seama ca o implementare elaborata a
-                acestora ar dura foarte mult. Din acest motiv, am cautat o implementare open-source ca sa ne ajute. Asa
-                am descoperit CreateJS, o librarie cu o licenta deschisa si care avea implementari esentiale pentru
-                jocul nostru.
+                În primul rând animațiile trebuiau realizate prin împărțirea foii de animație (spritesheet) în mai multe
+                cadre, și înlocuirea cadrului curent la un anumit interval, în funcție de viteza animației.
+            </p>
+            <p>
+                În al doilea rând, mutarea entităților desenate pe ecran necesită o arhitectură arborescentă, în care
+                fiecare nod copil se orienta relativ la părintele său. Un exemplu de ce este nevoie de aceasta: știm că
+                pentru a observa efectul de mișcare a personajului trebuie să observăm o translație a obiectelor din
+                interiorul lumii pe măsură ce jucătorul se mișcă, și de asemenea trebuie că acesta să rămână în mijlocul
+                ecranului, pentru ca utilizatorul să vadă la fel de mult din hartă pe măsură ce o parcurge. Pentru a
+                crea acest efect în interiorul lumii 2d create, observăm că vom avea nevoie de un nod părinte, care
+                conține obiectele lumii, inclusiv personajul, și trebuie să mutăm personajul relativ la acest nod, în
+                funcție de input. Ceea ce nu este așa de evident este că tot în același timp trebuie să mutăm și lumea
+                cu totul, pentru a urmări personajul și a-l menține în mijloc (nu avem în canvas conceptul de cameră
+                virtuală, care poate să inspecteze obiecte într-o locație oarecare, ci noi desenăm pe un viewport, și
+                deci trebuie să mutăm obiectele). Fără o arhitectură și o implementare care să ne ofere suportul pentru
+                relațiile de tip părinte-copil, lucrul acesta ar fi fost extrem de dificil.
+            </p>
+            <p>                
+                În urma realizărilor acestor două cerințe, ne-am dat seama că o implementare elaborată a
+                acestora ar dura foarte mult. Din acest motiv, am căutat o implementare open-source ca să ne ajute. Așa
+                am descoperit <a href="https://createjs.com/">CreateJS</a>, o librărie cu o licență deschisă și care are
+                implementări esențiale pentru jocul nostru.
             </p>
         </section>
         <section id="createjs">
-            <h3>Cum am folosit CreateJS</h3>
+            <h3>Cum am folosit <a href="https://createjs.com/">CreateJS</a></h3>
             <p>
-                Libraria permitea sa instantiem forme geometrice si imagini animate (sprite-uri) prin construirea de
-                obiecte. Principiul de baza este urmatorul. Nodul radacina trebuia instantiat ca un obiect de tip Stage,
-                si pentru fiecare copil adaugat lui, nodul parinte il va orienta in functie de pozitia proprie si
+                Librăria permite să instanțiem forme geometrice și imagini animate (sprite-uri) prin construirea de
+                obiecte. Principiul de bază este următorul: nodul rădăcină este instanțiat ca un obiect de tip Stage,
+                și pentru fiecare copil adăugat lui, nodul părinte îl va orienta în funcție de poziția proprie și
                 deplasament.
             </p>
             <p>
-                Cum pentru proiect exista restrictia de a nu folosi decat librarii, am avut grija ca alegerea noastra sa
-                nu fie framework, si am judecat ca aceasta indeplineste conditia luand in considerare urmatoarele:
-                - functiile din createjs reprezinta wrappere peste functiile clasice de desenat pe canvas, pastrand
-                signaturi similare cu cele din api-ul original
-                - clasele din createjs pot fi instantiate de noi cand dorim, avand control complet asupra obiectelor din
-                lume
-                - createjs nu ruleaza independent de codul nostru, positia obiectelor pe canvas se actualizeaza doar
-                cand apelam stage.update(), stage fiind un obiect instantiat de noi
+                Cum pentru proiect exista restricția de a nu folosi decat librarii, am avut grijă ca alegerea noastră să
+                nu fie framework, si am judecat că aceasta îndeplinește condiția luând în considerare următoarele:
+                <div style="padding-left:3em;">
+                - funcțiile din createjs reprezintă <> wrappere <> peste funcțiile clasice de desenat pe canvas, pastrând
+                declarații similare cu cele din api-ul original.<br>
+                - clasele din createjs pot fi instanțiate de noi când dorim, având control complet asupra obiectelor din
+                lume <br>
+                - createJs nu rulează independent de codul nostru, poziția obiectelor pe canvas se actualizează doar
+                când apelăm stage.update(), stage fiind tot un obiect instanțiat de noi.
+                </div>
             </p>
             <p>
-                Createjs are un obiect folosit pentru optimizare pe browser, Ticker, si are un rol de timer - calculeaza
-                in functie de framerate-ul
-                pe care il dorim si apeluri la requestAnimationFrame, cand trebuie sa apelam bucla principala (functia
-                de update) a jocului, care este definita de noi.
+                CreatJs are un obiect folosit pentru optimizare pe browser, Ticker, care are un rol de timer - calculează
+                în funcție de frecvența cadrelor pe care o dorim, când trebuie să apelăm
+                bucla principală (funcția de actualizare) a jocului, care este definită de noi.
             </p>
             <p>
-                Dupa ce am capturat input-ul de la utilizator prin handle-uri pe evenimente de input de la tastatura si
-                am introdus o imagine pentru personaj, am reusit sa facem un personaj care se putea orienta in spatiu.
+                După ce am capturat tastele apăsate de utilizator și am introdus o imagine pentru caracter, am reușit să
+                creăm un personaj care se putea orienta in spațiu.
             </p>
         </section>
         <section id="map">
-            <h3>Realizarea hartii</h3>
-            <p>Harta noastra preia coordonate pentru strazi, cladiri, si mase de apa si le creeaza ca obiecte pe harta.
-                Ordinea in care desenam obiectele creeaza si efectul de stratificare, necesar pentru noi ca jucatorul sa
-                se pozitioneze deasupra strazilor si nu sub. Modul in care luam coordonatele este descris in sectiunea
-                de mai jos, despre Mapbox. Coordonatele pe care le primim sunt puse in vectori sau multivectori de
-                coordonate. Un vector de coordonate reprezinta conturul unei strazi/ cladiri/ mase de apa. Coordonatele
-                cladirilor sunt salvate in doua locuri: prima data ca si forma geometrica pe ecran, iar a doua oara
-                intr-un vector ca sa ne dam seama cand o cladire a fost deja primita si desenata, si ca sa calculam
-                coliziunile cu jucatorii.</p>
+            <h3>Realizarea hărții</h3>
+            <p>  
+                API-ul de geolocație preia coordonate pentru străzi, clădiri, și mase de apă și le creează ca obiecte pe hartă.
+                Ordinea în care desenăm obiectele creează și efectul de stratificare, necesar pentru noi pentru ca jucătorul să
+                se poziționeze deasupra străzilor și nu sub acestea. Modul în care preluăm coordonatele este descris în secțiunea
+                de mai jos, despre <>Mapbox<>. Coordonatele pe care le primim sunt puse în vectori sau multivectori de
+                coordonate. Un vector de coordonate reprezintă conturul unei străzi,clădiri sau mase de apă. Coordonatele
+                clădirilor sunt păstrate în două locuri: prima dată ca și formă geometrică pe ecran, iar a două oară
+                într-un vector ca să ne dăm seama când o clădire a fost deja primită și desenată, și să calculăm
+                coliziunile cu jucătorii.
+            </p>
             <p>
-                Dupa ce am adaugat cladirile, am adaugat un algoritm pentru coliziune, la inceput foloseam o librarie cu
-                un algoritm bazat pe intersectie de poligoane, dar dupa, am renuntat la ea si am facut noi o
-                implementare mai optima, calculand distante fata de muchiile cladirii. Am adaugat doua optimizari pentru
-                coliziune, prima calculeaza limite pentru cladire si se asigura ca vom face operatia de calcul de
-                coliziune (care este costisitoare) doar in interiorul acestei limite, iar a doua calcula pe un interval
-                limitele cladirilor si elimina cladirile indepartate, aplicand coliziunea doar pe cele care erau in raza
-                noastra de actiune.
+                După ce am adăugat clădirile, am adăugat și un algoritm pentru coliziune, la început foloseam o librărie cu
+                un algoritm bazat pe intersecție de poligoane, dar după, am renunțat la ea întrucât caluclele erau realizate
+                prea lent și am făcut o implementare mai optimă, calculând distanțe față de muchiile clădirii. Am adăugat
+                două optimizări pentru coliziune, prima calculează limite pentru clădire și se asigură că vom face operația
+                de calcul de coliziune (care este costisitoare) doar în interiorul acestei limite, iar a doua calcula intr-un
+                interval limitele clădirilor și elimina clădirile îndepărtate, aplicând coliziunea doar pe cele care erau în raza
+                de acțiune a jucătorului.
             </p>
         </section>
         <section id="weather">
-            <h3>Afisarea vremii</h3>
+            <h3>Afișarea vremii</h3>
             <p>
-                Apeland serviciile pentru timp si vreme, completand ca si parametru locatia curenta a jucatorului,
-                distingem tipul vremii: insorit, innourat cu ploaie, ninsoare si tipul de luminozitate: luminos/
-                intunecat. In cazul in care serviciul esueaza, avem o functie care calculeaza aproximativ ora pe glob
-                dupa deplasarea fata de Greenwich si o intoarce.
+                Apelând serviciile pentru timp și vreme, având ca parametru locația curentă a jucătorului,
+                distingem tipul vremii: însorit, înnourat cu ploaie, ninsoare și tipul de luminozitate: luminos sau
+                întunecat. În cazul în care serviciul eșuează, am implementat o funcție care calculează aproximativ ora pe glob
+                după deplasarea față de Greenwich și o întoarce.
             </p>
             <p>
-                Pentru animatia de ninsoare si ploaie, a fost necesar sa folosim api-ul nativ pentru setari
-                mai avansate: ploaia trebuia sa aiba o animatie, si de asemenea, pentru a optimiza sprite-ul (sa nu avem
-                o imagine mare formata din imagini mici repetate), buffer-ul sprite-ului trebuia repetat pe tot ecranul.
-                In plus, am explicat mai sus ca pentru a crea efectul de miscare, trebuie sa mutam personajul, dar si
-                lumea, ca sa pastram in mijloc caracterul. Doar ca lumea trebuie mutata in sens invers miscarii
-                personajului. Deci, trebuia sa deplasam originea imaginii cu distanta de de plasare a jucatorului.
-                Clasele din CreateJS pot folosi functii trimise de noi in care apelam functiile de canvas native, acesta
-                fiind modul de lucru pentru efectele complexe. Am realizat o astfel de functie, CreateJS-ul se asigura
-                de schimbarea animatiei iar noi desenam pe tot ecranul animatia curenta si cu deplasamentul potrivit
-                miscarii.
+                Pentru animația de ninsoare și ploaie, a fost necesar să folosim api-ul nativ pentru setări
+                mai avansate: ploaia trebuia să aibă o animație, și de asemenea, pentru a optimiza sprite-ul (să nu avem
+                o imagine mare formată din imagini mici repetate), buffer-ul sprite-ului trebuia repetat pe tot ecranul.
+                În plus, am explicat mai sus că pentru a crea efectul de mișcare, trebuie să mutăm personajul, dar și
+                lumea, ca să păstrăm în mijlocul ecranului caracterul. Doar că lumea trebuie mutată în sens invers mișcării
+                personajului. Deci, trebuia să deplasăm originea imaginii cu aceeași distanță de deplasare a jucătorului.
+                Clasele din CreateJS pot folosi funcții trimise de noi în care apelăm funcțiile de canvas native, acesta
+                fiind modul de lucru pentru efectele complexe. Am realizat o astfel de funcție, CreateJS-ul se asigură
+                de schimbarea animației iar noi desenăm pe tot ecranul animația curentă și cu deplasamentul potrivit
+                mișcării.
             </p>
         </section>
         <section id="loading">
-            <h3>Incarcarea Resurselor</h3>
-            <p>Pe langa api-urile care trebuie accesate la inceput, jocul trebuie sa incarce imaginile pentru jucator,
-                monstri etc. Cum aceasta incarcare se realizeaza asincron, nu stim exact care dintre apelurile asincrone
-                se va termina primul/ultimul/in ce ordine. Trebuia sa asteptam cateva secunde pentru ca acestea sa sa
-                termine, si se vedea o pagina goala la inceput, pana incepea jocul, asa ca am pus o pagina de incarcare
-                si am creat PageLoader, o clasa care inregistreaza functii asincrone si apeleaza un callback de
-                terminare dupa ce toate functiile sunt terminate. In cazul nostru, noi doream sa afisam jocul cand se
-                termina de incarcat, si am adaugat si pictograme care sa arate progresul, daca s-a incarcat sau nu
-                resursa respectiva.</p>
-            <p>Imaginile se incarca cu ajutorul unei clase din createjs, LoadQueue. Buffer-ul primit este folosit mai
-                apoi la crearea din animatii prin impartirea ei in sectiuni, in functie de dimensiunea cadrelor si
-                numarul lor.</p>
-            <p>Cand PageLoader termina asteparea, jocul incepe.</p>
+            <h3>Incărcarea resurselor</h3>
+            <p>
+                Pe lângă api-urile care sunt accesate la început, încarcă imaginile pentru jucător,
+                monștri etc. Cum această încărcare se realizează asincron, nu știm exact care dintre apelurile asincrone
+                se va termina primul sau în ce ordine. Trebuie să așteptăm câteva secunde pentru ca acestea să se
+                termine, și se vedea o pagină goală până începea jocul, așa că am creat o pagină temporară de încărcare
+                și am creat PageLoader, o clasa care înregistrează funcții asincrone și apelează un <>callback<> după ce
+                toate funcțiile sunt pregătite. Am adăugat și pictograme care să arate progresul, dacă s-a încărcat sau
+                nu resursa respectivă.
+            </p>
+            <p>
+                Imaginile se încarcă cu ajutorul unei clase din createjs, LoadQueue. Buffer-ul primit este folosit
+                apoi la crearea din animații prin împărțirea ei în secțiuni, în funcție de dimensiunea cadrelor și
+                numărul lor.
+            </p>
+            <p>
+                Când PageLoader termină așteparea, jocul începe.
+            </p>
         </section>
         <section id="mechanics">
-            <h3>Mecanicile de baza ale jocului. Interactiunea cu inamicii</h3>
-            <p>Scopul jocului este obtinerea unui punctaj cat mai mare. Acesta depinde de cati monstri ai invins si cat
-                de mult ai rezistat in joc. Jucatorul se deplaseaza cu ajutorul tastelor WASD si poate arunca proiectile
-                prin alegerea directiei folosind mouse-ul. Jocul se termina cand viata caracterului ajunge la 0, adica
-                cand toata bara rosie din stanga-sus a ecranului se goleste.</p>
+            <h3>Mecanicile de bază ale jocului. Interacțiunea cu inamicii.</h3>
             <p>
-                In cazul detectarii de coliziune cu o cladire, jucatorului nu i se va permite deplasarea spre aceasta.
-                Monstrii sunt de doua tipuri, primul tip poate lansa proiectile spre personaj, iar al doilea tip este
-                mult mai rapid, insa nu are proiectile. Monstrii blocheaza trecerea,iar daca sunt in contact cu
-                jucatorul, acesta pierde puncte de vitalitate.
+                Scopul jocului este obținerea unui punctaj cât mai mare. Acesta depinde de câți monștri ai învins și cât
+                de mult ai rezistat în joc. Jucătorul se deplasează cu ajutorul tastelor WASD și poate arunca proiectile
+                prin alegerea direcției folosind mouse-ul. Jocul se termină când viața caracterului ajunge la 0, adică
+                toată bara roșie din stânga-sus a ecranului se golește.
+            </p>
+            <p>
+                În cazul detectării de coliziune cu o clădire, jucătorului nu i se va permite deplasarea spre aceasta.
+                Monștrii sunt de două tipuri, primul tip poate lansa proiectile spre personaj, iar al doilea tip este
+                mult mai rapid, însă nu are proiectile. Monștrii blochează trecerea, iar dacă sunt în contact cu
+                jucătorul, acesta pierde puncte de vitalitate.
             </p>
         </section>
         <section id="bonuses">
             <h3>Bonusuri</h3>
-            <p>Pe harta apar din cand in cand anumite iconite care reprezinta un avantaj (uneori temporar) pentru
-                jucator: sacul de bani reprezinta 50 de puncte in plus, papucul cu aripi ofera cateva secunde de viteza
-                dubla, iar cheile mov pot "deschide" cladirile, adica jucatorul poate sa treaca prin ele. Cheile sunt
-                stivuibile, dar papucii reseteaza intervalul de viteza la contact.</p>
+            <p>
+                Pe hartă apar din când în când anumite iconițe care reprezintă un avantaj (uneori temporar) pentru
+                jucător: sacul de bani reprezintă 50 de puncte în plus, papucul cu aripi oferă câteva secunde de viteză
+                dublă, iar cheile mov pot "deschide" clădirile, adică jucătorul poate să treacă prin ele. Cheile sunt
+                stivuibile, dar papucii resetează intervalul de viteză la contact.
+            </p>
         </section>
         <section id="art">
-            <h3>Arta si design</h3>
-            <p>Un joc este un proiect foarte laborios, pentru ca este format din foarte multe elemente: ideea jocului,
-                cat de distractiva este aceasta, design-ul jocului, daca resursele dau un aspect estetic impreuna
-                (consistenta), mecanica de baza a jocului, cat de echilibrate sunt castigurile fata de efortul depus de
-                jucator, cat de accesibile sunt controalele etc. Am incercat sa avem in vedere toate aceste aspecte,
-                realizand cat mai mult din fiecare.</p>
+            <h3>Artă si design</h3>
             <p>
-                Resursele grafice au fost desenate de noi (Sprite-ul personajului si al monstrilor, animatiile, cele
-                doua imagini cu eroul de pe pagina principala, sprite-urile pentru power-up-uri), dar pot fi folosite de
-                cine doreste.
+                Un joc este un proiect foarte laborios, pentru că este format din multe elemente: ideea jocului,
+                cât de distractivă este aceasta, design-ul jocului, dacă resursele dau un aspect estetic împreună
+                (consistență), mecanica de baza a jocului, cât de echilibrate sunt câștigurile față de efortul depus de
+                jucător, cât de accesibile sunt controalele etc. Am încercat să avem în vedere toate aceste aspecte,
+                realizând cât mai mult din fiecare.
             </p>
-            <p>De asemenea am scris si o introducere pe pagina principala, pentru a oferi un context jocului. </p>
-            <p>Pentru majoritatea jocurilor, interfata jocului (UI-ul), este integrata in aceeasi tehnologie ca restul
-                jocului. Insa, in loc sa o facem din dreptunghiuri, chenare, text, butoane desenate in interiorul
-                canvas-ului, am decis sa folosim html-ul si css-ul. Pana la urma, aceasta este cea mai utilizata
-                tehnologie pentru realizarea de interfete si este extrem de bine testata. In plus, puteam sa ne folosim
-                direct cunostintele legate de frontend, in loc sa calculam si sa implementam noi un sistem pentru
-                interfata.</p>
+            <p>
+                Resursele grafice au fost desenate de noi (imaginea personajului și a monștrilor, animațiile, cele
+                două imagini cu eroul de pe pagină principală, imaginile pentru bonusuri), dar pot fi folosite de
+                cine dorește.
+            </p>
+            <p>
+                De asemenea am scris si o introducere pe pagina principala, pentru a oferi un context jocului. 
+            </p>
+            <p>
+                Pentru majoritatea jocurilor, interfața jocului (UI-ul), este integrată în aceeași tehnologie ca și restul
+                jocului. Însă, în loc să o facem din dreptunghiuri, chenare, text, butoane desenate în interiorul
+                canvas-ului, am decis să folosim html-ul și css-ul. Până la urmă, aceasta este cea mai utilizată
+                tehnologie pentru realizarea de interfețe și este foarte bine testată. În plus, puteam să ne folosim
+                direct de cunoștințele legate de front-end, în loc să calculăm și să implementăm noi un sistem pentru
+                interfață.
+            </p>
         </section>
         <section id="gameEnd">
-            <h3>Sfarsitul jocului</h3>
+            <h3>Sfârșitul jocului</h3>
             <p>
-                Cand jucatorul isi pierde toate punctele de vitalitate, jocul afiseaza punctajul jucatorului, locul sau
-                in clasament si primii jucatori. De aici ei pot descarca traseul parcurs si top-ul jucatorilor.
+                Când jucătorul își pierde toate punctele de vitalitate, jocul afișează punctajul acestuia, locul său
+                în clasament și primii jucători. De aici ei pot descărca traseul parcurs si clasamentul primilor 10 jucători,
+                in funcție de scor.
             </p>
         </section>
         <section id="formats">
             <h3>Formatele exportate</h3>
             <p>
-                Pe parcursul jocului sunt salvate punctele geografice prin care trece jucatorul, iar la final el poate
-                descarca un fisier GPX cu traseul parcurs. De asemenea pe pagina de final, utilizatorul poate descarca
-                clasamentul jocului in format CSV.
+                Pe parcursul jocului sunt salvate punctele geografice prin care trece jucătorul, iar la final el poate
+                descărca un fișier GPX cu traseul parcurs. De asemenea, pe pagina de final, utilizatorul poate descărca
+                clasamentul primilor 10 jucători în format CSV.
             </p>
         </section>
         <section id="mobile">
             <h3>Versiunea de mobil</h3>
             <p>
-                Pentru versiunea de mobil am adaugat o implementare open-source numita JOY.JS pentru un joystick
-                html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru miscarea personajului, iar
-                cel din stanga, daca nu este in starea default, trimite un proiectil in directia in care este indreptat.
+                Pentru versiunea de mobil am adăugat o implementare open-source numită JOY.JS pentru un joystick
+                html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru mișcarea personajului, iar
+                cel din stânga, dacă nu este în starea default, trimite un proiectil în direcția în care este îndreptat.
             </p>
         </section>
         <section id="mapbox">
