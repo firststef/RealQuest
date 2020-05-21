@@ -23,7 +23,7 @@ async function testShouldFail(unitTester, test){
 
 async function testRequestPage(unitTester, test, path) {
     let data = '';
-    http.get('http://localhost:80' + path, (res) => {
+    http.get('http://localhost' + path, (res) => {
         res.on('data', (chunk) => {
             data += chunk;
         });
@@ -40,7 +40,7 @@ async function testGetGamePage(unitTester, test) {await testRequestPage(unitTest
 
 async function testNearbyFeatures(unitTester, test) {
     let data = '';
-    http.get('http://localhost:80/api/nearbymessage?long=27.5863&lat=47.1551', (res) => {
+    http.get('http://localhost/api/nearbymessage?long=27.5863&lat=47.1551', (res) => {
         res.on('data', (chunk) => {
             data += chunk;
         });
@@ -63,7 +63,7 @@ async function testNearbyFeatures(unitTester, test) {
 
 async function testConfig(unitTester, test) {
     let data = '';
-    http.get('http://localhost:80/api/configuration', (res) => {
+    http.get('http://localhost/api/configuration', (res) => {
         res.on('data', (chunk) => {
             data += chunk;
         });
