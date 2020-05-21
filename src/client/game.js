@@ -11,8 +11,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+//const ORIGIN = 'https://firststef.tools';
+const ORIGIN = 'http://localhost';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;
@@ -433,8 +433,8 @@ function loadComplete(){
     camera.addChild(baseLayer);
     camera.addChild(projectileLayer);
     camera.addChild(monsterLayer);
-    //stage.addChild(weatherOverlay);
-    //stage.addChild(luminosityOverlay);
+    stage.addChild(weatherOverlay);
+    stage.addChild(luminosityOverlay);
     stage.addChild(uiScreen);
 
 
@@ -1230,7 +1230,7 @@ function setMap() {
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
         center: [playerPos[0], playerPos[1]],
-        zoom: 18
+        zoom: 19
     });
     map.on('load', function() {
         map.getCanvas().addEventListener(
@@ -1260,7 +1260,7 @@ function setMap() {
         document.getElementById("loadMapWheel").className = "";
         pageLoader.notifyCompleted('loadMap');
         searchCallback();
-        setInterval(searchCallback, 3000); //TODO: request doar cand se paraseste view-portul curent
+        setInterval(searchCallback, 1000); //TODO: request doar cand se paraseste view-portul curent
     });
     map["keyboard"].disable();
 }
@@ -1771,7 +1771,7 @@ function setWeatherOverlay(weather) {
     stage.addChildAt(weatherOverlay, 3);
 }
 
-function updateWeatherOverlay(weatherLoader){
+function updateWeatherOverlay(){
     if(this.initialDisplay !== undefined){
         getServerTimeAndWeather();
     }
