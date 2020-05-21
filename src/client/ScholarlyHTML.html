@@ -475,6 +475,7 @@
             </p>
             <section id="livescores">
                 <h4>Livescores</h4>
+                <h5>Ruta: /api/livescores</h5>
                 <p>
                     Acest api primește că parametru în url o constantă "count", și întoarce primele "count" înregistrări
                     de utilizatori din lista de jucători activi, sortați după punctaj. Înregistrările sunt în format
@@ -488,6 +489,7 @@
             </section>
             <section id="leaderboards">
                 <h4>LeaderBoards</h4>
+                <h5>Ruta: /api/leaderboards</h5>
                 <p>
                     Acest api returnează primii "count" jucători după punctaj care au terminat jocul, și care au un
                     punctaj mai mare decât parametrul opțional "myScore". Pe lângă vectorul de obiecte, dacă am vrea să
@@ -502,6 +504,7 @@
             </section>
             <section id="weathertime">
                 <h4>Time And Weather</h4>
+                <h5>Ruta: /api/environment</h5>
                 <p>
                     Api-ul oferă informații despre vreme și timp la coordonatele trimise ca parametri: ["lat", "lng"].
                     În obiectul "weather" sunt mai multe informații, dar jocul folosește în special câmpul "main",
@@ -514,7 +517,8 @@
                 </figure>
             </section>
             <section id="nearby">
-                <h4>NearbyFeatures</h4>
+                <h4>Nearby Features</h4>
+                <h5>Ruta: /api/nearbymessage</h5>
                 <p>
                     Acest api întoarce o descriere a locației curente a utilizatorului (trimise ca ["lat", "lng"]),
                     clientul putând afla numele celei mai apropiate străzi, clădiri sau monument. Mesajele
@@ -529,6 +533,7 @@
             </section>
             <section id="aconfig">
                 <h4>Config</h4>
+                <h5>Ruta: /api/configuration</h5>
                 <p>
                     Nu în ultimul rând este api-ul de config, care întoarce clientului parametri pentru joc, așa cum au
                     fost stabiliți de administator.
@@ -652,30 +657,6 @@
             </li>
         </ol>
     </section>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     </section>
 
