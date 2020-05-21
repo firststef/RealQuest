@@ -100,7 +100,7 @@
                 <a href ="https://openweathermap.org">openweathermap.org</a> și <a href ="https://mapbox.com">mapbox.com</a>.
                 Serverul preia informațiile necesare clientului, iar aplicația client comunica REST cu serverul prin
                 api-ul nostru pentru a inițializa condițiile exterioare și harta. Vom detalia utilizarea
-                lor în capitolele următoare.</p>
+                lor în <a href="#api">capitolele următoare</a>.</p>
 
             <p>Am început implementarea prin construirea mecanicilor de bază a jocului. Platforma noastră de dezvoltare
                 fiind Web-ul, mai specific, formatul HTML5, am ales ca tehnologie prinicpală HTML5 Canvas. Pentru acest
@@ -178,7 +178,7 @@
                 API-ul de geolocație preia coordonate pentru străzi, clădiri, și mase de apă și le creează ca obiecte pe hartă.
                 Ordinea în care desenăm obiectele creează și efectul de stratificare, necesar pentru noi pentru ca jucătorul să
                 se poziționeze deasupra străzilor și nu sub acestea. Modul în care preluăm coordonatele este descris în secțiunea
-                de mai jos, despre <>Mapbox<>. Coordonatele pe care le primim sunt puse în vectori sau multivectori de
+                de mai jos, despre <a href="#mapbox">Mapbox</a>. Coordonatele pe care le primim sunt puse în vectori sau multivectori de
                 coordonate. Un vector de coordonate reprezintă conturul unei străzi,clădiri sau mase de apă. Coordonatele
                 clădirilor sunt păstrate în două locuri: prima dată ca și formă geometrică pe ecran, iar a două oară
                 într-un vector ca să ne dăm seama când o clădire a fost deja primită și desenată, și să calculăm
@@ -222,7 +222,7 @@
                 monștri etc. Cum această încărcare se realizează asincron, nu știm exact care dintre apelurile asincrone
                 se va termina primul sau în ce ordine. Trebuie să așteptăm câteva secunde pentru ca acestea să se
                 termine, și se vedea o pagină goală până începea jocul, așa că am creat o pagină temporară de încărcare
-                și am creat PageLoader, o clasa care înregistrează funcții asincrone și apelează un <>callback<> după ce
+                și am creat PageLoader, o clasa care înregistrează funcții asincrone și le apeleaza după ce
                 toate funcțiile sunt pregătite. Am adăugat și pictograme care să arate progresul, dacă s-a încărcat sau
                 nu resursa respectivă.
             </p>
@@ -304,8 +304,9 @@
         <section id="mobile">
             <h3>Versiunea de mobil</h3>
             <p>
-                Pentru versiunea de mobil am adăugat o implementare open-source numită JOY.JS pentru un joystick
-                html5[1]. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru mișcarea personajului, iar
+                Pentru versiunea de mobil am adăugat o implementare open-source numită
+                <a href="https://github.com/bobboteck/JoyStick/blob/master/joy.js">JOY.JS</a> pentru un joystick
+                html5. Pe ecranele mici, sunt 2 joystick-uri: cel din dreapta este pentru mișcarea personajului, iar
                 cel din stânga, dacă nu este în starea de bază, trimite un proiectil în direcția în care este îndreptat.
             </p>
         </section>
@@ -614,6 +615,13 @@
                 între două fișiere de erori numite la fel).
             </p>
         </section>
+        <section id="contributions">
+            <h3>Contributii</h3>
+            <p>Toata echipa a lucrat la joc si fiecare a progresat mult prin acest proiect.</p>
+            <p>Stefan s-a ocupat in principal cu integrarea librariilor, input-uri pe pagina jocului, proiectilele pentru user, design, resursele grafice, o parte din mvc, unele api-uri pe server, documentatie, etc.</p>
+            <p>Calin s-a ocupat de pagina principala, monstrii, gpx, csv, diagrama c4, o parte din mvc, documentatie, etc.</p>
+            <p>George a realizat algoritmul de coliziune, proiectile la monstrii, unele api-uri pe server, cateva bonusuri,documentatie, etc.</p>
+        </section>
     </section>
     <section id="conclusion">
         <h2>Concluzii</h2>
@@ -653,6 +661,12 @@
                 resource="https://socket.io/">
                 <cite property="schema:name">
                     <a href="https://socket.io/">SocketIO</a>
+                </cite>
+            </li>
+            <li property="schema:citation" role="doc-biblioentry" typeof="schema:WebPage"  id="joy-js"
+                resource="https://github.com/bobboteck/JoyStick/blob/master/joy.js">
+                <cite property="schema:name">
+                    <a href="https://github.com/bobboteck/JoyStick/blob/master/joy.js">JOY-JS</a>
                 </cite>
             </li>
         </ol>
