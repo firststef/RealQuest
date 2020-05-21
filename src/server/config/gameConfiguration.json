@@ -1,5 +1,5 @@
 {
-  "maxNrOfMonsters" : 10,
+  "maxNrOfMonsters" : 12,
   "isNight" : false,
   "rain" : false,
   "snow" : false,

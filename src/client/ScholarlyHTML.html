@@ -362,7 +362,8 @@
                 nivel de server, ci jocul este orientat spre client, din cauză că nu am reușit să mutăm calculele pe server.
             </p>
             <p>
-                La începutul jocului se realizează o conexiune cu serverul prin SocketIO (detalii mai jos). Clientul
+                La începutul jocului se realizează o conexiune cu serverul prin SocketIO (<a href="#socketio">
+                detalii mai jos)</a>. Clientul
                 trimite la un interval de timp coordonatele serverului, la început mai mare (1s). Dacă jucătorul are în
                 jurul său pe altcineva, acest interval se micșorează la o anumită valoare, astfel încât coordonatele să
                 fie transmise mai repede pentru a fi actualizate între clienți. Acest mod de comunicare reprezintă o
@@ -584,14 +585,15 @@
                 că la fiecare actualizare a codului să actualizăm și serverul. Am făcut asta utilizând o acțiune
                 open-source de la Github prin care putem să inserăm o cheie ssh care să se conecteze la mașină virtuală
                 și să facă un git pull, după care să repornească serverul. Inițial eram reticenți la folosirea unei chei
-                ssh pe un repo public, gândindu-ne că oricine ar putea să ia cheia și să se conecteze la server, însă
+                ssh pe un depozit(repository) public, gândindu-ne că oricine ar putea să ia cheia și să se conecteze la
+                server, însă
                 Github a implementat foarte inteligent soluția pentru astfel de probleme: pe Github există o secțiune
                 numită "Secrets". Aici se pot pune date de tip nume-valoare, date care pot fi folosite în acțiuni, iar
                 modul în care acestea oferă securitate sistemului este că odată inserată o valoare, ea nu poate fi
                 accesată de niciun membru, ci e posibil să fie utilizată doar în acțiuni. A fost prima dată când am
                 implementat o astfel de acțiune, dar cei de la Github au făcut că tot procesul să fie foarte ușor și la
                 îndemână de realizat, iar în final, am reușit. Serverul se actualiza la fiecare schimbare care o puneam
-                pe repo.
+                pe depozit.
             </p>
         </section>
         <section id="logging">
@@ -600,7 +602,8 @@
                 Atunci când serverul nostru este la distanță, se poate întâmpla ca ceva să meargă rău, iar noi să nu
                 realizăm sau să putem vedea output-ul pentru că nu avem acces imediat la acea mașină. Pentru asta am
                 implementat la fiecare pornire,
-                serverul să facă un fișier de log într-un folder, și să îl numească utilizând data și ora la care a fost
+                serverul să facă un fișier de loguri într-un folder, și să îl numească utilizând data și ora la care a
+                fost
                 pornit. Astfel, dacă vom avea nevoie să vedem din ce motiv a picat serverul sau dacă s-a întâmplat ceva
                 neprevăzut, putem inspecta fișierele cu erori.
             </p>
@@ -628,7 +631,7 @@
     </section>
 
     <section id="biblio-references">
-        <h2>Referințe</h2>
+        <h2>References</h2>
         <ol>
             <li property="schema:citation" role="doc-biblioentry" typeof="schema:ScholarlyArticle"  id="Scholarly-html"
             resource="https://w3c.github.io/scholarly-html/">
