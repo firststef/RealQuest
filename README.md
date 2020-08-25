@@ -9,3 +9,5 @@ Clientul poate să exploreze împrejurimile, orientându-se dupa detalii precum 
 Acest sit web reprezintă tema noastră de proiect pentru cursul Tehnologii Web al Facultății de Informatică al Universității Alexandru Ioan Cuza. Ideea proiectului a fost adusă de noi, fiind pasionați de jocuri, prin care ne-am propus să invățăm cât mai multe despre web în timp ce construim ceva interactiv, care să ne placă atât nouă, cât și altora.
 
 ![presentation image](https://github.com/firststef/twproj/blob/master/src/sprites/multi.png "Presentation Image")
+
+You can open the server by going to src/server and running `npm start`. You will also need to uncomment this line (https://github.com/firststef/RealQuest/blob/48afb9141de79effc462fa92d7a59b1cd2b6bc72/src/client/game.js#L15) accordingly for avoiding CORS. The site will be available at http://localhost.
