@@ -1,5 +1,5 @@
 const DEBUG = false;
-const LOCAL = true;
+const LOCAL = false;
 const ORIGIN = LOCAL ? 'http://localhost' : 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
