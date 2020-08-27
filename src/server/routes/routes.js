@@ -15,7 +15,6 @@ router.get('/game.html', resourceController.plainFileExport.bind(resourceControl
 router.get('/style.css', resourceController.plainFileExport.bind(resourceController), ['../client/resources/style.css', 'text/css']);
 router.get('/gamestyle.css', resourceController.plainFileExport.bind(resourceController), ['../client/resources/gamestyle.css', 'text/css']);
 router.get('/index.js', resourceController.plainFileExport.bind(resourceController), ['../client/resources/index.js', 'text/javascript']);
-router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/game.js', 'text/javascript']);
 router.get('/joy.min.js', resourceController.plainFileExport.bind(resourceController), ['../client/resources/joy.min.js', 'text/javascript']);
 router.get('/sprites/players.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/players.png', 'image/png']);
 router.get('/sprites/Epichero.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/Epichero.png', 'image/png']);
@@ -35,5 +34,20 @@ router.get('/alphbeta.ttf', resourceController.plainFileExport.bind(resourceCont
 router.get('/sprites/github-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/github-logo.png', 'image/png']);
 router.get('/sprites/scholarly-logo.png', resourceController.plainFileExport.bind(resourceController), ['../sprites/scholarly-logo.png', 'image/png']);
 router.get('/ScholarlyHTML.html', resourceController.plainFileExport.bind(resourceController), ['../client/resources/ScholarlyHTML.html', 'text/html']);
+
+router.get('/game.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/game.js', 'text/javascript']);
+router.get('/constants.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/constants.js', 'text/javascript']);
+router.get('/load.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/load.js', 'text/javascript']);
+router.get('/api.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/api.js', 'text/javascript']);
+
+router.get('/PageLoader.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/PageLoader.js', 'text/javascript']);
+router.get('/WeatherLoader.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/WeatherLoader.js', 'text/javascript']);
+router.get('/Projectile.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/Projectile.js', 'text/javascript']);
+router.get('/Monster.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/Monster.js', 'text/javascript']);
+
+router.get('/collision.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/collision.js', 'text/javascript']);
+router.get('/map.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/map.js', 'text/javascript']);
+router.get('/ui.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/ui.js', 'text/javascript']);
+router.get('/utils.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/utils.js', 'text/javascript']);
 
 module.exports = router;

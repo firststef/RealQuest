@@ -6,7 +6,7 @@ const fs = require('fs');
 
 let router = require('../server/routes/routes');
 let model = require('../server/model/index');
-let logToFile = require('../server/utils/logger')
+let logToFile = require('../server/utils/logger');
 
 //Server
 const port = 80;
