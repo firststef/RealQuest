@@ -11,8 +11,8 @@ SECTIONS:
 */
 /* --------------------------------------------------------------------------------------------------------- CONSTANTS AND GLOBALS*/
 const DEBUG = false;
-const ORIGIN = 'https://firststef.tools';
-//const ORIGIN = 'http://localhost';
+const LOCAL = false;
+const ORIGIN = LOCAL ? 'http://localhost' : 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
 const ZOOM = 1000000;

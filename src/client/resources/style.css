@@ -63,7 +63,7 @@ footer{
 }
 
 #div_start_game {
-    background-image:url(../sprites/game_screen.png);
+    background-image:url(../../sprites/game_screen.png);
     flex-direction: column;
     align-content: center;
     align-items: center;

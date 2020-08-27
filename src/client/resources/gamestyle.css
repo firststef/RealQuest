@@ -6,7 +6,7 @@
 body {
     margin: 0;
     padding: 0;
-    cursor: url('../sprites/cursorImg.png') 4 4, auto;
+    cursor: url('../../sprites/cursorImg.png') 4 4, auto;
     font-family: AlphaBeta, Roboto, sans-serif;
 }
 
