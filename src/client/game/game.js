@@ -354,7 +354,7 @@ function shootProjectile(x, y){
     arrowSprite.scaleY = 0.3;
     let angle = Math.atan2(x, y);
     arrowSprite.rotation = angle * (180/Math.PI) - 90;
-    let p = new Projectile(
+    new Projectile(
         arrowSprite,
         arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
         arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * playerRadius),
@@ -364,19 +364,35 @@ function shootProjectile(x, y){
     );
 }
 
+function createPowerUp(name, playerPos) {
+    let xRand = Math.random();
+    let yRand = Math.random();
+    let object = new createjs.Sprite(projectileSheet, name);
+
+    object.type=name;
+    object.name = (this[name + "Id"]++).toString();
+
+    object.isPowerUp = true;
+    object.scaleX = 0.3;
+    object.scaleY = 0.3;
+    object.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
+    object.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
+
+    baseLayer.addChild(object);
+}
+
 function createPowerUps() {
+    if (Math.random() > 0.5){
+        return;
+    }
     if (this.moneyId === undefined){
         this.moneyId = 0;
     }
-    if (this.speedId === undefined){
-        this.speedId = 0;
+    if (this.speedBoostId === undefined){
+        this.speedBoostId = 0;
     }
     if (this.smashBuilding === undefined){
-        this.smashBuilding = 0;
-    }
-
-    if (Math.random() > 0.5){
-        return;
+        this.smashBuildingId = 0;
     }
 
     let playerPos = playerGetPos();
@@ -396,49 +412,14 @@ function createPowerUps() {
     }
 
     if (outSideLastBox) {
-        let xRand;
-        let yRand;
-        if (Math.random() > 0.5) {
-            xRand = Math.random();
-            yRand = Math.random();
-            let money = new createjs.Sprite(projectileSheet, "money");
-            money.type="money";
-            money.name = (this.moneyId++).toString();
-            money.isPowerUp = true;
-            money.scaleX = 0.3;
-            money.scaleY = 0.3;
-            money.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
-            money.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
-
-            baseLayer.addChild(money);
+        if (Math.random() > 0.01){
+            createPowerUp("money", playerPos);
         }
-        if (Math.random()>0.5) {
-            xRand = Math.random();
-            yRand = Math.random();
-            let speedBoost = new createjs.Sprite(projectileSheet, "speedBoost");
-            speedBoost.type="speedBoost";
-            speedBoost.name = (this.speedBoost++).toString();
-            speedBoost.isPowerUp = true;
-            speedBoost.scaleX = 0.3;
-            speedBoost.scaleY = 0.3;
-            speedBoost.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
-            speedBoost.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
-
-            baseLayer.addChild(speedBoost);
+        if (Math.random() > 0.01){
+            createPowerUp("speedBoost", playerPos);
         }
-        if (Math.random() > 0.5){
-            xRand = Math.random();
-            yRand = Math.random();
-            let smashBuilding = new createjs.Sprite(projectileSheet, "smashBuilding");
-            smashBuilding.type="smashBuilding";
-            smashBuilding.name = (this.smashBuilding++).toString();
-            smashBuilding.isPowerUp = true;
-            smashBuilding.scaleX = 0.3;
-            smashBuilding.scaleY = 0.3;
-            smashBuilding.x = playerPos[0] + (Math.floor(xRand*100%2)===0 ? 1 : -1) * (2* xRand) * offsetx;
-            smashBuilding.y = playerPos[1] + (Math.floor(yRand*100%2)===0 ? 1 : -1) * (2* yRand) * offsety;
-
-            baseLayer.addChild(smashBuilding);
+        if (Math.random() > 0.01){
+            createPowerUp("smashBuilding", playerPos);
         }
     }
 }
