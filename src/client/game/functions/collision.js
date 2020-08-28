@@ -12,8 +12,8 @@ function checkIfPointOnLine(x, y, x1, y1, x2, y2){
     let precision = 6;
     return parseFloat((distanceBetweenPoints(x, y, x1, y1) + distanceBetweenPoints(x, y, x2, y2)).toFixed(precision)) ===
         parseFloat(distanceBetweenPoints(x1, y1, x2, y2).toFixed(precision));
-
 }
+
 function pointLineDistance(x0, y0, a, b, c){
     return [(b*(b*x0-a*y0)-a*c)/(a*a+b*b), (a*(-b*x0+a*y0)-b*c)/(a*a+b*b)];
 }

@@ -7,7 +7,7 @@ const gameConfiguration = 'config/gameConfiguration.json';
 
 const streetMessages=[{topText: "You are travelling on ", bottomText: ""},
     {topText: "", bottomText: " is beneath your feet" },
-    {topText: "", bottomText: " is in you sight"},
+    {topText: "", bottomText: " is in your sight"},
     {topText: "The ancient place ", bottomText: " calls to you"},
     {topText: "You have entered the cursed land nearby ", bottomText: ""},
     {topText: "You have reached ", bottomText: ""},

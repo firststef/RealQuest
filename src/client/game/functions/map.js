@@ -4,41 +4,24 @@ function getCoordinateX(point){
 function getCoordinateY(point){
     return (Player.pos.y-point)*ZOOM+ offsety;
 }
-function getReverseCoordinateX(point){
-    return Player.pos.x - ((point - offsetx) / (-ZOOM));
+
+function getPointCoordinates(point){
+    return {
+        x: -(Player.pos.x-point.x)*ZOOM+offsetx,
+        y: (Player.pos.y-point.y)*ZOOM+ offsety
+    };
 }
-function getReverseCoordinateY(point){
-    return Player.pos.y - ((point - offsety) / ZOOM);
-}
-function getScreenCoordinates(arr){
-    let new_arr = [];
-    arr.forEach(point => {
-        new_arr.push([getCoordinateX(point[0]), getCoordinateY(point[1])]);
-    });
-    return new_arr;
-}
-function getReverseCoordinates(arr){
-    let new_arr = [];
-    arr.forEach(point => {
-        new_arr.push([getReverseCoordinateX(point[0]), getReverseCoordinateY(point[1])]);
-    });
-    return new_arr;
+
+function getReversePointCoordinates(point){
+    return {
+        x: Player.pos.x - ((point.x - offsetx) / (-ZOOM)),
+        y: Player.pos.y - ((point.y - offsety) / ZOOM)
+    };
 }
 
 /** parameters (x, y...) are real coordinate values - they are offsets from playerPos */
 function playerGetPos(x=0, y=0, z=0, t=0) {
     return [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t];
-}
-
-//TODO: remove if not needed
-function playerGetRect(x=0, y=0, z=0, t=0) {
-    return [
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + 2 * Player.radius  + t],
-        [getCoordinateX(map.transform._center.lng + x) + 2 * Player.radius + z, getCoordinateY(map.transform._center.lat + y) + 2 * Player.radius + t],
-        [getCoordinateX(map.transform._center.lng + x) + 2 * Player.radius  + z,getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t]
-    ];
 }
 
 function drawPointArray(object, array, fill = false, color = "red") {

@@ -1,5 +1,5 @@
 const DEBUG = false;
-const LOCAL = true;
+const LOCAL = false;
 const ORIGIN = LOCAL ? 'http://localhost' : 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
@@ -7,13 +7,12 @@ const ZOOM = 1000000;
 
 const windowWidth =  window.innerWidth;
 const windowHeight =  window.innerHeight;
-const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
+const buildingsBoxX=windowWidth*1.5; //thinking outside of the box is not good
 const buildingsBoxY=windowHeight*1.5;
 
 const collisionDelta=2;
 const MAX_COORDINATE=180;
 const initialDisplacement=0.000002;
-
 
 const joyStickScreenMaxSize = 1000;
 
