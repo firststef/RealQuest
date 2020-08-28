@@ -3,11 +3,14 @@
  * a trajectory with a given velocity until timeToLive is expired
  */
 class Projectile {
+
+    static radius=4;
+    static scale=0.5;
+
     constructor(sprite, x, y, angle, velocity, timeToLive, faction="player") {
         if (Number.isInteger(timeToLive) && timeToLive > 0){
             let id = getUniqueId();
 
-            this.isProjectile = true;
             this.sprite = sprite;
 
             sprite.isProjectile = true;
@@ -29,7 +32,7 @@ class Projectile {
                 projectileCircle.graphics.beginStroke("green");
                 projectileCircle.name = id + "circle";
                 projectileCircle.graphics.beginFill("green");
-                projectileCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), projectileRadius);
+                projectileCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), Projectile.radius);
                 sprite.collider = projectileCircle;
                 projectileLayer.addChild(projectileCircle);
             }

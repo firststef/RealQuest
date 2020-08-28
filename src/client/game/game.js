@@ -27,8 +27,8 @@ function tick(event) {
             //Keyboard movement
             if (Key.isDown(Key.W) || (isStickEnabled && rightStick.GetY() > 0)) {
                 // up
-                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius, mayRemove))
-                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], Player.radius, mayRemove))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, displacement)[0], playerGetPos(0, displacement)[1], Player.radius))
                         axisY = 1;
 
                 if (player.currentAnimation !== "runUp" && player.currentAnimation !== "runSideways")
@@ -36,8 +36,8 @@ function tick(event) {
 
             } else if (Key.isDown(Key.S)|| (isStickEnabled && rightStick.GetY() < 0)) {
                 // down
-                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius, mayRemove))
-                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], Player.radius, mayRemove))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(0, -displacement)[0], playerGetPos(0, -displacement)[1], Player.radius))
                         axisY = -1;
 
                 if (player.currentAnimation !== "runDown" && player.currentAnimation !== "runSideways")
@@ -45,8 +45,8 @@ function tick(event) {
             }
             if (Key.isDown(Key.A) || (isStickEnabled && rightStick.GetX() < 0)) {
                 // left
-                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius, mayRemove))
-                    if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], Player.radius, mayRemove))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(-displacement, 0)[0], playerGetPos(-displacement, 0)[1], Player.radius))
                         axisX = -1;
 
                 if (player.currentAnimation !== "runSideways")
@@ -66,8 +66,8 @@ function tick(event) {
 
             } else if (Key.isDown(Key.D) || (isStickEnabled && rightStick.GetX() > 0)) {
                 // right
-                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius, mayRemove))
-                    if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], playerRadius))
+                if (checkCollisionWithBuildings(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], Player.radius, mayRemove))
+                    if (checkPlayerCollisionWithMonsters(playerGetPos(displacement, 0)[0], playerGetPos(displacement, 0)[1], Player.radius))
                         axisX = 1;
 
                 if (player.currentAnimation !== "runSideways")
@@ -139,14 +139,14 @@ function tick(event) {
                     sprite.collider.y += sprite.velocityY;
                 }
                 if (sprite.faction==="player"){
-                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), Projectile.radius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else if (checkProjectileCollisionWithMonsters(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
+                    else if (checkProjectileCollisionWithMonsters(sprite.centerX(), sprite.centerY(), Projectile.radius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
                 } else if (sprite.faction==="monster"){
 /*                    if (checkCollisionWithBuildings(sprite.centerX(), sprite.centerY(), projectileRadius) === false)
                         Projectile.removeProjectileWithId(sprite.name);
-                    else*/ if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(), projectileRadius)===false){
+                    else*/ if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(),Projectile.radius)===false){
                         Projectile.removeProjectileWithId(sprite.name);
                         playerHealth -= 10;
                         if (playerHealth < 0) {
@@ -188,13 +188,13 @@ function tick(event) {
                         sprite.projectileTimer=sprite.projectileTimer-3;
                     let arrowSprite = new createjs.Sprite(projectileSheet, "purple_attack");
                     let arrowAngle=Math.atan2(dx, -dy);
-                    arrowSprite.scaleX = projectileScale;
-                    arrowSprite.scaleY = projectileScale;
+                    arrowSprite.scaleX = Projectile.scale;
+                    arrowSprite.scaleY = Projectile.scale;
                     arrowSprite.rotation = arrowAngle * (180/Math.PI) - 45;
                     new Projectile(
                         arrowSprite,
-                        arrowSprite.reverseCenterX(sprite.centerX() + Math.sin(arrowAngle) * monsterRadius),
-                        arrowSprite.reverseCenterY(sprite.centerY() - Math.cos(arrowAngle) * monsterRadius),
+                        arrowSprite.reverseCenterX(sprite.centerX() + Math.sin(arrowAngle) * Monster.radius),
+                        arrowSprite.reverseCenterY(sprite.centerY() - Math.cos(arrowAngle) * Monster.radius),
                         arrowAngle  - Math.PI / 2,
                         4,
                         5000,
@@ -202,7 +202,7 @@ function tick(event) {
                     );
                 }
 
-                if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(), monsterRadius, collisionDelta)) {
+                if (checkCircleCollisionWithPlayer(sprite.centerX(), sprite.centerY(), Monster.radius, collisionDelta)) {
                     sprite.x += velocityX;
                     sprite.y += velocityY;
                     if (DEBUG === true) {
@@ -356,8 +356,8 @@ function shootProjectile(x, y){
     arrowSprite.rotation = angle * (180/Math.PI) - 90;
     new Projectile(
         arrowSprite,
-        arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * playerRadius),
-        arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * playerRadius),
+        arrowSprite.reverseCenterX(playerGetPos()[0] + Math.sin(angle) * Player.radius),
+        arrowSprite.reverseCenterY(playerGetPos()[1] - Math.cos(angle) * Player.radius),
         angle  - Math.PI / 2,
         4,
         3000
@@ -412,13 +412,13 @@ function createPowerUps() {
     }
 
     if (outSideLastBox) {
-        if (Math.random() > 0.01){
+        if (Math.random() > 0.5){
             createPowerUp("money", playerPos);
         }
-        if (Math.random() > 0.01){
+        if (Math.random() > 0.5){
             createPowerUp("speedBoost", playerPos);
         }
-        if (Math.random() > 0.01){
+        if (Math.random() > 0.5){
             createPowerUp("smashBuilding", playerPos);
         }
     }

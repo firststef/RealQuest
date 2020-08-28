@@ -1,14 +1,14 @@
 function getCoordinateX(point){
-    return -(playerPos[0]-point)*ZOOM+offsetx;
+    return -(Player.pos.x-point)*ZOOM+offsetx;
 }
 function getCoordinateY(point){
-    return (playerPos[1]-point)*ZOOM+ offsety;
+    return (Player.pos.y-point)*ZOOM+ offsety;
 }
 function getReverseCoordinateX(point){
-    return playerPos[0] - ((point - offsetx) / (-ZOOM));
+    return Player.pos.x - ((point - offsetx) / (-ZOOM));
 }
 function getReverseCoordinateY(point){
-    return playerPos[1] - ((point - offsety) / ZOOM);
+    return Player.pos.y - ((point - offsety) / ZOOM);
 }
 function getScreenCoordinates(arr){
     let new_arr = [];
@@ -34,9 +34,9 @@ function playerGetPos(x=0, y=0, z=0, t=0) {
 function playerGetRect(x=0, y=0, z=0, t=0) {
     return [
         [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t],
-        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + playerWidth  + t],
-        [getCoordinateX(map.transform._center.lng + x) + playerWidth + z, getCoordinateY(map.transform._center.lat + y) + playerWidth + t],
-        [getCoordinateX(map.transform._center.lng + x) + playerWidth  + z,getCoordinateY(map.transform._center.lat + y) + t],
+        [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + 2 * Player.radius  + t],
+        [getCoordinateX(map.transform._center.lng + x) + 2 * Player.radius + z, getCoordinateY(map.transform._center.lat + y) + 2 * Player.radius + t],
+        [getCoordinateX(map.transform._center.lng + x) + 2 * Player.radius  + z,getCoordinateY(map.transform._center.lat + y) + t],
         [getCoordinateX(map.transform._center.lng + x) + z, getCoordinateY(map.transform._center.lat + y) + t]
     ];
 }

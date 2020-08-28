@@ -89,7 +89,7 @@ function checkProjectileCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
         if (sprite.isMonster === true) {
-            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
+            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(Monster.radius + radius, 2)) {
                 sprite.monsterHP -= 25;
                 if (sprite.monsterHP <= 0) {
                     nrOfMonsters--;
@@ -109,7 +109,7 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
     for (let i=0; i<monsterLayer.children.length; i++) {
         let sprite = monsterLayer.children[i];
         if (sprite.isMonster === true) {
-            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(monsterRadius + radius, 2)) {
+            if (Math.pow((x - sprite.centerX()),2) + Math.pow((y - sprite.centerY()),2) <= Math.pow(Monster.radius + radius, 2)) {
                 return false;
             }
         }
@@ -119,5 +119,6 @@ function checkPlayerCollisionWithMonsters(x,y,radius){
 
 /** Returns false if (x,y) is closer than radius to player */
 function checkCircleCollisionWithPlayer(x,y, radius, collisionDelta=0){
-    return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(radius + playerRadius + collisionDelta, 2);
+    return distanceBetweenPoints(playerGetPos()[0],playerGetPos()[1],x,y) > radius+Player.radius+collisionDelta; //TODO check if expressions are the same
+    //return Math.pow(playerGetPos()[0] - x, 2) + Math.pow(playerGetPos()[1] - y, 2) > Math.pow(radius + playerRadius + collisionDelta, 2);
 }

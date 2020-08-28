@@ -1,9 +1,11 @@
 class Monster{
+
+    static radius=8;
+
     constructor(sprite, x, y, velocity,hp, type) {
         let id = getUniqueId();
 
         this.sprite = sprite;
-        this.isMonster = true;
 
         sprite.mType = type;
         if (type === "Red") {
@@ -23,7 +25,7 @@ class Monster{
             monsterCircle.graphics.beginStroke("green");
             monsterCircle.name = id + "circle";
             monsterCircle.graphics.beginFill("green");
-            monsterCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), monsterRadius);
+            monsterCircle.graphics.drawCircle(sprite.centerX(), sprite.centerY(), Monster.radius);
             sprite.collider = monsterCircle;
             monsterLayer.addChild(monsterCircle);
         }

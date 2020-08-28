@@ -61,7 +61,7 @@ function setNightOverlay(on) {
         luminosityOverlay = new createjs.Shape();
         luminosityOverlay.graphics
             .beginRadialGradientFill(["rgba(54,118,191,0.15)", "rgba(6,29,41,0.9)"], [0, 1], offsetx, offsety,
-                playerRadius, offsetx, offsety, playerRadius * 10)
+                Player.radius, offsetx, offsety, Player.radius * 10)
             .drawRect(0, 0, windowWidth, windowHeight);
         luminosityOverlay.name = "luminosityOverlay";
         stage.addChildAt(luminosityOverlay, 4);

@@ -218,7 +218,7 @@ function loadComplete(){
         playerRect.graphics.beginStroke("green");
         playerRect.name = "playerRect";
         playerRect.graphics.beginFill("green");
-        playerRect.graphics.drawCircle(playerSprite.centerX(), playerSprite.centerY(), playerRadius);
+        playerRect.graphics.drawCircle(playerSprite.centerX(), playerSprite.centerY(), Player.radius);
     }
 
     //Adding Layers to the tree
@@ -265,7 +265,7 @@ function loadComplete(){
     }
 
     //Server communication
-    socket = io(socketServerAddress, {secure: true, query: {username: playerName}});
+    socket = io(socketServerAddress, {secure: true, query: {username: Player.name}});
     socket.on('connect', function () {
         socket.on('other_player', function (obj) {
             obj = JSON.parse(obj);
@@ -296,7 +296,7 @@ function loadComplete(){
                     otherPlayerCollider.graphics.beginStroke("green");
                     otherPlayerCollider.name = otherP.username + "_collider";
                     otherPlayerCollider.graphics.beginFill("green");
-                    otherPlayerCollider.graphics.drawCircle(otherPlayer.centerX(), otherPlayer.centerY(), playerRadius);
+                    otherPlayerCollider.graphics.drawCircle(otherPlayer.centerX(), otherPlayer.centerY(), Player.radius);
                     otherPlayerContainer.addChild(otherPlayerCollider);
                 }
                 otherPlayerContainer.addChild(otherPlayer);
@@ -317,6 +317,13 @@ function loadComplete(){
             consoleText.innerHTML += str;
         });
     });
+    /*
+    window.addEventListener('beforeunload',function (event) {
+        event.preventDefault();
+        event.returnValue = ' ';
+        socket.close();
+    });
+    */
     updateSocketCallback = function () {
         let sendObj = {
             coordinates: [map.transform._center.lng, map.transform._center.lat],
@@ -339,7 +346,7 @@ function loadComplete(){
         if (event.code === 'Enter') {
             event.preventDefault();
             if (input.value !== ''){
-                socket.emit('new_message',{message:input.value,user:playerName});
+                socket.emit('new_message',{message:input.value,user:Player.name});
             }
             input.value = '';
         }
@@ -382,10 +389,11 @@ function getGameParameters(){
 
         //TODO: temporary replace with if (lat != null || lng != null || username !== null) => redirect to index
         if (lat != null && lng != null){
-            playerPos = [lng, lat];
+            Player.pos.x=lng;
+            Player.pos.y=lat;
         }
         if (username !== null){
-            playerName = username;
+            Player.name = username;
         }
     }
     else {
@@ -397,10 +405,11 @@ function getGameParameters(){
 
         //Temporarily
         if (lat != null && lng != null){
-            playerPos = [lng, lat];
+            Player.pos.x=lng;
+            Player.pos.y=lat;
         }
         if (username !== null){
-            playerName = username;
+            Player.name = username;
         }
     }
 }

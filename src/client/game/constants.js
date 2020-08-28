@@ -1,5 +1,5 @@
 const DEBUG = false;
-const LOCAL = false;
+const LOCAL = true;
 const ORIGIN = LOCAL ? 'http://localhost' : 'https://firststef.tools';
 
 const defaultPos = [27.598505, 47.162098];
@@ -10,12 +10,7 @@ const windowHeight =  window.innerHeight;
 const buildingsBoxX=windowWidth*1.5; //thinking outside of box is not good
 const buildingsBoxY=windowHeight*1.5;
 
-const playerWidth = 20;
-const playerRadius = 10; //radius of the player collision
 const collisionDelta=2;
-const projectileRadius = 4;
-const monsterRadius = 8 ;
-const projectileScale = 0.5;
 const MAX_COORDINATE=180;
 const initialDisplacement=0.000002;
 
@@ -32,11 +27,8 @@ const waterColor = "#0892A5";
 
 //Socket
 const socketServerAddress = ORIGIN;
-//const socketServerAddress = ORIGIN;
 const slowUpdateDelta = 1000;
 const fastUpdateDelta = 1000/30;
-
-var playerName = "player";
 
 var pageLoader;
 var resourceLoader; // resource loader
@@ -80,7 +72,6 @@ var moneyPowerUpValue = 50;
 
 var leaderBoardCount = 8;
 var player;
-var playerPos = defaultPos;
 var playerHealth = playerMaxHealth;
 var gameOver = false;
 var displacement = initialDisplacement; // collision is checked by offsetting the position with this amount and checking for contact

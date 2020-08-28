@@ -44,6 +44,8 @@ router.get('/PageLoader.js', resourceController.plainFileExport.bind(resourceCon
 router.get('/WeatherLoader.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/WeatherLoader.js', 'text/javascript']);
 router.get('/Projectile.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/Projectile.js', 'text/javascript']);
 router.get('/Monster.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/Monster.js', 'text/javascript']);
+router.get('/Player.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/classes/Player.js', 'text/javascript']);
+
 
 router.get('/collision.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/collision.js', 'text/javascript']);
 router.get('/map.js', resourceController.plainFileExport.bind(resourceController), ['../client/game/functions/map.js', 'text/javascript']);

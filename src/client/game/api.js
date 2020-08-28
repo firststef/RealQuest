@@ -60,7 +60,7 @@ function getGameConfiguration(){
 /* GEO TIME FUNCTIONS */
 
 function getServerTimeAndWeather(){
-    let timeRequest= ORIGIN + "/api/environment?lat="+playerPos[1]+"&long="+playerPos[0];
+    let timeRequest= ORIGIN + "/api/environment?lat="+Player.pos.y+"&long="+Player.pos.x;
     fetch(timeRequest).
     then((response) => {
         return response.json();
@@ -82,7 +82,7 @@ function setMap() {
     map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
-        center: [playerPos[0], playerPos[1]],
+        center: [Player.pos.x, Player.pos.y],
         zoom: 19
     });
     map.on('load', function() {
